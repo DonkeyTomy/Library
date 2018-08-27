@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ZZXLibrary</string>
+    <string name="record_error">录像失败</string>
+    <string name="not_support_format">格式不支持</string>
+</resources>
