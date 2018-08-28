@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/media_library/media_library.iml" filepath="$PROJECT_DIR$/media_library/media_library.iml" />
       <module fileurl="file://$PROJECT_DIR$/network_library/network_library.iml" filepath="$PROJECT_DIR$/network_library/network_library.iml" />
       <module fileurl="file://$PROJECT_DIR$/utils_library/utils_library.iml" filepath="$PROJECT_DIR$/utils_library/utils_library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/view_library/view_library.iml" filepath="$PROJECT_DIR$/view_library/view_library.iml" />
     </modules>
   </component>
 </project>

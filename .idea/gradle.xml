@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/media_library" />
             <option value="$PROJECT_DIR$/network_library" />
             <option value="$PROJECT_DIR$/utils_library" />
+            <option value="$PROJECT_DIR$/view_library" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
