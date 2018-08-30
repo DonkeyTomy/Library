@@ -25,10 +25,10 @@
 #-renamesourcefileattribute SourceFile
 -keep class kotlin.jvm.internal.DefaultConstructorMarker
 -keep class com.tomy.lib.ui.view.layout.MainLinearLayout$OnKeyPressedListener
--keep class media.SystemUtil{*;}
+-keep class com.zzx.utils.system.SystemUtil{*;}
 -dontwarn android.os.SystemProperties
 -keep class android.os.SystemProperties{*;}
--keep class media.recorder.IRecorder$State
+-keep class com.zzx.media.recorder.IRecorder$State
 
 -keepclassmembers class android.media.MediaMetadataRetriever {
     public android.graphics.Bitmap getScaledFrameAtTime(long,int,int,int);

@@ -1,4 +1,4 @@
-package com.zzx.utils;
+package com.zzx.utils.system;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

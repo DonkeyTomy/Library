@@ -22,6 +22,7 @@
 **/
 ext.deps = [:]
 def versions = [:]
+versions.library = "1.0.1"
 versions.kotlin = "1.2.60"
 versions.paging = "1.0.1"
 versions.work = "1.0.0-alpha06"
@@ -62,6 +63,12 @@ build_versions.compile_sdk = 27
 build_versions.build_tools = "27.0.3"
 ext.build_versions = build_versions
 deps.android_gradle_plugin = "com.android.tools.build:gradle:$versions.android_gradle_plugin"
+
+def library = [:]
+library.utils = "com.github.DonkeyTomy.Library:utils_library:$versions.library"
+library.media = "com.github.DonkeyTomy.Library:media_library:$versions.library"
+library.view = "com.github.DonkeyTomy.Library:view_library:$versions.library"
+deps.library = library
 
 def kotlin = [:]
 //前三个要加入根目录build.gradle的dependencies中

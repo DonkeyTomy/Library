@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.._.._Library.iml" filepath="$PROJECT_DIR$/.._.._Library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../RV123/LauncherDemo/LauncherDemo.iml" filepath="$PROJECT_DIR$/../RV123/LauncherDemo/LauncherDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../RV123/LauncherDemo/app/LauncherDemo-app.iml" filepath="$PROJECT_DIR$/../RV123/LauncherDemo/app/LauncherDemo-app.iml" />
       <module fileurl="file://$PROJECT_DIR$/Library.iml" filepath="$PROJECT_DIR$/Library.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../RV123/LauncherDemo/bluetooth_phone/bluetooth_phone.iml" filepath="$PROJECT_DIR$/../RV123/LauncherDemo/bluetooth_phone/bluetooth_phone.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../RV123/LauncherDemo/file_manager/file_manager.iml" filepath="$PROJECT_DIR$/../RV123/LauncherDemo/file_manager/file_manager.iml" />
       <module fileurl="file://$PROJECT_DIR$/media_library/media_library.iml" filepath="$PROJECT_DIR$/media_library/media_library.iml" />
       <module fileurl="file://$PROJECT_DIR$/network_library/network_library.iml" filepath="$PROJECT_DIR$/network_library/network_library.iml" />
       <module fileurl="file://$PROJECT_DIR$/utils_library/utils_library.iml" filepath="$PROJECT_DIR$/utils_library/utils_library.iml" />

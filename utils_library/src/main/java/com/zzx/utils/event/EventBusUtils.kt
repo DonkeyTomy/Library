@@ -1,4 +1,4 @@
-package com.zzx.utils
+package com.zzx.utils.event
 
 import org.greenrobot.eventbus.EventBus
 import java.util.*
@@ -29,7 +29,7 @@ private constructor() {
             EventBusUtils()
         }
 
-        fun getInstance() :EventBusUtils{
+        fun getInstance() : EventBusUtils {
             return mEventBusUtils.value
         }
 

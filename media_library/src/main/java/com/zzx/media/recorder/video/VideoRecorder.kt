@@ -5,12 +5,13 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.util.SparseIntArray
 import android.view.Surface
+import com.zzx.media.R
+import com.zzx.utils.file.FileUtil
 import com.zzx.media.parameters.AudioProperty
 import com.zzx.media.parameters.VideoProperty
 import com.zzx.media.recorder.IRecorder
 import java.io.File
 import com.zzx.media.recorder.IRecorder.State
-import com.zzx.utils.file.FileUtil
 import com.zzx.utils.rxjava.FlowableUtil
 import io.reactivex.functions.Consumer
 import timber.log.Timber

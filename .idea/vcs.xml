@@ -2,8 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/TomyLibrary" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/media_library/MediaLibrary" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/zzx_library/MediaLibrary" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
 </project>

@@ -4,11 +4,12 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraDevice
 import android.media.CamcorderProfile
+import com.zzx.media.R
+import com.zzx.utils.file.FileUtil
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.recorder.IRecorder
-import com.zzx.media.utils.MediaInfoUtils
-import com.zzx.utils.file.FileUtil
 import com.zzx.utils.rxjava.FlowableUtil
+import com.zzx.media.utils.MediaInfoUtils
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer

@@ -1,0 +1,4 @@
+# network_library
+网络相关的操作类
+目前只实现了Apache的FTP下载相关
+AFtpContinue
