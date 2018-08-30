@@ -1,5 +1,7 @@
 package com.zzx.media.utils
 
+import com.zzx.utils.rxjava.fixedThread
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,13 +36,25 @@ class MediaInfoUtils {
             return getFileName(VIDEO_MP4)
         }
 
+        fun getTmpFileName(): String {
+            return getFileName(FILE_TMP)
+        }
+
         fun getAudioName(): String {
             return getFileName(AUDIO_MP3)
+        }
+
+        fun tmpFile2Video(filePath: String) {
+
+        }
+
+        fun tmpFile2Video(file: File?) = fixedThread {
         }
 
         const val TIME_FORMAT = "yyyyMMdd-HHmmss"
         const val DATE_FORMAT = "yyyyMMdd"
 
+        const val FILE_TMP  = ""
         const val VIDEO_MP4 = ".mp4"
         const val AUDIO_MP3 = ".mp3"
         const val AUDIO_AAC = ".aac"

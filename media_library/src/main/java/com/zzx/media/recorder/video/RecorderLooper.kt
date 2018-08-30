@@ -62,7 +62,7 @@ class RecorderLooper(var mContext: Context, @IRecorder.FLAG flag: Int) {
     }
 
     private fun setupRecorder(quality: Int) {
-        mOutputFile = File(mDirPath, MediaInfoUtils.getVideoName())
+        mOutputFile = File(mDirPath, MediaInfoUtils.getTmpFileName())
         mRecorder.setOutputFile(mOutputFile!!)
         (mRecorder as VideoRecorder).setProperty(quality)
     }
@@ -107,6 +107,7 @@ class RecorderLooper(var mContext: Context, @IRecorder.FLAG flag: Int) {
 
     fun stopRecord() {
         mRecorder.reset()
+        MediaInfoUtils.tmpFile2Video(mOutputFile)
     }
 
     fun release() {

@@ -22,7 +22,7 @@
 **/
 ext.deps = [:]
 def versions = [:]
-versions.library = "1.0.1"
+versions.library = "1.0.2"
 versions.kotlin = "1.2.60"
 versions.paging = "1.0.1"
 versions.work = "1.0.0-alpha06"
