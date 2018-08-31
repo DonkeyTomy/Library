@@ -8,19 +8,13 @@ import android.os.Build
 import android.os.StatFs
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
+import android.provider.MediaStore
+import android.provider.MediaStore.MediaColumns
 import android.support.annotation.RequiresApi
 import android.support.v4.content.FileProvider
 import timber.log.Timber
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Comparator
-import android.provider.MediaStore.MediaColumns
-import android.provider.MediaStore
-
+import java.io.*
+import java.util.*
 
 
 /**@author Tomy
@@ -28,19 +22,19 @@ import android.provider.MediaStore
  */
 object FileUtil {
 
-    fun sortDirTime(path: String, dec: Boolean = true): ArrayList<File> {
-        return sortDirTime(File(path), dec)
+    fun sortDirTime(path: String, dec: Boolean = true, filter: FileFilter? = null): ArrayList<File> {
+        return sortDirTime(File(path), dec, filter)
     }
 
     /**@param dec if true 则递减排序,反之递增.
      */
-    fun sortDirTime(dir: File, dec: Boolean = true): ArrayList<File> {
+    fun sortDirTime(dir: File, dec: Boolean = true, filter: FileFilter? = null): ArrayList<File> {
         val list = ArrayList<File>()
 
         if (!dir.exists() || !dir.isDirectory) {
             return list
         }
-        val files = dir.listFiles()
+        val files = if (filter == null) dir.listFiles() else dir.listFiles(filter)
         if (files == null || files.isEmpty()) {
             return list
         }

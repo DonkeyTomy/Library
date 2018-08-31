@@ -49,12 +49,13 @@ class MediaInfoUtils {
         }
 
         fun tmpFile2Video(file: File?) = fixedThread {
+            file?.renameTo(File(file.parent, "${file.nameWithoutExtension}$VIDEO_MP4"))
         }
 
         const val TIME_FORMAT = "yyyyMMdd-HHmmss"
         const val DATE_FORMAT = "yyyyMMdd"
 
-        const val FILE_TMP  = ""
+        const val FILE_TMP  = ".tmp"
         const val VIDEO_MP4 = ".mp4"
         const val AUDIO_MP3 = ".mp3"
         const val AUDIO_AAC = ".aac"

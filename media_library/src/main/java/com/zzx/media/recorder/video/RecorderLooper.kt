@@ -179,10 +179,10 @@ class RecorderLooper(var mContext: Context, @IRecorder.FLAG flag: Int) {
                         },
                         {
                             it.printStackTrace()
-                            Timber.e("onError. Thread = ${Thread.currentThread().name}")
+//                            Timber.e("onError. Thread = ${Thread.currentThread().name}")
                         },
                         {
-                            Timber.e("onComplete. Thread = ${Thread.currentThread().name}")
+//                            Timber.e("onComplete. Thread = ${Thread.currentThread().name}")
                         },
                         {
                             mRecordLoopDisposable = it
@@ -197,6 +197,9 @@ class RecorderLooper(var mContext: Context, @IRecorder.FLAG flag: Int) {
                 }, Consumer {
                     Observable.interval(0, 10L, TimeUnit.SECONDS)
                             .observeOn(Schedulers.io())
+                            .doOnDispose {
+                                Timber.e("check Disposed")
+                            }
                             .subscribe(
                                     {
                                         checkNeedDelete()
