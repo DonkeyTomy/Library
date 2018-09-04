@@ -1,5 +1,6 @@
 package com.zzx.media.recorder
 
+import android.hardware.Camera
 import android.support.annotation.IntDef
 import android.view.Surface
 import com.zzx.media.parameters.AudioProperty
@@ -21,7 +22,15 @@ interface IRecorder {
      * */
     fun prepare()
 
+    /**
+     * Camera2录制视频使用
+     * */
     fun getSurface(): Surface?
+
+    /**
+     * Camera1时录制视频使用
+     * */
+    fun setCamera(camera: Camera)
 
     /**
      * @see setOutputFile[File]
@@ -47,6 +56,8 @@ interface IRecorder {
      * */
     fun setOutputFile(dir: File, file: File)
 
+    fun getOutputFile(): String
+
     /**
      * 设置视频参数.
      * @see VideoProperty
@@ -60,6 +71,10 @@ interface IRecorder {
     fun setAudioProperty(audioProperty: AudioProperty)
 
     fun setRecordCallback(callback: IRecordCallback?)
+
+    fun setRotation(rotation: Int)
+
+    fun setProperty(quality: Int)
 
     /**
      * 开始录像.
@@ -119,6 +134,8 @@ interface IRecorder {
         fun onRecorderConfigureFailed()
 
         fun onRecordError()
+
+        fun onRecorderFinished(file: File?)
     }
 
 }

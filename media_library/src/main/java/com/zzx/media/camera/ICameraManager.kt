@@ -33,7 +33,7 @@ interface ICameraManager<in surface, camera> {
      * 只设置了预览 Surface ,但是不会调用 [startPreview].
      * 此方法跟[startPreview]共同使用由自身决定何时启动预览.
      * */
-    fun setPreviewSurface(surfaceTexture: surface)
+    fun setPreviewSurface(surface: surface)
 
     /**
      * 此方法调用之前必须先调用[setPreviewSurface],自行决定决定何时启动预览.
@@ -51,7 +51,9 @@ interface ICameraManager<in surface, camera> {
     /**
      * 开始录像
      * */
-    fun startRecordPreview(surface: Surface)
+    fun startRecordPreview(surface: Surface?)
+
+    fun startRecord()
 
     fun setIRecorder(recorder: IRecorder)
 
@@ -82,13 +84,13 @@ interface ICameraManager<in surface, camera> {
 
     fun getSensorOrientation(): Int
 
-    fun takePicture(callback: PictureDataCallback)
+    fun takePicture(callback: PictureDataCallback? = null)
 
-    fun takePictureBurst(count: Int, callback: PictureDataCallback)
+    fun takePictureBurst(count: Int, callback: PictureDataCallback? = null)
 
-    fun setPictureCallback(callback: PictureDataCallback)
+    fun setPictureCallback(callback: PictureDataCallback?)
 
-    fun setRecordPreviewCallback(callback: RecordPreviewReady)
+    fun setRecordPreviewCallback(callback: RecordPreviewReady?)
 
     fun takePicture()
 

@@ -1,6 +1,7 @@
 package com.zzx.media.custom.view.glsurface
 
 import android.content.Context
+import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
@@ -13,7 +14,12 @@ import javax.microedition.khronos.opengles.GL10
 /**@author Tomy
  * Created by Tomy on 2017/8/23.
  */
-class MyGLSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(context, attrs), ISurfaceView {
+class MyGLSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(context, attrs), ISurfaceView<SurfaceTexture, Camera> {
+    override fun setRotation(rotation: Int) {
+    }
+
+    override fun setStateCallback(stateCallback: ISurfaceView.StateCallback<SurfaceTexture>) {
+    }
 
     override fun setPreviewSize(width: Int, height: Int) {
 

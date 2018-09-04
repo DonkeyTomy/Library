@@ -201,6 +201,7 @@ object FileUtil {
             } else {
                 Uri.fromFile(file)
             }
+            Timber.e("openAssignFile.path = ${uri?.path}")
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 setDataAndType(uri, "image/*")
@@ -226,9 +227,8 @@ object FileUtil {
                     where,
                     arrayOf(mAbsolutePath), null)
             if (c != null && c.moveToNext()) {
-                val type = c.getInt(c.getColumnIndexOrThrow(MediaColumns._ID))
-                if (type != 0) {
-                    val id = c.getLong(c.getColumnIndexOrThrow(MediaColumns._ID))
+                val id = c.getInt(c.getColumnIndexOrThrow(MediaColumns._ID))
+                if (id != 0) {
                     itemUri = Uri.withAppendedPath(baseUri, id.toString())
                 }
             }

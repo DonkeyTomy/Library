@@ -5,6 +5,7 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
+import android.hardware.camera2.CameraDevice
 import android.support.annotation.Keep
 import android.util.AttributeSet
 import android.util.Size
@@ -20,7 +21,7 @@ import timber.log.Timber
 /**@author Tomy
  * Created by Tomy on 2017/9/11.
  */
-class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceView, SurfaceTexture.OnFrameAvailableListener {
+class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceView<SurfaceTexture, CameraDevice>, SurfaceTexture.OnFrameAvailableListener {
 
     private var mPreviewWidth = 1280
 
@@ -34,6 +35,8 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
 
     private var mTextureListener: SurfaceTextureListener? = null
 
+    private var mSurfaceStateCallback: ISurfaceView.StateCallback<SurfaceTexture>? = null
+
     private var mRotation = 0
 
     constructor(context: Context, attributes: AttributeSet?): super(context, attributes) {
@@ -45,13 +48,17 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
 
     constructor(context: Context): this(context, null)
 
+    override fun setStateCallback(stateCallback: ISurfaceView.StateCallback<SurfaceTexture>) {
+        mSurfaceStateCallback = stateCallback
+    }
+
     override fun setPreviewSize(width: Int, height: Int) {
         mPreviewWidth   = width
         mPreviewHeight  = height
         mPreviewSize = Size(width, height)
     }
 
-    fun setRotation(rotation: Int) {
+    override fun setRotation(rotation: Int) {
         mRotation = rotation
     }
 
@@ -76,7 +83,7 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
     override fun release() {
     }
 
-    override fun setCamera(@NonNull camera: Camera) {
+    override fun setCamera(@NonNull camera: CameraDevice) {
     }
 
     fun setCustomFrameAvailable(listener: SurfaceTexture.OnFrameAvailableListener) {
@@ -94,6 +101,7 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
+        mSurfaceStateCallback?.onSurfaceSizeChange(surface, width, height)
         mTextureListener?.onSurfaceTextureSizeChanged(surface, width, height)
         configureTransform(mPreviewSize!!, mRotation, width, height)
         Timber.e("onSurfaceTextureSizeChanged")
@@ -106,12 +114,14 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
         Timber.e("onSurfaceTextureDestroyed")
         mTextureListener?.onSurfaceTextureDestroyed(surface)
+        mSurfaceStateCallback?.onSurfaceDestroyed(surface)
         return true
     }
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
         Timber.e("onSurfaceTextureAvailable")
         mTextureListener?.onSurfaceTextureAvailable(surface, width, height)
+        mSurfaceStateCallback?.onSurfaceCreate(surface)
         if (mLayoutParamsWidth == 0 || mLayoutParamsHeight == 0) {
             mLayoutParamsWidth  = width
             mLayoutParamsHeight = height

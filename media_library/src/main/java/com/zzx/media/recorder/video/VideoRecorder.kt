@@ -1,25 +1,25 @@
 package com.zzx.media.recorder.video
 
+import android.hardware.Camera
 import android.media.CamcorderProfile
 import android.media.MediaRecorder
 import android.os.Build
 import android.util.SparseIntArray
 import android.view.Surface
-import com.zzx.media.R
-import com.zzx.utils.file.FileUtil
 import com.zzx.media.parameters.AudioProperty
 import com.zzx.media.parameters.VideoProperty
 import com.zzx.media.recorder.IRecorder
-import java.io.File
 import com.zzx.media.recorder.IRecorder.State
+import com.zzx.utils.file.FileUtil
 import com.zzx.utils.rxjava.FlowableUtil
 import io.reactivex.functions.Consumer
 import timber.log.Timber
+import java.io.File
 
 /**@author Tomy
  * Created by Tomy on 2018/6/8.
  */
-class VideoRecorder: IRecorder {
+class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 
     private lateinit var mMediaRecorder: MediaRecorder
 
@@ -40,16 +40,22 @@ class VideoRecorder: IRecorder {
 
     private var mRotation   = 0
 
+    private var mCamera: Camera? = null
+
 
     override fun setFlag(@IRecorder.FLAG flag: Int) {
         mFlag = flag
+    }
+
+    override fun setCamera(camera: Camera) {
+        mCamera = camera
     }
 
     fun setSensorOrientationHint(degrees: Int) {
         mDegrees = degrees
     }
 
-    fun setRotation(rotation: Int) {
+    override fun setRotation(rotation: Int) {
         mRotation = rotation
     }
 
@@ -73,7 +79,7 @@ class VideoRecorder: IRecorder {
         mRecorderCallback = callback
     }
 
-    fun setProperty(quality: Int) {
+    override fun setProperty(quality: Int) {
         val profile = CamcorderProfile.get(quality)
         mAudioProperty = AudioProperty(profile.audioSampleRate,
                 profile.audioChannels,
@@ -143,6 +149,21 @@ class VideoRecorder: IRecorder {
         setOutputFile(File(file, file.name))
     }
 
+    override fun getOutputFile(): String {
+        return mFile?.absolutePath ?: ""
+    }
+
+    private fun getVideoSource(): Int {
+
+        return if (isUseCamera2) {
+            MediaRecorder.VideoSource.SURFACE
+        } else {
+            mCamera!!.unlock()
+            mMediaRecorder.setCamera(mCamera)
+            MediaRecorder.VideoSource.CAMERA
+        }
+    }
+
     /**
      * 设置参数至[State.PREPARED]状态
      * @see init
@@ -153,10 +174,10 @@ class VideoRecorder: IRecorder {
             IRecorder.AUDIO ->
                 mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             IRecorder.VIDEO_MUTE ->
-                mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
+                mMediaRecorder.setVideoSource(getVideoSource())
             IRecorder.VIDEO -> {
+                mMediaRecorder.setVideoSource(getVideoSource())
                 mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-                mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
             }
         }
 
@@ -205,6 +226,7 @@ class VideoRecorder: IRecorder {
             Timber.e("$TAG_RECORDER onRecorderPrepared")
         } catch (e: Exception) {
             e.printStackTrace()
+            unlockCamera()
             setState(State.ERROR)
             mRecorderCallback?.onRecorderConfigureFailed()
             Timber.e("$TAG_RECORDER onRecorderConfigureFailed")
@@ -212,6 +234,11 @@ class VideoRecorder: IRecorder {
                 TTSToast.showToast(R.string.not_support_format)
             })*/
         }
+    }
+
+    private fun unlockCamera() {
+        if (!isUseCamera2)
+            mCamera?.unlock()
     }
 
     private fun setOrientation() {
@@ -242,6 +269,7 @@ class VideoRecorder: IRecorder {
         if (checkState() == State.RECORDING) {
             mMediaRecorder.stop()
             setState(State.IDLE)
+            mRecorderCallback?.onRecorderFinished(mFile)
         }
     }
 

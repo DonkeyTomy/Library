@@ -1,5 +1,7 @@
 package com.zzx.media.utils
 
+import android.content.Context
+import android.provider.MediaStore
 import com.zzx.utils.rxjava.fixedThread
 import java.io.File
 import java.text.SimpleDateFormat
@@ -50,6 +52,10 @@ class MediaInfoUtils {
 
         fun tmpFile2Video(file: File?) = fixedThread {
             file?.renameTo(File(file.parent, "${file.nameWithoutExtension}$VIDEO_MP4"))
+        }
+
+        fun insertImage(context: Context, file: File) = fixedThread {
+            MediaStore.Images.Media.insertImage(context.contentResolver, file.absolutePath, file.name, null)
         }
 
         const val TIME_FORMAT = "yyyyMMdd-HHmmss"

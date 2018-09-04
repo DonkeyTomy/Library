@@ -185,7 +185,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * @see takePictureBurst
      * @see setupCaptureReader
      * */
-    override fun takePicture(callback: ICameraManager.PictureDataCallback) {
+    override fun takePicture(callback: ICameraManager.PictureDataCallback?) {
         Timber.e("sensorOrientation = ${getSensorOrientation()}")
         mPictureCallback = callback
         takePicture()
@@ -196,13 +196,13 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * @see takePictureBurst
      * @see setupCaptureReader
      * */
-    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureDataCallback) {
+    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureDataCallback?) {
         mPictureCallback = callback
         takePictureBurst(count)
     }
 
 
-    override fun setPictureCallback(callback: ICameraManager.PictureDataCallback) {
+    override fun setPictureCallback(callback: ICameraManager.PictureDataCallback?) {
         mPictureCallback = callback
     }
 
@@ -422,14 +422,14 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         mVideoRecorder = recorder
     }
 
-    override fun setRecordPreviewCallback(callback: ICameraManager.RecordPreviewReady) {
+    override fun setRecordPreviewCallback(callback: ICameraManager.RecordPreviewReady?) {
         mRecordPreviewReady = callback
     }
 
     /**
      * 开始录像
      * */
-    override fun startRecordPreview(surface: Surface) {
+    override fun startRecordPreview(surface: Surface?) {
         if (mCamera == null || mCameraClosed.get()) {
             return
         }
@@ -440,7 +440,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
             clear()
             add(mCaptureReader!!.surface)
             add(mPreviewSurface!!)
-            add(surface)
+            add(surface!!)
         }
 
         mCamera?.createCaptureSession(mSurfaceList, object : CameraCaptureSession.StateCallback() {
@@ -458,7 +458,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
              */
             override fun onConfigured(session: CameraCaptureSession?) {
                 mPreviewSession = session
-                sendRecordPreviewRequest(surface)
+                sendRecordPreviewRequest(surface!!)
                 mRecordPreviewReady?.onRecordPreviewReady()
             }
 
@@ -490,6 +490,9 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * 停止录像
      * */
     override fun stopRecord() {
+    }
+
+    override fun startRecord() {
     }
 
 

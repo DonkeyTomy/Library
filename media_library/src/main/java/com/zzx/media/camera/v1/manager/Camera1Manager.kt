@@ -1,6 +1,8 @@
 package com.zzx.media.camera.v1.manager
 
 import android.hardware.Camera
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -15,7 +17,15 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mCamera: Camera? = null
 
+    private lateinit var mParameters: Camera.Parameters
+
     private var mCameraId: Int = 0
+
+    private var mPictureCount = 0
+
+    private var mBurstMode = false
+
+    private var mRecording = false
 
     private var mCameraClosed = AtomicBoolean(false)
 
@@ -26,13 +36,26 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mVideoRecorder: IRecorder? = null
 
+    private var mPictureDataCallback: ICameraManager.PictureDataCallback? = null
+
+    private var mRecordPreviewReady: ICameraManager.RecordPreviewReady? = null
+
+    private var mHandlerThread: HandlerThread = HandlerThread(Camera1Manager::class.simpleName)
+    private var mHandler: Handler
+
+    init {
+        mHandlerThread.start()
+        mHandler = Handler(mHandlerThread.looper)
+    }
+
+
     override fun openFrontCamera() {
         for (i in 0 until getCameraCount()) {
             val info = Camera.CameraInfo()
             Camera.getCameraInfo(i, info)
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                 mCameraId = i
-                mCamera = Camera.open(i)
+                openSpecialCamera(mCameraId)
                 return
             }
         }
@@ -44,10 +67,16 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             Camera.getCameraInfo(i, info)
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
                 mCameraId = i
-                mCamera = Camera.open(i)
+                openSpecialCamera(mCameraId)
                 return
             }
         }
+    }
+
+    private fun openSpecialCamera(cameraId: Int) {
+        mCamera = Camera.open(cameraId)
+        mParameters = mCamera!!.parameters
+        mStateCallback?.onCameraOpenSuccess(mCamera)
     }
 
     override fun openExternalCamera() {
@@ -57,8 +86,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 只设置了预览 Surface ,但是不会调用 [startPreview].
      * 此方法跟[startPreview]共同使用由自身决定何时启动预览.
      * */
-    override fun setPreviewSurface(surfaceTexture: SurfaceHolder) {
-        mPreviewSurface = surfaceTexture
+    override fun setPreviewSurface(surface: SurfaceHolder) {
+        mPreviewSurface = surface
+        mCamera?.setPreviewDisplay(mPreviewSurface)
     }
 
     /**
@@ -74,28 +104,32 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * */
     override fun startPreview(surface: SurfaceHolder) {
         setPreviewSurface(surface)
+        startPreview()
     }
 
     override fun stopPreview() {
         mCamera?.stopPreview()
+        mCamera?.setPreviewDisplay(null)
     }
 
     /**
      * 开始录像
      * */
-    override fun startRecordPreview(surface: Surface) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun startRecordPreview(surface: Surface?) {
+    }
+
+    override fun startRecord() {
+        mRecording = true
     }
 
     override fun setIRecorder(recorder: IRecorder) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     /**
      * 停止录像
      * */
     override fun stopRecord() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mRecording = false
     }
 
     override fun closeCamera() {
@@ -103,6 +137,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun releaseCamera() {
+        stopPreview()
         mCamera?.release()
     }
 
@@ -111,66 +146,105 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun getSupportPreviewSizeList(): Array<Size> {
-        val parameters = mCamera?.parameters
-        val list = parameters!!.supportedPreviewSizes
+        val list = mParameters.supportedPreviewSizes
         return Array(list.size) {
             Size(list[it].width, list[it].height)
         }
     }
 
     override fun getSupportPreviewFormatList(): Array<Int> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val list = mParameters.supportedPreviewFormats
+        return Array(list.size) {
+            list[it]
+        }
     }
 
     override fun setPreviewParams(width: Int, height: Int, format: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mCamera!!.parameters.apply {
+            previewFormat = format
+            setPreviewSize(width, height)
+            mCamera!!.parameters = this
+        }
     }
 
     override fun getSupportCaptureSizeList(): Array<Size> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val list = mParameters.supportedPictureSizes
+        return Array(list.size) {
+            Size(list[it].width, list[it].height)
+        }
     }
 
     override fun getSupportCaptureFormatList(): Array<Int> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val list = mParameters.supportedPictureFormats
+        return Array(list.size) {
+            list[it]
+        }
     }
 
     override fun setCaptureParams(width: Int, height: Int, format: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mCamera!!.parameters.apply {
+            pictureFormat = format
+            setPictureSize(width, height)
+            mCamera!!.parameters = this
+        }
     }
 
     override fun getSupportRecordSizeList(): Array<Size> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val list = mParameters.supportedVideoSizes
+        return Array(list.size) {
+            Size(list[it].width, list[it].height)
+        }
     }
 
     override fun getSensorOrientation(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return 0
     }
 
-    override fun takePicture(callback: ICameraManager.PictureDataCallback) {
-        mCamera?.takePicture(null, null, Camera.PictureCallback {
-            data, _ ->
-            callback.onCaptureFinished(data)
-        })
+    override fun takePicture(callback: ICameraManager.PictureDataCallback?) {
+        setPictureCallback(callback)
+        takePicture()
     }
 
-    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureDataCallback) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureDataCallback?) {
+        mPictureDataCallback = callback
+        takePictureBurst(count)
     }
 
-    override fun setPictureCallback(callback: ICameraManager.PictureDataCallback) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun setPictureCallback(callback: ICameraManager.PictureDataCallback?) {
+        mPictureDataCallback = callback
     }
 
-    override fun setRecordPreviewCallback(callback: ICameraManager.RecordPreviewReady) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun setRecordPreviewCallback(callback: ICameraManager.RecordPreviewReady?) {
+        mRecordPreviewReady = callback
     }
 
     override fun takePicture() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        setPictureNormalMode()
+        startTakePicture()
     }
 
     override fun takePictureBurst(count: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        setPictureContinuousMode(count)
+        startTakePicture()
+    }
+
+    private fun startTakePicture() {
+        mPictureCount = 0
+        mCamera?.takePicture(null, null, mPictureCallback)
+    }
+
+    private val mPictureCallback by lazy {
+        Camera.PictureCallback { data, _ ->
+            mPictureDataCallback?.onCaptureFinished(data!!)
+
+            if (mBurstMode) {
+                if (++mPictureCount >= mContinuousShotCount && !mRecording) {
+                    startPreview()
+                }
+            } else if (!mRecording) {
+                startPreview()
+            }
+        }
     }
 
     override fun setOrientation(rotation: Int) {
@@ -185,8 +259,44 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         return mCamera
     }
 
+    private var mStateCallback: ICameraManager.CameraStateCallback<Camera>? = null
+
     override fun setStateCallback(stateCallback: ICameraManager.CameraStateCallback<Camera>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mStateCallback = stateCallback
+    }
+
+    private fun setPictureNormalMode() {
+        mParameters.apply {
+            set(CAP_MODE, CAP_MODE_NORMAL)
+            set(BURST_NUM, 1)
+            mCamera?.parameters = this
+        }
+        mBurstMode = false
+    }
+
+    /**
+     * 高速连拍总数
+     * */
+    private var mContinuousShotCount = 0
+
+    /**
+     * 设置成高速连拍模式
+     * */
+    private fun setPictureContinuousMode(pictureCount: Int) {
+        mContinuousShotCount = pictureCount
+        mParameters.apply {
+            set(CAP_MODE, CAP_MODE_CONTINUOUS)
+            set(BURST_NUM, pictureCount)
+            mCamera?.parameters = this
+        }
+        mBurstMode = true
+    }
+
+    companion object {
+        const val CAP_MODE  = "cap-mode"
+        const val CAP_MODE_NORMAL   = "normal"
+        const val CAP_MODE_CONTINUOUS = "continuousshot"
+        const val BURST_NUM = "burst-num"
     }
 
 }
