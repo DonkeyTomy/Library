@@ -228,6 +228,41 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         startTakePicture()
     }
 
+    /**
+     * 在当前的缩放下放大镜头的Level
+     * @param level Int +level
+     */
+    override fun zoomIncrease(level: Int) {
+        mParameters.zoom += level
+        mCamera?.parameters = mParameters
+    }
+
+    /**
+     * 在当前的缩放倍数下缩小镜头的Level
+     * @param level Int -Level
+     */
+    override fun zoomDecrease(level: Int) {
+        mParameters.zoom -= level
+        mCamera?.parameters = mParameters
+    }
+
+    /***
+     * @return Int 获得可放大的最大倍数.
+     */
+    override fun getZoomMax(): Int {
+        return mParameters.maxZoom
+    }
+
+    /**
+     * @param level Int 设置的缩放倍数.level不得小于零以及不得超过最大放大倍数,可通过[getZoomMax]获得最大放大倍数.否则无效.
+     */
+    override fun setZoomLevel(level: Int) {
+        if (level < 0 || level > getZoomMax())
+            return
+        mParameters.zoom = level
+        mCamera?.parameters = mParameters
+    }
+
     private fun startTakePicture() {
         mPictureCount = 0
         mCamera?.takePicture(null, null, mPictureCallback)

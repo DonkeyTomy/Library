@@ -23,7 +23,7 @@
 ext.deps = [:]
 def versions = [:]
 versions.library = "1.0.2"
-versions.kotlin = "1.2.60"
+versions.kotlin = "1.2.71"
 versions.paging = "1.0.1"
 versions.work = "1.0.0-alpha06"
 versions.navigation = "1.0.0-alpha05"
@@ -37,7 +37,7 @@ versions.constraint_layout = "1.1.2"
 versions.multidex = "1.0.3"
 versions.glide = "4.7.1"
 versions.timber = "4.7.0"
-versions.android_gradle_plugin = '3.3.0-alpha07'
+versions.android_gradle_plugin = '3.3.0-alpha11'
 versions.rxjava2 = "2.1.10"
 versions.rx_android = "2.0.2"
 

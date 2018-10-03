@@ -99,6 +99,28 @@ interface ICameraManager<in surface, camera> {
     fun setOrientation(rotation: Int)
 
     /**
+     * 在当前的缩放下放大镜头的Level
+     * @param level Int +level
+     */
+    fun zoomIncrease(level: Int = 1)
+
+    /**
+     * 在当前的缩放倍数下缩小镜头的Level
+     * @param level Int -Level
+     */
+    fun zoomDecrease(level: Int = 1)
+
+    /***
+     * @return Int 获得可放大的最大倍数.
+     */
+    fun getZoomMax(): Int
+
+    /**
+     * @param level Int 设置的缩放倍数.不得超过最大放大倍数,可通过[getZoomMax]获得最大放大倍数.
+     */
+    fun setZoomLevel(level: Int)
+
+    /**
      * 获得摄像头设备.
      * @see CameraDevice
      * @see Camera

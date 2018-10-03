@@ -43,4 +43,66 @@
         <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+
+    <style name="ConHor">
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+    </style>
+    <style name="ConVer">
+        <item name="layout_constraintTop_toTopOf">parent</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+    </style>
+
+    <!-- 宽度Math -->
+    <style name="ConWidthMath" parent="ConHor">
+        <item name="android:layout_width">0dp</item>
+    </style>
+
+    <!-- 水平居中 -->
+    <style name="ConHorCenter" parent="ConHor">
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+
+    <!-- 高度Math -->
+    <style name="ConHeightMath" parent="ConVer">
+        <item name="android:layout_height">0dp</item>
+
+    </style>
+
+    <!-- 垂直居中 -->
+    <style name="ConVerCenter" parent="ConVer">
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="ConAllParent" parent="ConVer">
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+    </style>
+
+    <!-- 顶部Width全屏,Height Wrap -->
+    <style name="ConTopHeightWrap" parent="ConWidthMath">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+
+    <!-- 底部Width全屏,Height Wrap -->
+    <style name="ConBottomHeightWrap" parent="ConWidthMath">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+    </style>
+
+    <!-- 顶部Wrap居中 -->
+    <style name="ConTopAllWrapCenter" parent="ConHor">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+
+    <!-- 底部Wrap居中 -->
+    <style name="ConBottomAllWrapCenter" parent="ConHor">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+    </style>
 </resources>

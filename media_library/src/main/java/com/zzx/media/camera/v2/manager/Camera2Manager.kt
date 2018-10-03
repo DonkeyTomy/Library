@@ -237,6 +237,33 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         mPreviewSession!!.captureBurst(list, CaptureCallback(), mHandler)
     }
 
+    /**
+     * 在当前的缩放下放大镜头的Level
+     * @param level Int +level
+     */
+    override fun zoomIncrease(level: Int) {
+    }
+
+    /**
+     * 在当前的缩放倍数下缩小镜头的Level
+     * @param level Int -Level
+     */
+    override fun zoomDecrease(level: Int) {
+    }
+
+    /***
+     * @return Int 获得可放大的最大倍数.
+     */
+    override fun getZoomMax(): Int {
+        return 0
+    }
+
+    /**
+     * @param level Int 设置的缩放倍数.不得超过最大放大倍数,可通过[getZoomMax]获得最大放大倍数.
+     */
+    override fun setZoomLevel(level: Int) {
+    }
+
     private fun getCameraProperty(id: String): CameraCharacteristics {
         return mCameraManager.getCameraCharacteristics(id)
     }
@@ -306,15 +333,17 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
 
     override fun openBackCamera() {
         mCameraId = getSpecialCameraId(CameraCharacteristics.LENS_FACING_BACK)
-        openSpecialCamera(getSpecialCameraId(CameraCharacteristics.LENS_FACING_BACK))
+        openSpecialCamera(mCameraId)
     }
 
     override fun openFrontCamera() {
-        openSpecialCamera(getSpecialCameraId(CameraCharacteristics.LENS_FACING_FRONT))
+        mCameraId = getSpecialCameraId(CameraCharacteristics.LENS_FACING_FRONT)
+        openSpecialCamera(mCameraId)
     }
 
     override fun openExternalCamera() {
-        openSpecialCamera(getSpecialCameraId(CameraCharacteristics.LENS_FACING_EXTERNAL))
+        mCameraId = getSpecialCameraId(CameraCharacteristics.LENS_FACING_EXTERNAL)
+        openSpecialCamera(mCameraId)
     }
 
     @SuppressLint("MissingPermission")
