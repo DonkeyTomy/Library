@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_gravity="center_vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+    <CheckBox
+        android:id="@+id/cb_record_popup_window_item"
+        android:button="@drawable/radio_button"
+        android:focusable="false"
+        android:clickable="false"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <ImageView
+        android:id="@+id/iv_list_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:focusable="false"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textSize="20sp"
+        android:id="@+id/tv_record_popup_window_item"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content" />
+</LinearLayout>
