@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**@author Tomy
  * Created by Tomy on 2018/6/6.
  */
-class FloatWinManager(private var mContext: Context, var mRootView: View, private var mWinType: Int = WindowManager.LayoutParams.TYPE_SYSTEM_DIALOG) {
+class FloatWinManager(private var mContext: Context, var mRootView: View, private var mWinType: Int = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY) {
 
     private lateinit var mWindowManager: WindowManager
 

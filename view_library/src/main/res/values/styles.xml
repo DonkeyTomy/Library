@@ -110,4 +110,16 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="layout_constraintBottom_toBottomOf">parent</item>
     </style>
+
+    <!-- 居左 垂直居中 -->
+    <style name="ConStartVerCenter" parent="ConVerCenter">
+        <item name="layout_constraintStart_toStartOf">parent</item>
+    </style>
+
+    <!-- 顶部居左 垂直居中 -->
+    <style name="ConTopStartVerCenter" parent="ConStartVerCenter">
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+
+
 </resources>
