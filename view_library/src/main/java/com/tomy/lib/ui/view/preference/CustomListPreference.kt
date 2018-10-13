@@ -11,6 +11,7 @@ import com.tomy.lib.ui.R
  */
 abstract class CustomListPreference(context: Context, attributeSet: AttributeSet): BaseListPreference(context, attributeSet) {
 
+
     override fun getDialogLayoutId(): Int {
         return R.layout.camera_setting_dialog
     }

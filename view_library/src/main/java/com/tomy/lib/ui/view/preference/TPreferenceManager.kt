@@ -8,7 +8,7 @@ import android.widget.ListView
 /**@author Tomy
  * Created by Tomy on 2018/10/10.
  */
-class TPreferenceManager(var context: Context) {
+class TPreferenceManager(private var context: Context) {
 
     private val mPreferenceManagerCls = PreferenceManager::class.java
 
@@ -19,11 +19,15 @@ class TPreferenceManager(var context: Context) {
     }
 
     private val mInflateMethod by lazy {
-        mPreferenceManagerCls.getDeclaredMethod("inflateFromResource", Context::class.java, Integer.TYPE, PreferenceScreen::class.java)
+        mPreferenceManagerCls.getDeclaredMethod("inflateFromResource", Context::class.java, Integer.TYPE, PreferenceScreen::class.java).apply {
+            isAccessible = true
+        }
     }
 
     private val mSetPreferenceMethod by lazy {
-        mPreferenceManagerCls.getDeclaredMethod("setPreferences", PreferenceScreen::class.java)
+        mPreferenceManagerCls.getDeclaredMethod("setPreferences", PreferenceScreen::class.java).apply {
+            isAccessible = true
+        }
     }
 
     private val mPreferenceManager by lazy {
@@ -42,7 +46,7 @@ class TPreferenceManager(var context: Context) {
      * @param xmlId Int.包含Preferences的xml文件.
      */
     fun inflatePreferenceScreen(xmlId: Int) {
-        val screen = getPreferenceScreen()
+        val screen: PreferenceScreen? = null
         val resultScreen = mInflateMethod.invoke(mPreferenceManager, context, xmlId, screen) as PreferenceScreen
         mSetPreferenceMethod.invoke(mPreferenceManager, resultScreen)
     }

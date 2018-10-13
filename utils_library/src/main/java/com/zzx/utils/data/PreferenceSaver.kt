@@ -1,6 +1,7 @@
 package com.zzx.utils.data
 
 import android.content.Context
+import android.preference.PreferenceManager
 
 /**@author Tomy
  * Created by Tomy on 2018/6/17.
