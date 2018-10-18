@@ -1,11 +1,15 @@
 package com.zzx.media.custom.view.camera
 
+import com.zzx.media.camera.ICameraManager
+
 /**@author Tomy
  * Created by Tomy on 2017/12/4.
  */
 interface ISurfaceView<Surface, Camera> {
 
     fun initParams()
+
+    fun setCameraManager(cameraManager: ICameraManager<Surface, Camera>)
 
     fun startPreview()
 

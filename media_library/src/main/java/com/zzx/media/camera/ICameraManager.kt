@@ -96,19 +96,32 @@ interface ICameraManager<in surface, camera> {
 
     fun takePictureBurst(count: Int)
 
-    fun setOrientation(rotation: Int)
+    /**
+     * @param rotation Int 预览界面的旋转角度
+     */
+    fun setDisplayOrientation(rotation: Int)
+
+    /**
+     * @param rotation Int 图片的旋转角度
+     */
+    fun setPictureRotation(rotation: Int)
+
+    /**
+     * @param enable Boolean 是否打开拍照声音
+     */
+    fun enableShutter(enable: Boolean)
 
     /**
      * 在当前的缩放下放大镜头的Level
      * @param level Int +level
      */
-    fun zoomIncrease(level: Int = 1)
+    fun zoomUp(level: Int = 1)
 
     /**
      * 在当前的缩放倍数下缩小镜头的Level
      * @param level Int -Level
      */
-    fun zoomDecrease(level: Int = 1)
+    fun zoomDown(level: Int = 1)
 
     /***
      * @return Int 获得可放大的最大倍数.

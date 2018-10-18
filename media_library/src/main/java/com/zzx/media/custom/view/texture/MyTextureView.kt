@@ -13,6 +13,7 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
+import com.zzx.media.camera.ICameraManager
 import com.zzx.media.custom.view.camera.ISurfaceView
 import io.reactivex.annotations.NonNull
 import timber.log.Timber
@@ -50,6 +51,9 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
 
     override fun setStateCallback(stateCallback: ISurfaceView.StateCallback<SurfaceTexture>) {
         mSurfaceStateCallback = stateCallback
+    }
+
+    override fun setCameraManager(cameraManager: ICameraManager<SurfaceTexture, CameraDevice>) {
     }
 
     override fun setPreviewSize(width: Int, height: Int) {

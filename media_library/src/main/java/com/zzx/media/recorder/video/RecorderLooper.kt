@@ -76,7 +76,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mRecorder.setCamera(mCameraManager?.getCameraDevice() as Camera)
     }
 
-    private fun setupRecorder(quality: Int) {
+    fun setupRecorder(quality: Int) {
         mOutputFile = File(mDirPath, MediaInfoUtils.getTmpFileName())
         mRecorder.setOutputFile(mOutputFile!!)
         mRecorder.setProperty(quality)

@@ -7,6 +7,7 @@
     android:layout_height="wrap_content">
     <ListView
         android:id="@+id/list_view"
+        android:layout_centerInParent="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 </RelativeLayout>

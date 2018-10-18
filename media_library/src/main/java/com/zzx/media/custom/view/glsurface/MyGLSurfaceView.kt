@@ -7,6 +7,7 @@ import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
+import com.zzx.media.camera.ICameraManager
 import com.zzx.media.custom.view.camera.ISurfaceView
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -42,6 +43,9 @@ class MyGLSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(c
     }
 
     override fun release() {
+    }
+
+    override fun setCameraManager(cameraManager: ICameraManager<SurfaceTexture, Camera>) {
     }
 
     var mCamera: Camera? = null

@@ -241,14 +241,14 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * 在当前的缩放下放大镜头的Level
      * @param level Int +level
      */
-    override fun zoomIncrease(level: Int) {
+    override fun zoomUp(level: Int) {
     }
 
     /**
      * 在当前的缩放倍数下缩小镜头的Level
      * @param level Int -Level
      */
-    override fun zoomDecrease(level: Int) {
+    override fun zoomDown(level: Int) {
     }
 
     /***
@@ -327,8 +327,23 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         mCameraStateCallback = stateCallback
     }
 
-    override fun setOrientation(rotation: Int) {
+    /**
+     * @param rotation Int 预览界面的旋转角度
+     */
+    override fun setDisplayOrientation(rotation: Int) {
 
+    }
+
+    /**
+     * @param rotation Int 图片的旋转角度
+     */
+    override fun setPictureRotation(rotation: Int) {
+    }
+
+    /**
+     * @param enable Boolean 是否打开拍照声音
+     */
+    override fun enableShutter(enable: Boolean) {
     }
 
     override fun openBackCamera() {

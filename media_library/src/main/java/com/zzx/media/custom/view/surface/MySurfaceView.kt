@@ -7,8 +7,9 @@ import android.util.AttributeSet
 import android.util.Size
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.zzx.media.camera.v1.manager.Camera1Manager
+import com.zzx.media.camera.ICameraManager
 import com.zzx.media.custom.view.camera.ISurfaceView
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy
@@ -23,11 +24,11 @@ class MySurfaceView(context: Context, attributeSet: AttributeSet): SurfaceView(c
 
     private var mCamera: Camera? = null
 
-    private var mICameraManager: Camera1Manager? = null
+    private var mICameraManager: ICameraManager<SurfaceHolder, Camera>? = null
 
     private val mPreview: AtomicBoolean = AtomicBoolean(false)
 
-    private var mDisplayRotation = 0
+    private var mDisplayRotation = 90
 
     private var mSurfaceStateCallback: ISurfaceView.StateCallback<SurfaceHolder>? = null
 
@@ -37,6 +38,9 @@ class MySurfaceView(context: Context, attributeSet: AttributeSet): SurfaceView(c
         mSurfaceStateCallback = stateCallback
     }
 
+    override fun setCameraManager(cameraManager: ICameraManager<SurfaceHolder, Camera>) {
+        mICameraManager = cameraManager
+    }
 
     override fun setPreviewSize(width: Int, height: Int) {
         mPreviewSize = Size(width, height)
@@ -73,8 +77,9 @@ class MySurfaceView(context: Context, attributeSet: AttributeSet): SurfaceView(c
 
     override fun startPreview() {
         mICameraManager?.apply {
+            Timber.e("previewSize = $mPreviewSize; displayRotation = $mDisplayRotation")
             setPreviewParams(mPreviewSize!!.width, mPreviewSize!!.height, ImageFormat.YV12)
-            setOrientation(mDisplayRotation)
+            setDisplayOrientation(mDisplayRotation)
             startPreview(holder!!)
         }
     }

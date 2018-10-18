@@ -11,6 +11,10 @@ import com.tomy.lib.ui.R
  */
 abstract class CustomListPreference(context: Context, attributeSet: AttributeSet): BaseListPreference(context, attributeSet) {
 
+    /**
+     * 初始化数据与UI
+     */
+    abstract fun initData()
 
     override fun getDialogLayoutId(): Int {
         return R.layout.camera_setting_dialog

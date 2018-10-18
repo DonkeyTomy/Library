@@ -160,7 +160,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun setPreviewParams(width: Int, height: Int, format: Int) {
-        mCamera!!.parameters.apply {
+        mParameters.apply {
             previewFormat = format
             setPreviewSize(width, height)
             mCamera!!.parameters = this
@@ -182,7 +182,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun setCaptureParams(width: Int, height: Int, format: Int) {
-        mCamera!!.parameters.apply {
+        mParameters.apply {
             pictureFormat = format
             setPictureSize(width, height)
             mCamera!!.parameters = this
@@ -232,8 +232,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 在当前的缩放下放大镜头的Level
      * @param level Int +level
      */
-    override fun zoomIncrease(level: Int) {
-        mParameters.zoom += level
+    override fun zoomUp(level: Int) {
+        val zoom = mParameters.zoom + level
+        mParameters.zoom = if (zoom <= getZoomMax()) zoom else getZoomMax()
         mCamera?.parameters = mParameters
     }
 
@@ -241,8 +242,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 在当前的缩放倍数下缩小镜头的Level
      * @param level Int -Level
      */
-    override fun zoomDecrease(level: Int) {
-        mParameters.zoom -= level
+    override fun zoomDown(level: Int) {
+        val zoom = mParameters.zoom - level
+        mParameters.zoom = if (zoom >= 0) zoom else 0
         mCamera?.parameters = mParameters
     }
 
@@ -282,8 +284,26 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
     }
 
-    override fun setOrientation(rotation: Int) {
+    /**
+     * @param rotation Int 预览界面的旋转角度
+     */
+    override fun setDisplayOrientation(rotation: Int) {
         mCamera?.setDisplayOrientation(rotation)
+    }
+
+    /**
+     * @param rotation Int 图片的旋转角度
+     */
+    override fun setPictureRotation(rotation: Int) {
+        mParameters.setRotation(rotation)
+        mCamera?.parameters = mParameters
+    }
+
+    /**
+     * @param enable Boolean 是否打开拍照声音
+     */
+    override fun enableShutter(enable: Boolean) {
+        mCamera?.enableShutterSound(enable)
     }
 
     /**

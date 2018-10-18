@@ -55,7 +55,7 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
         val dialogWindow = mDialog!!.window
         /**设置成此Type是因为WindowManager设置成了{@link android.view.WindowManager.LayoutParams#TYPE_SYSTEM_ERROR},这里必须得比它高才能显示在它上面.
          * */
-//        dialogWindow.setType(WindowManager.LayoutParams.)
+        dialogWindow.setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR)
         /*val lp = dialogWindow.attributes
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT
