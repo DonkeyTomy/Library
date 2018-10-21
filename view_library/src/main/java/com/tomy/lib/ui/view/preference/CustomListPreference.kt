@@ -1,6 +1,7 @@
 package com.tomy.lib.ui.view.preference
 
 import android.content.Context
+import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.ListView
@@ -21,7 +22,10 @@ abstract class CustomListPreference(context: Context, attributeSet: AttributeSet
     }
 
     override fun bindDialogLayout(view: View) {
-        bindListView(view.findViewById(R.id.list_view))
+        bindListView(view.findViewById<ListView>(R.id.list_view).apply {
+            divider = ColorDrawable(R.color.white)
+            dividerHeight = 1
+        })
     }
 
     abstract fun bindListView(listView: ListView)

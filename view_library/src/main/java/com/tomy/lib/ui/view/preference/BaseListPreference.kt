@@ -5,10 +5,9 @@ import android.content.Context
 import android.os.Bundle
 import android.preference.ListPreference
 import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.view.View
-import android.view.WindowManager
+import android.view.*
 import com.tomy.lib.ui.R
+import timber.log.Timber
 
 
 /**@author Tomy
@@ -22,7 +21,7 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
 
     protected var mDialog: Dialog? = null
 
-    private var mXOffset: Int = 0
+    private var mXOffset: Int = 250
 
     private var mYOffset: Int = 0
 
@@ -47,6 +46,7 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
         val contentView = onCreateDialogView()
         contentView.setBackgroundResource(R.drawable.bg_camera_setting_dialog)
         onBindDialogView(contentView)
+        contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
         mDialog!!.setContentView(contentView)
         // Create the mDialog
         if (state != null) {
@@ -56,18 +56,37 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
         /**设置成此Type是因为WindowManager设置成了{@link android.view.WindowManager.LayoutParams#TYPE_SYSTEM_ERROR},这里必须得比它高才能显示在它上面.
          * */
         dialogWindow.setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR)
-        /*val lp = dialogWindow.attributes
-        lp.width = WindowManager.LayoutParams.WRAP_CONTENT
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT
-        lp.x = mXOffset
-        lp.y = mYOffset
-        dialogWindow.attributes = lp*/
+        val lp = dialogWindow.attributes
+        lp.apply {
+            width = contentView.measuredWidth
+            height = WindowManager.LayoutParams.WRAP_CONTENT
+            x = mXOffset
+            y = mYOffset
+            gravity = Gravity.TOP.or(Gravity.START)
+        }
+
+        dialogWindow.attributes = lp
+        Timber.e("lp.width = ${lp.width}")
         try {
             mDialog?.show()
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
+    }
+
+    override fun onCreateView(parent: ViewGroup?): View {
+        return super.onCreateView(parent).apply {
+            viewTreeObserver.addOnGlobalLayoutListener {
+                val intArray = IntArray(2)
+                getLocationOnScreen(intArray)
+                Timber.e("measuredWidth = $measuredWidth; x = ${intArray[0]}, y = ${intArray[1]}")
+                val xOffset = intArray[0] + measuredWidth + 10
+                val yOffset = intArray[1]
+                Timber.e("xOffset = $xOffset; yOffset = $yOffset")
+                setDialogShowCoordinate(xOffset, yOffset)
+            }
+        }
     }
 
     override fun onBindDialogView(view: View) {

@@ -32,6 +32,10 @@ public class ZZXMiscUtils {
     public static final String FM_FREQ      = MISC + "fmtx_freq_hz";
     public static final String LOCAL_OUT    = MISC + "speaker_power";
     public static final String AUDIO_OUT    = MISC + "audio_sw_state";
+    public static final String FLASH_PATH   = MISC + "zzx_flash_stats";
+    public static final String IR_CUT_PATH  = MISC + "zzx_ir_cut_stats";
+    public static final String IR_RED_PATH  = MISC + "zzx_ir_led_stats";
+    public static final String LAZER_PATH   = MISC + "zzx_lazer_stats";
     public static final String OTG  = MISC + "otg_en";
 
     public static final String OTG_PATH = MISC + "otg_en";
@@ -156,6 +160,19 @@ public class ZZXMiscUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void setFlashState(Boolean open) {
+        write(FLASH_PATH, open ? OPEN : CLOSE);
+    }
+
+    public static void setLaserState(Boolean open) {
+        write(LAZER_PATH, open ? OPEN : CLOSE);
+    }
+
+    public static void setIrRedState(Boolean open) {
+        write(IR_CUT_PATH, open ? OPEN : CLOSE);
+        write(IR_RED_PATH, open ? OPEN : CLOSE);
     }
 
     /**重置强制关机计时器.若不重置计时,则会在休眠开始后2分钟后若休眠失败则强制关机

@@ -134,6 +134,13 @@ interface ICameraManager<in surface, camera> {
     fun setZoomLevel(level: Int)
 
     /**
+     * @param stateCallback CameraStateCallback<camera> 设置相机状态回调
+     */
+    fun setStateCallback(stateCallback: CameraStateCallback<camera>)
+
+    fun restartPreview()
+
+    /**
      * 获得摄像头设备.
      * @see CameraDevice
      * @see Camera
@@ -339,6 +346,4 @@ interface ICameraManager<in surface, camera> {
         }*/
     }
 
-
-    fun setStateCallback(stateCallback: CameraStateCallback<camera>)
 }

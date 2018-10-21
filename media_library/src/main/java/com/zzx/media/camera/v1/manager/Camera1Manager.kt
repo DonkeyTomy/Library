@@ -8,6 +8,7 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.recorder.IRecorder
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy
@@ -110,6 +111,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun stopPreview() {
         mCamera?.stopPreview()
         mCamera?.setPreviewDisplay(null)
+    }
+
+    override fun restartPreview() {
+        stopPreview()
+        startPreview(mPreviewSurface!!)
     }
 
     /**
@@ -270,10 +276,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mCamera?.takePicture(null, null, mPictureCallback)
     }
 
-    private val mPictureCallback by lazy {
+    private val mPictureCallback =
         Camera.PictureCallback { data, _ ->
-            mPictureDataCallback?.onCaptureFinished(data!!)
-
+            mPictureDataCallback?.onCaptureFinished(data)
+            Timber.e("mPictureCount = $mPictureCount; mBurstMode = $mBurstMode")
             if (mBurstMode) {
                 if (++mPictureCount >= mContinuousShotCount && !mRecording) {
                     startPreview()
@@ -282,6 +288,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                 startPreview()
             }
         }
+//    }
+
+    private val callback = Camera.PictureCallback {
+        _, _ ->
+        Timber.e("mPictureCount = $mPictureCount")
     }
 
     /**
@@ -320,13 +331,19 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mStateCallback = stateCallback
     }
 
+    /**
+     * @see setPictureContinuousMode
+     */
     private fun setPictureNormalMode() {
-        mParameters.apply {
-            set(CAP_MODE, CAP_MODE_NORMAL)
-            set(BURST_NUM, 1)
-            mCamera?.parameters = this
+        if (mBurstMode) {
+            mParameters.apply {
+                set(CAP_MODE, CAP_MODE_NORMAL)
+                set(BURST_NUM, 1)
+                set(MTK_CAM_MODE, CAMERA_MODE_NORMAL)
+                mCamera?.parameters = this
+            }
+            mBurstMode = false
         }
-        mBurstMode = false
     }
 
     /**
@@ -339,12 +356,16 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * */
     private fun setPictureContinuousMode(pictureCount: Int) {
         mContinuousShotCount = pictureCount
-        mParameters.apply {
-            set(CAP_MODE, CAP_MODE_CONTINUOUS)
-            set(BURST_NUM, pictureCount)
-            mCamera?.parameters = this
+        if (!mBurstMode) {
+            mParameters.apply {
+                set(CAP_MODE, CAP_MODE_CONTINUOUS)
+                set(BURST_NUM, pictureCount)
+                set(MTK_CAM_MODE, CAMERA_MODE_MTK_PRV)
+                mCamera?.parameters = this
+            }
+            restartPreview()
+            mBurstMode = true
         }
-        mBurstMode = true
     }
 
     companion object {
@@ -352,6 +373,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         const val CAP_MODE_NORMAL   = "normal"
         const val CAP_MODE_CONTINUOUS = "continuousshot"
         const val BURST_NUM = "burst-num"
+        const val MTK_CAM_MODE = "mtk-cam-mode"
+        const val CAMERA_MODE_NORMAL    = 0
+        const val CAMERA_MODE_MTK_PRV   = 1
+        const val CAMERA_MODE_MTK_VDO   = 2
+        const val CAMERA_MODE_MTK_VT    = 3
     }
 
 }

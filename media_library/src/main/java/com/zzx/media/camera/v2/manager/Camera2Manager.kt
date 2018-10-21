@@ -462,6 +462,9 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         }
     }
 
+    override fun restartPreview() {
+    }
+
     override fun setIRecorder(recorder: IRecorder) {
         mVideoRecorder = recorder
     }

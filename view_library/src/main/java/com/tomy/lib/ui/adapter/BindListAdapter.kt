@@ -9,7 +9,7 @@ import butterknife.ButterKnife
 /**@author Tomy
  * Created by Tomy on 2018/10/11.
  */
-abstract class BindListAdapter<E, T: BindListAdapter.BaseHolder>: BaseAdapter() {
+abstract class BindListAdapter<E, T: BindListAdapter.BaseHolder<E>>: BaseAdapter() {
 
     private val mDataList by lazy {
         ArrayList<E>()
@@ -29,7 +29,8 @@ abstract class BindListAdapter<E, T: BindListAdapter.BaseHolder>: BaseAdapter() 
             view = convertView
             holder = convertView.tag as T
         }
-        bindToHolder(holder, position, item)
+        holder.bindToItem(position, item)
+//        bindToHolder(holder, position, item)
         return view
     }
 
@@ -81,7 +82,7 @@ abstract class BindListAdapter<E, T: BindListAdapter.BaseHolder>: BaseAdapter() 
 
     abstract fun getHolder(): T
 
-    abstract fun bindToHolder(holder: T, position: Int, item: E)
+//    abstract fun bindToHolder(holder: T, position: Int, item: E)
 
     override fun getItem(position: Int): E {
         return mDataList[position]
@@ -95,7 +96,7 @@ abstract class BindListAdapter<E, T: BindListAdapter.BaseHolder>: BaseAdapter() 
         return mDataList.size
     }
 
-    open class BaseHolder {
+    abstract class BaseHolder<E> {
         private var convertView: View? = null
 
         fun setConvertView(view: View) {
@@ -104,5 +105,7 @@ abstract class BindListAdapter<E, T: BindListAdapter.BaseHolder>: BaseAdapter() 
         }
 
         fun getConvertView() = convertView
+
+        abstract fun bindToItem(position: Int, item: E)
     }
 }

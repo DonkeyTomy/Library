@@ -4,4 +4,6 @@
     <color name="blue">#f105addc</color>
     <color name="blue_tran">#5d02aafd</color>
     <color name="transDark">#000000</color>
+    <color name="gray">#929191</color>
+    <color name="white">#FFFFFF</color>
 </resources>
