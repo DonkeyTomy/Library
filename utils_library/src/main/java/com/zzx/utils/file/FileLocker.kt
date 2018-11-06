@@ -10,50 +10,35 @@ import java.io.File
 /**@author Tomy
  * Created by Tomy on 2018/6/18.
  */
-class FileLocker(private var mLockDir: File?): IFileLocker {
+class FileLocker(private var mLockDir: File?): IFileLocker() {
 
-    private var mListener: IFileLocker.FileLockListener? = null
 
-    override fun lockFile(path: String) {
-        lockFile(File(path))
-    }
 
     override fun isLockFileFull(): Boolean {
         return FileUtil.getDirFileCount(getLockDir()!!) >= LOCK_FILE_COUNT
     }
 
-    /**
-     * 文件锁定状态回调
-     * */
-    override fun setLockListener(listener: IFileLocker.FileLockListener) {
-        mListener = listener
-    }
 
-    override fun lockFile(file: File) {
+    override fun lockFile(file: File): Boolean {
         if (!FileUtil.checkFileExist(file)) {
-            return
+            return false
         }
 
-        Observable.just(file)
-                .observeOn(AndroidSchedulers.mainThread())
-                .map {
-                    it ->
-                    if (isLockFileFull()) {
-
-                    }
-                    return@map it
-                }.observeOn(Schedulers.newThread())
-                .map {
-                    mListener?.onLockStart()
-                    return@map startLock(it)
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    when(it) {
-                        CommonConst.SUCCESS -> mListener?.onLockFinished()
-                        CommonConst.FAILED  -> mListener?.onLockFailed()
-                    }
-                }
+        try {
+            if (!FileUtil.checkDirExist(mLockDir!!, true)) {
+                return false
+            }
+            val runtime = Runtime.getRuntime()
+            Timber.e(" ============= startLock ============= ")
+            val process = runtime.exec("mv ${file.absolutePath} ${mLockDir!!.absolutePath}")
+            process.waitFor()
+            process.destroy()
+            Timber.e(" ============= finishLock ============= ")
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
 
     }
 

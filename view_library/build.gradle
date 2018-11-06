@@ -4,11 +4,11 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion build_versions.compile_sdk
 
     defaultConfig {
-        minSdkVersion 24
-        targetSdkVersion 24
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
         versionCode 1
         versionName "1.0"
 
@@ -56,5 +56,6 @@ dependencies {
     implementation deps.rx_android
     //Paged
     implementation deps.paging.runtime
+    implementation project(path: ':../../Library:utils_library')
 }
 

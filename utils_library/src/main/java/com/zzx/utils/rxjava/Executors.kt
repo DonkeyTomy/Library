@@ -24,7 +24,7 @@ private val FIXED_EXECUTOR = Executors.newFixedThreadPool(3)
 /**
  * Utility method to run blocks on a dedicated background thread, used for io/database work.
  */
-fun ioThread(f : () -> Unit) {
+fun singleThread(f : () -> Unit) {
     IO_EXECUTOR.execute(f)
 }
 

@@ -36,9 +36,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 
     private var mFile: File? = null
 
-    private var mDegrees    = 0
-
-    private var mRotation   = 0
+    private var mDegrees    = 90
 
     private var mCamera: Camera? = null
 
@@ -51,12 +49,12 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         mCamera = camera
     }
 
-    fun setSensorOrientationHint(degrees: Int) {
+    override fun setSensorRotationHint(degrees: Int) {
         mDegrees = degrees
     }
 
-    override fun setRotation(rotation: Int) {
-        mRotation = rotation
+    init {
+        init()
     }
 
     /**
@@ -64,7 +62,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * @see prepare
      * */
     override fun init() {
-        mMediaRecorder = MediaRecorder()
+        mMediaRecorder = MediaRecorder().apply {
+            reset()
+        }
         mMediaRecorder.setOnErrorListener { _, _, _ ->
             Timber.e("$TAG_RECORDER onRecordError")
             FlowableUtil.setBackgroundThread(Consumer {
@@ -92,8 +92,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 
             audioProperty = mAudioProperty
         }
-        prepare()
         Timber.e("$TAG_RECORDER $mVideoProperty")
+        prepare()
     }
 
     /**
@@ -112,7 +112,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         mAudioProperty = audioProperty
     }
 
-    fun setProfile(profile: CamcorderProfile) {
+    private fun setProfile(profile: CamcorderProfile) {
         mMediaRecorder.setProfile(profile)
     }
 
@@ -198,6 +198,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                     setVideoSize(mVideoProperty.width, mVideoProperty.height)
                     setVideoEncodingBitRate(mVideoProperty.bitRate)
                     setVideoEncoder(mVideoProperty.encoder)
+                    setOrientation()
                 }
             }
         }
@@ -216,7 +217,6 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mMediaRecorder.setOutputFile(mFile)
         }
-        setOrientation()
         Timber.e("mFlag = $mFlag[1: Video. 2: Audio. 3:MuteVideo]")
         Timber.e("mFile = ${mFile!!.absolutePath}.")
         try {
@@ -226,13 +226,10 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             Timber.e("$TAG_RECORDER onRecorderPrepared")
         } catch (e: Exception) {
             e.printStackTrace()
-            unlockCamera()
+//            unlockCamera()
             setState(State.ERROR)
             mRecorderCallback?.onRecorderConfigureFailed()
             Timber.e("$TAG_RECORDER onRecorderConfigureFailed")
-            /*FlowableUtil.setMainThread(Consumer {
-                TTSToast.showToast(R.string.not_support_format)
-            })*/
         }
     }
 
@@ -242,10 +239,11 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     }
 
     private fun setOrientation() {
-        when(mDegrees) {
-            SENSOR_ORIENTATION_DEFAULT_DEGREES  -> mMediaRecorder.setOrientationHint(DEFAULT_ORIENTATIONS.get(mRotation))
-            SENSOR_ORIENTATION_INVERSE_DEGREES  -> mMediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(mRotation))
-        }
+        mMediaRecorder.setOrientationHint(mDegrees)
+        /*when(mDegrees) {
+            SENSOR_FRONT_CAMERA  -> mMediaRecorder.setOrientationHint(DEFAULT_ORIENTATIONS.get(mRotation))
+            SENSOR_BACK_CAMERA  -> mMediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(mRotation))
+        }*/
     }
 
     /**
@@ -253,9 +251,10 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun startRecord() {
         Timber.e("$TAG_RECORDER startRecord. mState = [$mState]")
-        if (checkState() == State.PREPARED) {
+        if (getState() == State.PREPARED) {
             mMediaRecorder.start()
             setState(State.RECORDING)
+            mRecorderCallback?.onRecordStart()
         } else {
             throw object : IllegalStateException("Current state is {$mState}.Not Prepared!") {}
         }
@@ -266,10 +265,29 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun stopRecord() {
         Timber.e("$TAG_RECORDER stopRecord. mState = [$mState]")
-        if (checkState() == State.RECORDING) {
+        if (getState() == State.RECORDING || getState() == State.PAUSE) {
+            mMediaRecorder.resume()
             mMediaRecorder.stop()
             setState(State.IDLE)
             mRecorderCallback?.onRecorderFinished(mFile)
+        }
+    }
+
+    override fun pauseRecord() {
+        Timber.e("$TAG_RECORDER pauseRecord. mState = [$mState]")
+        if (getState() == State.RECORDING) {
+            mMediaRecorder.pause()
+            setState(State.PAUSE)
+
+        }
+    }
+
+    override fun resumeRecord() {
+        Timber.e("$TAG_RECORDER resumeRecord. mState = [$mState]")
+        if (getState() == State.PAUSE) {
+            mMediaRecorder.resume()
+            setState(State.RECORDING)
+
         }
     }
 
@@ -279,7 +297,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun reset() {
         Timber.e("$TAG_RECORDER reset. mState = [$mState]")
-        if (checkState() != State.IDLE && checkState() != State.RELEASE) {
+        if (getState() != State.IDLE && getState() != State.RELEASE) {
             stopRecord()
             mMediaRecorder.reset()
             setState(State.IDLE)
@@ -291,7 +309,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun release() {
         Timber.e("$TAG_RECORDER release. mState = [$mState]")
-        if (checkState() != State.RELEASE) {
+        if (getState() != State.RELEASE) {
             stopRecord()
             mMediaRecorder.release()
             setState(State.RELEASE)
@@ -302,7 +320,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * 返回当前状态.
      * @see State
      * */
-    override fun checkState(): IRecorder.State {
+    override fun getState(): IRecorder.State {
+        Timber.e("$TAG_RECORDER getState() = $mState")
         return mState
     }
 
@@ -312,6 +331,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun setState(state: IRecorder.State) {
         mState = state
+        Timber.e("$TAG_RECORDER setState. mState = [$mState]")
     }
 
     override fun getSurface(): Surface {
@@ -322,8 +342,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     companion object {
         private const val TAG_RECORDER = "[VideoRecorder] "
 
-        private const val SENSOR_ORIENTATION_DEFAULT_DEGREES = 90
-        private const val SENSOR_ORIENTATION_INVERSE_DEGREES = 270
+        const val SENSOR_FRONT_CAMERA = 270
+        const val SENSOR_BACK_CAMERA = 90
         val DEFAULT_ORIENTATIONS  = SparseIntArray().apply {
             append(Surface.ROTATION_0, 90)
             append(Surface.ROTATION_90, 0)

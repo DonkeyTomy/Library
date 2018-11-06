@@ -7,4 +7,5 @@
     <string name="friday">星期五</string>
     <string name="saturday">星期六</string>
     <string name="sunday">星期天</string>
+    <string name="uninstall_apk_sure">是否确定卸载?</string>
 </resources>

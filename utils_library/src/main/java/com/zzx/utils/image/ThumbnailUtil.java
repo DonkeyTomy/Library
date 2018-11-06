@@ -50,7 +50,7 @@ public class ThumbnailUtil {
         options.inSampleSize = scale;
         /**根据缩放比真正的生成缩略Bitmap.
          * */
-        Bitmap bitmap1 = null;
+        Bitmap bitmap1;
          try {
             bitmap = BitmapFactory.decodeFile(imagePath, options);
             bitmap1 = ThumbnailUtils.extractThumbnail(bitmap, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);

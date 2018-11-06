@@ -374,6 +374,9 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         }
     }
 
+    override fun openSpecialCamera(cameraId: Int) {
+    }
+
     /**
      * @see setPreviewParams
      * */

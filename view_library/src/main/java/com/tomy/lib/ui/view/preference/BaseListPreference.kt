@@ -14,10 +14,6 @@ import timber.log.Timber
  * Created by Tomy on 2018/10/9.
  */
 abstract class BaseListPreference(context: Context, attrSet: AttributeSet): ListPreference(context, attrSet) {
-    /*private var mEntries: Array<CharSequence>
-    private var mEntryValues: Array<CharSequence>
-    private var mDefaultValue: String
-    private var mValue: String? = null*/
 
     protected var mDialog: Dialog? = null
 
@@ -25,13 +21,6 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
 
     private var mYOffset: Int = 0
 
-    init {
-        /*val array = context.obtainStyledAttributes(attrSet, R.styleable.BaseListPreference)
-        mEntries    = array.getTextArray(R.styleable.CustomDialogPreference_entries)
-        mEntryValues     = array.getTextArray(R.styleable.CustomDialogPreference_entryValues)
-        mDefaultValue   = array.getString(R.styleable.CustomDialogPreference_defaultValue)
-        array.recycle()*/
-    }
 
     private val mInflater by lazy {
         LayoutInflater.from(context)
@@ -66,7 +55,7 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
         }
 
         dialogWindow.attributes = lp
-        Timber.e("lp.width = ${lp.width}")
+//        Timber.e("lp.width = ${lp.width}")
         try {
             mDialog?.show()
         } catch (e: Exception) {
@@ -80,10 +69,10 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
             viewTreeObserver.addOnGlobalLayoutListener {
                 val intArray = IntArray(2)
                 getLocationOnScreen(intArray)
-                Timber.e("measuredWidth = $measuredWidth; x = ${intArray[0]}, y = ${intArray[1]}")
+//                Timber.e("measuredWidth = $measuredWidth; x = ${intArray[0]}, y = ${intArray[1]}")
                 val xOffset = intArray[0] + measuredWidth + 10
                 val yOffset = intArray[1]
-                Timber.e("xOffset = $xOffset; yOffset = $yOffset")
+//                Timber.e("xOffset = $xOffset; yOffset = $yOffset")
                 setDialogShowCoordinate(xOffset, yOffset)
             }
         }

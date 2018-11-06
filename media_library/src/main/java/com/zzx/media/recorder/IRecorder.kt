@@ -72,7 +72,10 @@ interface IRecorder {
 
     fun setRecordCallback(callback: IRecordCallback?)
 
-    fun setRotation(rotation: Int)
+    /**
+     * @param degrees Int 视频录像的旋转角度
+     */
+    fun setSensorRotationHint(degrees: Int)
 
     fun setProperty(quality: Int)
 
@@ -85,6 +88,10 @@ interface IRecorder {
      * 停止录像.
      * */
     fun stopRecord()
+
+    fun pauseRecord()
+
+    fun resumeRecord()
 
     /**
      * 重置[IRecorder]到[State.IDLE]状态,从而重新设置参数.
@@ -101,7 +108,7 @@ interface IRecorder {
      * 返回当前状态.
      * @see State
      * */
-    fun checkState(): State
+    fun getState(): State
 
     /**
      * 设置当前状态.
@@ -110,7 +117,7 @@ interface IRecorder {
     fun setState(state: State)
 
     enum class State {
-        RELEASE, IDLE, PREPARED, RECORDING, ERROR
+        RELEASE, IDLE, PREPARED, RECORDING, ERROR, PAUSE
     }
 
     companion object {
@@ -131,11 +138,17 @@ interface IRecorder {
 
         fun onRecorderPrepared()
 
+        fun onRecordStart()
+
         fun onRecorderConfigureFailed()
 
         fun onRecordError()
 
         fun onRecorderFinished(file: File?)
+
+        fun onRecordPause()
+
+        fun onRecordResume()
     }
 
 }

@@ -87,6 +87,10 @@ object FileUtil {
         return getDirFreeSpace(dir) / 1000 / 1000
     }
 
+    fun getFileLengthByMB(bytes: Long): Float {
+        return bytes / 1024 / 1024f
+    }
+
     fun getDirFreeSpaceByMB(dir: String): Long {
         return getDirFreeSpace(File(dir)) / 1000 / 1000
     }
@@ -159,7 +163,7 @@ object FileUtil {
             if (volume.isRemovable)
                 return true
         }
-        return false
+        return true
     }
 
     fun getExternalStoragePath(context: Context): String {

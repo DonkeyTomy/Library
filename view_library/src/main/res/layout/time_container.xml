@@ -22,7 +22,7 @@
             <include
                 bind:time="@{time}"
                 android:id="@+id/view_time"
-                layout="@layout/layout_image_view_time"
+                layout="@layout/view_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
             <TextView

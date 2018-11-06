@@ -29,6 +29,8 @@ interface ICameraManager<in surface, camera> {
 
     fun openExternalCamera()
 
+    fun openSpecialCamera(cameraId: Int = 0)
+
     /**
      * 只设置了预览 Surface ,但是不会调用 [startPreview].
      * 此方法跟[startPreview]共同使用由自身决定何时启动预览.
@@ -161,6 +163,8 @@ interface ICameraManager<in surface, camera> {
     interface PictureDataCallback {
 
         fun onCaptureFinished(buffer: ByteArray)
+
+        fun onCaptureDone()
     }
 
     interface RecordPreviewReady {
@@ -253,6 +257,9 @@ interface ICameraManager<in surface, camera> {
             }
             return indexList
         }
+
+        const val SENSOR_FRONT_CAMERA = 0
+        const val SENSOR_BACK_CAMERA = 0
 
         val ORIENTATIONS = SparseIntArray()
         init {

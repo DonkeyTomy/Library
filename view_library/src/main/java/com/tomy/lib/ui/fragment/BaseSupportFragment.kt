@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +18,7 @@ import timber.log.Timber
  */
 abstract class BaseSupportFragment: Fragment() {
 
-    var mContext: Activity? = null
+    var mContext: AppCompatActivity? = null
     var mUnBinder: Unbinder? = null
 
     private var mRootView: View? = null
@@ -28,7 +29,7 @@ abstract class BaseSupportFragment: Fragment() {
 
     override fun onAttach(context: Activity?) {
         super.onAttach(context)
-        mContext = context
+        mContext = context as AppCompatActivity
         initMember()
     }
 
@@ -80,7 +81,7 @@ abstract class BaseSupportFragment: Fragment() {
     /**
      * 初始化布局.
      * */
-    abstract fun resumeView()
+    open fun resumeView() {}
 
     open fun initView(root: View) {}
 

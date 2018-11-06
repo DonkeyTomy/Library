@@ -24,6 +24,7 @@ class StorageListener(var mContext: Context) {
             addDataScheme("file")
         }
         mContext.registerReceiver(mReceiver, intentFilter)
+        Timber.e("StorageListener.registerReceiver()")
     }
 
     fun setStorageCallback(callback: StorageCallback) {

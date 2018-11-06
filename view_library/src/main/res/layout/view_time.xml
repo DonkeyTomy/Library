@@ -6,7 +6,6 @@
         <variable
             name="time"
             type="com.tomy.lib.ui.bean.Time"/>
-
     </data>
 
     <LinearLayout
@@ -38,6 +37,20 @@
             android:id="@+id/iv_time_min_right"
             android:src="@drawable/time_0"
             time:minRight="@{time.minRight}"
+            style="@style/TimeView" />
+        <ImageView
+            android:id="@+id/animation_colon_1"
+            android:src="@drawable/time_colon_animation"
+            style="@style/TimeView"/>
+        <ImageView
+            android:id="@+id/iv_time_sec_left"
+            android:src="@drawable/time_0"
+            time:minLeft="@{time.secLeft}"
+            style="@style/TimeView" />
+        <ImageView
+            android:id="@+id/iv_time_sec_right"
+            android:src="@drawable/time_0"
+            time:minRight="@{time.secRight}"
             style="@style/TimeView" />
     </LinearLayout>
 </layout>

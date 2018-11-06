@@ -19,7 +19,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.tomy.lib.ui.R
 import com.tomy.lib.ui.bean.Time
-import com.tomy.lib.ui.databinding.DataContainerBinding
+import com.tomy.lib.ui.databinding.TimeContainerBinding
 import java.util.*
 
 
@@ -28,8 +28,8 @@ import java.util.*
  */
 class DateLayout(context: Context?, attrs: AttributeSet?) : LinearLayout(context, attrs) {
 
-    private var mDataBinding: DataContainerBinding = DataBindingUtil.inflate(LayoutInflater.from(context),
-            R.layout.data_container, this, true)
+    private var mDataBinding: TimeContainerBinding = DataBindingUtil.inflate(LayoutInflater.from(context),
+            R.layout.time_container, this, true)
     private var mTimeReceiver = TimeReceiver()
 
     private var mTvWeekDay: TextView? = null

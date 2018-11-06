@@ -4,6 +4,8 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
+import com.zzx.utils.rxjava.FlowableUtil
+import io.reactivex.functions.Consumer
 import java.util.Locale
 
 /**@author Tomy
@@ -59,11 +61,15 @@ object TTSToast {
     }
 
     @JvmOverloads
-    fun showToast(msg: String, needTTS: Boolean = false, show_time: Int = Toast.LENGTH_SHORT) {
-        if (show_time >= 0) {
-            mToast!!.setText(msg)
-            mToast!!.duration = show_time
-            mToast!!.show()
+    fun showToast(msg: String, needTTS: Boolean = false, show_time: Int = Toast.LENGTH_SHORT, show: Boolean = true) {
+        if (show && show_time >= 0) {
+            FlowableUtil.setMainThread(
+                    Consumer {
+                        mToast!!.setText(msg)
+                        mToast!!.duration = show_time
+                        mToast!!.show()
+                    }
+            )
         }
         try {
             if (needTTS) {
@@ -75,19 +81,8 @@ object TTSToast {
     }
 
     @JvmOverloads
-    fun showToast(msgId: Int, needTTS: Boolean = false, show_time: Int = Toast.LENGTH_SHORT) {
-        if (show_time >= 0) {
-            mToast!!.setText(msgId)
-            mToast!!.duration = show_time
-            mToast!!.show()
-        }
-        try {
-            if (needTTS) {
-                mTTS?.speak(mContext!!.getText(msgId), TextToSpeech.QUEUE_FLUSH, null, null)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    fun showToast(msgId: Int, needTTS: Boolean = false, show_time: Int = Toast.LENGTH_SHORT, show: Boolean = true) {
+        showToast(mContext!!.getString(msgId), needTTS, show_time, show)
     }
 
 }

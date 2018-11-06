@@ -8,6 +8,7 @@ import android.view.View
 import android.view.WindowManager
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy
@@ -41,10 +42,11 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
         mParameter      = WindowManager.LayoutParams()
         mParameter.x    = 0
         mParameter.y    = 0
-        mParameter.gravity  = Gravity.CENTER
+        mParameter.gravity  = Gravity.START or Gravity.TOP
         mParameter.format = PixelFormat.RGBA_8888
-        mParameter.flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
+        mParameter.flags = mParameter.flags.or(WindowManager.LayoutParams.FLAG_FULLSCREEN) or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+//        mParameter.flags = mParameter.flags.or(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN).and(WindowManager.LayoutParams.FLAG_FULLSCREEN.inv())
+        Timber.e("flags = ${mParameter.flags}")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mParameter.type = mWinType
         } else {
@@ -58,6 +60,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     }
 
     fun showFloatWindow() {
+        mParameter.x = 0
         mParameter.alpha = 1f
         mParameter.flags = mParameter.flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
         updateView(mWidth, mHeight)
@@ -71,9 +74,10 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
      * @see showFloatWindow
      * */
     fun dismissWindow() {
-        mParameter.alpha = 0f
+        mParameter.x = -480
+        mParameter.alpha = 1f
         mParameter.flags = mParameter.flags.or(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
-        updateView(2, 2)
+        updateView(480, mHeight)
         mDismissListener?.onWindowDismiss()
     }
 

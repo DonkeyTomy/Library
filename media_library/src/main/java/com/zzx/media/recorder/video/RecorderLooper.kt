@@ -3,13 +3,15 @@ package com.zzx.media.recorder.video
 import android.content.Context
 import android.hardware.Camera
 import android.media.CamcorderProfile
+import android.view.Surface
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.camera.v1.manager.Camera1Manager
 import com.zzx.media.camera.v2.manager.Camera2Manager
 import com.zzx.media.recorder.IRecorder
-import com.zzx.media.utils.MediaInfoUtils
+import com.zzx.media.utils.FileNameUtils
 import com.zzx.utils.file.FileUtil
 import com.zzx.utils.rxjava.FlowableUtil
+import com.zzx.utils.zzx.DeviceUtils
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer
@@ -25,9 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG flag: Int) {
 
-    var mRecorder: IRecorder = VideoRecorder(false).apply {
-        init()
-    }
+    var mRecorder: IRecorder = VideoRecorder(false)
 
     init {
         mRecorder.setFlag(flag)
@@ -53,6 +53,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     private var mRecordStateCallback: IRecorder.IRecordCallback? = null
 
+    private var mQuality = CamcorderProfile.QUALITY_720P
+
 
     fun setCameraManager(cameraManager: ICameraManager<surface, camera>?) {
         mCameraManager = cameraManager
@@ -66,9 +68,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 })
             }
 
-            if (mRecorder is VideoRecorder) {
-                (mRecorder as VideoRecorder).setSensorOrientationHint(getSensorOrientation())
-            }
+
         }
     }
 
@@ -76,10 +76,21 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mRecorder.setCamera(mCameraManager?.getCameraDevice() as Camera)
     }
 
-    fun setupRecorder(quality: Int) {
-        mOutputFile = File(mDirPath, MediaInfoUtils.getTmpFileName())
+    fun setQuality(quality: Int) {
+        mQuality = quality
+    }
+
+    private fun setupRecorder() {
+        setRecordHintRotation()
+        mOutputFile = File(mDirPath, FileNameUtils.getTmpVideoName("${DeviceUtils.getUserNum(mContext)}_"))
         mRecorder.setOutputFile(mOutputFile!!)
-        mRecorder.setProperty(quality)
+        mRecorder.setProperty(mQuality)
+    }
+
+    private fun setRecordHintRotation() {
+        if (mRecorder is VideoRecorder) {
+            (mRecorder as VideoRecorder).setSensorRotationHint(mCameraManager!!.getSensorOrientation())
+        }
     }
 
     fun getOutputFile(): File? = mOutputFile
@@ -90,7 +101,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     fun setRotation(rotation: Int) {
         mRotation = rotation
-        mRecorder.setRotation(mRotation)
+        mRecorder.setSensorRotationHint(Surface.ROTATION_90)
     }
 
     fun setDirPath(dirPath: String) {
@@ -106,10 +117,11 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun startRecord():Boolean {
+        Timber.e("startRecord")
         mRecording.set(true)
-        setupRecorder(CamcorderProfile.QUALITY_720P)
+        setupRecorder()
         try {
-            return if (mCameraManager is Camera2Manager && mRecorder.checkState() == IRecorder.State.PREPARED) {
+            return if (mCameraManager is Camera2Manager && mRecorder.getState() == IRecorder.State.PREPARED) {
                 mCameraManager!!.startRecordPreview(mRecorder.getSurface())
                 true
             } else {
@@ -123,10 +135,11 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun stopRecord() {
+        Timber.e("stopRecord")
         mRecording.set(false)
         mRecorder.reset()
         mCameraManager?.stopRecord()
-        MediaInfoUtils.tmpFile2Video(mOutputFile)
+//        FileNameUtils.tmpFile2Video(mOutputFile)
     }
 
     fun release() {
@@ -187,7 +200,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             return
         }
         mLooping.set(true)
-        check()
+//        check()
         Observable.interval(0, mRecordDuration.toLong(),  TimeUnit.SECONDS)
                 .observeOn(Schedulers.newThread())
                 .subscribe(
@@ -270,6 +283,10 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             }
         }
 
+        override fun onRecordStart() {
+            mRecordStateCallback?.onRecordStart()
+        }
+
         override fun onRecorderConfigureFailed() {
             mRecordStateCallback?.onRecorderConfigureFailed()
         }
@@ -280,6 +297,12 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
         override fun onRecorderFinished(file: File?) {
             mRecordStateCallback?.onRecorderFinished(file)
+        }
+
+        override fun onRecordPause() {
+        }
+
+        override fun onRecordResume() {
         }
 
     }

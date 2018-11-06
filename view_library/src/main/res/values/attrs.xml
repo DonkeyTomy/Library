@@ -5,4 +5,7 @@
         <attr name="entryValues" format="reference" />
         <attr name="defaultValue" format="string" />
     </declare-styleable>
+    <declare-styleable name="PagePointLayout">
+        <attr name="point_count" format="integer"/>
+    </declare-styleable>
 </resources>

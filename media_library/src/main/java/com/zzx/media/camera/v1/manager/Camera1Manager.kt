@@ -6,8 +6,12 @@ import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
+import com.zzx.media.bean.Const
 import com.zzx.media.camera.ICameraManager
+import com.zzx.media.camera.ICameraManager.Companion.SENSOR_BACK_CAMERA
+import com.zzx.media.camera.ICameraManager.Companion.SENSOR_FRONT_CAMERA
 import com.zzx.media.recorder.IRecorder
+import com.zzx.utils.rxjava.singleThread
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -28,7 +32,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mRecording = false
 
-    private var mCameraClosed = AtomicBoolean(false)
+    private var mPreviewed = AtomicBoolean(false)
+
+    private var mCameraFacing = Camera.CameraInfo.CAMERA_FACING_BACK
 
     private val mObject = Object()
 
@@ -55,8 +61,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             val info = Camera.CameraInfo()
             Camera.getCameraInfo(i, info)
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                Timber.e("${Const.TAG}openFrontCamera()")
                 mCameraId = i
+                mCameraFacing = info.facing
                 openSpecialCamera(mCameraId)
+                setDisplayOrientation(0)
+                setPictureRotation(0)
                 return
             }
         }
@@ -67,15 +77,28 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             val info = Camera.CameraInfo()
             Camera.getCameraInfo(i, info)
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                Timber.e("${Const.TAG}openBackCamera()")
                 mCameraId = i
+                mCameraFacing = info.facing
                 openSpecialCamera(mCameraId)
+                setDisplayOrientation(0)
+                setPictureRotation(0)
                 return
             }
         }
     }
 
-    private fun openSpecialCamera(cameraId: Int) {
-        mCamera = Camera.open(cameraId)
+    override fun openSpecialCamera(cameraId: Int) {
+        if (mCamera != null) {
+            return
+        }
+        val id = if (getCameraCount() <= 1) {
+            0
+        } else {
+            cameraId
+        }
+        Timber.e("${Const.TAG}cameraId = $cameraId; getCameraCount = ${getCameraCount()}")
+        mCamera = Camera.open(id)
         mParameters = mCamera!!.parameters
         mStateCallback?.onCameraOpenSuccess(mCamera)
     }
@@ -104,13 +127,19 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 设置完预览界面后即可启动预览.
      * */
     override fun startPreview(surface: SurfaceHolder) {
-        setPreviewSurface(surface)
-        startPreview()
+        if (!mPreviewed.get()) {
+            setPreviewSurface(surface)
+            startPreview()
+            mPreviewed.set(true)
+        }
     }
 
     override fun stopPreview() {
-        mCamera?.stopPreview()
-        mCamera?.setPreviewDisplay(null)
+        if (mPreviewed.get()) {
+            mCamera?.stopPreview()
+            mCamera?.setPreviewDisplay(null)
+            mPreviewed.set(false)
+        }
     }
 
     override fun restartPreview() {
@@ -145,6 +174,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun releaseCamera() {
         stopPreview()
         mCamera?.release()
+        mCamera = null
     }
 
     override fun getCameraCount(): Int {
@@ -203,7 +233,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun getSensorOrientation(): Int {
-        return 0
+        return if (mCameraFacing != Camera.CameraInfo.CAMERA_FACING_BACK)
+            SENSOR_FRONT_CAMERA
+        else
+            SENSOR_BACK_CAMERA
     }
 
     override fun takePicture(callback: ICameraManager.PictureDataCallback?) {
@@ -225,12 +258,14 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun takePicture() {
-        setPictureNormalMode()
+        if (!mRecording)
+            setPictureNormalMode()
         startTakePicture()
     }
 
     override fun takePictureBurst(count: Int) {
-        setPictureContinuousMode(count)
+        if (!mRecording)
+            setPictureContinuousMode(count)
         startTakePicture()
     }
 
@@ -271,7 +306,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mCamera?.parameters = mParameters
     }
 
-    private fun startTakePicture() {
+    private fun startTakePicture() = singleThread {
         mPictureCount = 0
         mCamera?.takePicture(null, null, mPictureCallback)
     }
@@ -281,11 +316,17 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             mPictureDataCallback?.onCaptureFinished(data)
             Timber.e("mPictureCount = $mPictureCount; mBurstMode = $mBurstMode")
             if (mBurstMode) {
-                if (++mPictureCount >= mContinuousShotCount && !mRecording) {
+                if (++mPictureCount >= mContinuousShotCount) {
+                    if (!mRecording) {
+                        startPreview()
+                    }
+                    mPictureDataCallback?.onCaptureDone()
+                }
+            } else {
+                if (!mRecording) {
                     startPreview()
                 }
-            } else if (!mRecording) {
-                startPreview()
+                mPictureDataCallback?.onCaptureDone()
             }
         }
 //    }
@@ -299,6 +340,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * @param rotation Int 预览界面的旋转角度
      */
     override fun setDisplayOrientation(rotation: Int) {
+        Timber.e("setDisplayOrientation.rotation = $rotation")
         mCamera?.setDisplayOrientation(rotation)
     }
 
@@ -306,6 +348,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * @param rotation Int 图片的旋转角度
      */
     override fun setPictureRotation(rotation: Int) {
+        Timber.e("setPictureRotation.rotation = $rotation")
         mParameters.setRotation(rotation)
         mCamera?.parameters = mParameters
     }
@@ -357,6 +400,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     private fun setPictureContinuousMode(pictureCount: Int) {
         mContinuousShotCount = pictureCount
         if (!mBurstMode) {
+            mBurstMode = true
             mParameters.apply {
                 set(CAP_MODE, CAP_MODE_CONTINUOUS)
                 set(BURST_NUM, pictureCount)
@@ -364,7 +408,6 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                 mCamera?.parameters = this
             }
             restartPreview()
-            mBurstMode = true
         }
     }
 
