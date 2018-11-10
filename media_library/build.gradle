@@ -46,9 +46,7 @@ dependencies {
     androidTestImplementation deps.espresso.core
     implementation deps.support.app_compat
     implementation deps.support.annotations
-
     testImplementation deps.junit
-
     implementation deps.kotlin.stdlib
     implementation deps.kotlin.reflect
     implementation deps.kotlin.stdlib_jdk
@@ -56,7 +54,8 @@ dependencies {
     implementation deps.rxjava2
     implementation deps.rx_android
     implementation project(path: ':../../Library:utils_library')
-//    implementation project(':utils_library')
+    //    implementation project(':utils_library')
+
 }
 repositories {
     mavenCentral()

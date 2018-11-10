@@ -1,6 +1,7 @@
 package com.tomy.lib.ui.activity
 
 import android.app.Application
+import com.zzx.utils.TTSToast
 import timber.log.Timber
 
 /**@author Tomy
@@ -13,11 +14,13 @@ open class BaseApplication: Application() {
         if (Timber.treeCount() <= 0) {
             Timber.plant(Timber.DebugTree())
         }
+        TTSToast.init(this)
     }
 
     override fun onTerminate() {
         super.onTerminate()
         Timber.uprootAll()
+        TTSToast.release()
     }
 
 }

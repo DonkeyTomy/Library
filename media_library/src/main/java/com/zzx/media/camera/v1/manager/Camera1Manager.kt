@@ -30,7 +30,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mBurstMode = false
 
-    private var mRecording = false
+    private var mIsRecording = false
 
     private var mPreviewed = AtomicBoolean(false)
 
@@ -154,7 +154,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun startRecord() {
-        mRecording = true
+        mIsRecording = true
     }
 
     override fun setIRecorder(recorder: IRecorder) {
@@ -164,7 +164,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 停止录像
      * */
     override fun stopRecord() {
-        mRecording = false
+        mIsRecording = false
     }
 
     override fun closeCamera() {
@@ -219,6 +219,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun setCaptureParams(width: Int, height: Int, format: Int) {
         mParameters.apply {
+            if (mIsRecording) {
+                Timber.e("mIsRecording = $mIsRecording; isVssSupported = $isVideoSnapshotSupported")
+                if (!isVideoSnapshotSupported) {
+                    return
+                }
+            }
             pictureFormat = format
             setPictureSize(width, height)
             mCamera!!.parameters = this
@@ -258,13 +264,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun takePicture() {
-        if (!mRecording)
+        if (!mIsRecording)
             setPictureNormalMode()
         startTakePicture()
     }
 
     override fun takePictureBurst(count: Int) {
-        if (!mRecording)
+        if (!mIsRecording)
             setPictureContinuousMode(count)
         startTakePicture()
     }
@@ -308,6 +314,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private fun startTakePicture() = singleThread {
         mPictureCount = 0
+        if (mIsRecording) {
+            val vssSupported = mParameters.isVideoSnapshotSupported
+            Timber.e("mIsRecording = $mIsRecording; isVssSupported = $vssSupported")
+            if (!vssSupported) {
+                return@singleThread
+            }
+        }
         mCamera?.takePicture(null, null, mPictureCallback)
     }
 
@@ -317,13 +330,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             Timber.e("mPictureCount = $mPictureCount; mBurstMode = $mBurstMode")
             if (mBurstMode) {
                 if (++mPictureCount >= mContinuousShotCount) {
-                    if (!mRecording) {
+                    if (!mIsRecording) {
                         startPreview()
                     }
                     mPictureDataCallback?.onCaptureDone()
                 }
             } else {
-                if (!mRecording) {
+                if (!mIsRecording) {
                     startPreview()
                 }
                 mPictureDataCallback?.onCaptureDone()

@@ -129,7 +129,8 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
                     continue;
                 }
             }*/
-            if (activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0 || checkPackageNeedHide(activityInfo.packageName)) {
+            val packageName = activityInfo.packageName
+            if (!checkPackageNeedShow(packageName) && (checkPackageNeedHide(packageName) || activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0)) {
                 continue
             }
             Timber.e("packageName = ${activityInfo.packageName}")
@@ -150,6 +151,8 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
      * @return Boolean true表示该App不显示.
      */
     abstract fun checkPackageNeedHide(packageName: String): Boolean
+
+    abstract fun checkPackageNeedShow(packageName: String): Boolean
 
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
 

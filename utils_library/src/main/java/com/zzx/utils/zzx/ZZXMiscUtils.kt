@@ -34,11 +34,21 @@ object ZZXMiscUtils {
     const val FM_FREQ = MISC + "fmtx_freq_hz"
     const val LOCAL_OUT = MISC + "speaker_power"
     const val AUDIO_OUT = MISC + "audio_sw_state"
+
+
     const val FLASH_PATH = MISC + "zzx_flash_stats"
+
     const val IR_CUT_PATH = MISC + "zzx_ir_cut_stats"
+
     const val IR_RED_PATH = MISC + "zzx_ir_led_stats"
+
     const val LAZER_PATH = MISC + "zzx_lazer_stats"
+
     const val RGB_LED = MISC + "rgb_led_stats"
+
+    const val GPS_PATH = "${MISC}zzx_gps_stats"
+
+    const val USER_INFO_PATH = "${MISC}zzx_police_num_stats"
 
     const val LED_RED = "ff0000"
     const val LED_GREEN = "ff00"
@@ -184,6 +194,18 @@ object ZZXMiscUtils {
      */
     fun toggleBackRecord() {
         write(SECOND_CAMERA_PATH, ASTERN_RECORD)
+    }
+
+    /**
+     * 写GPS数据
+     * @param gps String
+     */
+    fun writeGps(gps: String) {
+        write(GPS_PATH, gps)
+    }
+
+    fun writeUserInfo(info: String) {
+        write(USER_INFO_PATH, info)
     }
 
     /**切换到倒车后视,同上
