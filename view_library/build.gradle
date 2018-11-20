@@ -36,6 +36,7 @@ dependencies {
     implementation deps.support.annotations
     implementation deps.support.constraint_layout
     implementation deps.support.design
+    implementation deps.support.preference
 
     testImplementation deps.junit
 

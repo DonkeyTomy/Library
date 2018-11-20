@@ -92,6 +92,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 
             audioProperty = mAudioProperty
         }
+        if (quality == CamcorderProfile.QUALITY_480P) {
+            mVideoProperty.width = 864
+        }
         Timber.e("$TAG_RECORDER $mVideoProperty")
         prepare()
     }

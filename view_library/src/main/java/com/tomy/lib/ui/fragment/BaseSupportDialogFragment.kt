@@ -1,6 +1,7 @@
 package com.tomy.lib.ui.fragment
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
@@ -10,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import butterknife.ButterKnife
 import butterknife.Unbinder
+import com.tomy.lib.ui.R
 
 /**@author Tomy
  * Created by Tomy on 2018/8/6.
@@ -41,6 +43,10 @@ abstract class BaseSupportDialogFragment: DialogFragment() {
             mRootView = inflater.inflate(getLayoutId(), container, false)
         }
         return mRootView!!
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return Dialog(mContext!!, R.style.CustomDialogTheme)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
