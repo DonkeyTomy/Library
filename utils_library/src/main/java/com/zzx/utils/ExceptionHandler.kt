@@ -21,7 +21,7 @@ class ExceptionHandler private constructor(application: Application): Thread.Unc
     private var mContext: Application? = application
 
     private val LOG_DIR by lazy {
-        FileUtil.getExternalStoragePath(mContext!!)
+        "${FileUtil.getExternalStoragePath(mContext!!)}/log"
     }
 
     init {

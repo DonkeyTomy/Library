@@ -22,7 +22,7 @@ abstract class CustomListPreference(context: Context, attributeSet: AttributeSet
     }
 
     override fun bindDialogLayout(view: View) {
-        bindListView(view.findViewById<ListView>(R.id.list_view).apply {
+        bindListView(listView = view.findViewById<ListView>(R.id.list_view).apply {
             divider = ColorDrawable(R.color.white)
             dividerHeight = 1
         })

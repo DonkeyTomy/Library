@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Switch xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/switchWidget"
     android:gravity="center_vertical"
-    android:paddingStart="?android:attr/listPreferredItemPaddingEnd"
-    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:checked="false"
     android:clickable="false"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:focusable="false"
+    android:thumb="@drawable/thumb"
+    android:track="@drawable/track"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
 
 </Switch>

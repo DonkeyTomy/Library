@@ -76,8 +76,8 @@ public class WifiApHandler {
 			e.printStackTrace();
 		}
 		/*
-		 * if (!mWifiManager.isWifiEnabled()) {
-		 * mWifiManager.setWifiEnabled(true); }
+		 * if (!mBluetoothManager.isWifiEnabled()) {
+		 * mBluetoothManager.setWifiEnabled(true); }
 		 */
 	}
 

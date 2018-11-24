@@ -1,21 +1,25 @@
 package com.tomy.lib.ui.view.preference
 
 import android.content.Context
+import android.support.constraint.ConstraintLayout
 import android.support.v7.preference.PreferenceViewHolder
 import android.util.AttributeSet
 import android.widget.Switch
 import com.tomy.lib.ui.R
+import timber.log.Timber
 
 /**@author Tomy
  * Created by Tomy on 2018/11/20.
  */
-class SwitchPreference: TwoTargetPreference {
+class MasterSwitchPreference: TwoTargetPreference {
 
     private var mSwitch: Switch? = null
 
     private var mChecked = false
 
     private var mSwitchEnabled = true
+
+    private var mSummaryEnabled = false
 
     constructor(context: Context): super(context)
     constructor(context: Context, attrs: AttributeSet): super(context, attrs)
@@ -28,8 +32,16 @@ class SwitchPreference: TwoTargetPreference {
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
+        Timber.e("onBindViewHolder.key = $key")
+        if (!mSummaryEnabled) {
+            holder.findViewById(android.R.id.title).apply {
+//                (layoutParams as ConstraintLayout.LayoutParams).bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            }
+        }
+
         val widgetView = holder.findViewById(android.R.id.widget_frame)
         widgetView?.setOnClickListener {
+            Timber.e("widgetView.Click()")
             if (mSwitch?.isEnabled != true) {
                 return@setOnClickListener
             }
