@@ -55,7 +55,6 @@ dependencies {
     implementation deps.rx_android
     implementation project(path: ':../../Library:utils_library')
     //    implementation project(':utils_library')
-
 }
 repositories {
     mavenCentral()

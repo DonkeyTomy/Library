@@ -17,13 +17,21 @@ open class TwoTargetPreference: Preference {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int): super(context, attrs, defStyleAttr)
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int): super(context, attrs, defStyleAttr, defStyleRes)
 
+    protected var mListener: OnBindViewHolderListener? = null
+
     init {
-        layoutResource = R.layout.preference_two_target
+        layoutResource = getLayoutResourceId()
         val secondTargetId = getSecondTargetResId()
         if (secondTargetId != 0) {
             widgetLayoutResource = secondTargetId
         }
     }
+
+    fun setOnBindViewHolderListener(listener: OnBindViewHolderListener) {
+        mListener = listener
+    }
+
+    open fun getLayoutResourceId() = R.layout.preference_two_target
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
@@ -39,6 +47,10 @@ open class TwoTargetPreference: Preference {
 
     open fun getSecondTargetResId(): Int {
         return 0
+    }
+
+    interface OnBindViewHolderListener {
+        fun onBindViewHolder(holder: PreferenceViewHolder)
     }
 
 }

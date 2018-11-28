@@ -5,6 +5,7 @@
     android:checked="false"
     android:clickable="false"
     android:focusable="false"
+    android:switchMinWidth="@dimen/switch_min_width"
     android:thumb="@drawable/thumb"
     android:track="@drawable/track"
     android:layout_width="wrap_content"

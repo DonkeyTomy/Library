@@ -27,7 +27,7 @@ abstract class ADialRecycler<T>(context: Context, attributeSet: AttributeSet): R
             clear()
             addAll(list)
         }
-        adapter.notifyDataSetChanged()
+        adapter?.notifyDataSetChanged()
     }
 
     fun getItem(position: Int): T {
