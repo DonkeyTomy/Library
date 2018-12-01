@@ -8,4 +8,8 @@
     <declare-styleable name="PagePointLayout">
         <attr name="point_count" format="integer"/>
     </declare-styleable>
+    <declare-styleable name="TabBarLayout">
+        <attr name="infos" format="reference"/>
+        <attr name="icons" format="reference"/>
+    </declare-styleable>
 </resources>

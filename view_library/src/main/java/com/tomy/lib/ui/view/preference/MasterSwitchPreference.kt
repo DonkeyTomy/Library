@@ -65,7 +65,11 @@ class MasterSwitchPreference: TwoTargetPreference, Preference.OnPreferenceClickL
     fun setChecked(checked: Boolean) {
         Timber.e("setChecked.isChecked = $checked")
         mChecked = checked
-        mSwitch?.isChecked = mChecked
+        mSwitch?.apply {
+            if (isChecked != checked) {
+                isChecked = checked
+            }
+        }
     }
 
     fun setSwitchEnabled(enabled: Boolean) {

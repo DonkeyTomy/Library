@@ -6,4 +6,7 @@
     <dimen name="radius_track">11dp</dimen>
     <dimen name="setting_main_tv_main_size">20sp</dimen>
     <dimen name="switch_min_width">55dp</dimen>
+
+    <dimen name="tool_bar_height">60dp</dimen>
+    <dimen name="tv_size_tab_item">20sp</dimen>
 </resources>

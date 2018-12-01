@@ -89,7 +89,7 @@ abstract class BaseFragment: Fragment() {
      * @param root View
      */
     open fun initView(root: View) {
-        Timber.e("initView()")
+        Timber.e("refreshView()")
     }
 
     /**
