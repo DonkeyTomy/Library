@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
+import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +18,7 @@ import com.tomy.lib.ui.R
  * Created by Tomy on 2018/8/6.
  */
 abstract class BaseSupportDialogFragment: DialogFragment() {
-    var mContext: Activity? = null
+    var mContext: AppCompatActivity? = null
     var mUnBinder: Unbinder? = null
 
     private var mRootView: View? = null
@@ -28,7 +29,7 @@ abstract class BaseSupportDialogFragment: DialogFragment() {
 
     override fun onAttach(context: Activity?) {
         super.onAttach(context)
-        mContext = context
+        mContext = context as AppCompatActivity
         initMember()
     }
 
@@ -59,11 +60,11 @@ abstract class BaseSupportDialogFragment: DialogFragment() {
 
 
     override fun onDestroyView() {
-        super.onDestroyView()
         viewDestroy()
         mUnBinder?.unbind()
         mUnBinder = null
         (mRootView!!.parent as ViewGroup).removeView(mRootView!!)
+        super.onDestroyView()
     }
 
     override fun onDestroy() {

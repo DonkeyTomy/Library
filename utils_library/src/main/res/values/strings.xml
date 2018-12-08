@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Utils Library</string>
+    <string name="system_uid">android.uid.system</string>
 </resources>

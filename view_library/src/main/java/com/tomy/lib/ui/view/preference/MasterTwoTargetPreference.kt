@@ -10,7 +10,7 @@ import timber.log.Timber
 /**@author Tomy
  * Created by Tomy on 2018/11/27.
  */
-class MasterTwoTargetPreference: TwoTargetPreference, Preference.OnPreferenceClickListener {
+open class MasterTwoTargetPreference: TwoTargetPreference {
 
     private var mSummaryEnabled = false
 
@@ -19,9 +19,6 @@ class MasterTwoTargetPreference: TwoTargetPreference, Preference.OnPreferenceCli
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int): super(context, attrs, defStyleAttr)
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int): super(context, attrs, defStyleAttr, defStyleRes)
 
-    init {
-        onPreferenceClickListener = this
-    }
 
     override fun getSecondTargetResId(): Int {
         return R.layout.preference_widget_go
@@ -35,14 +32,8 @@ class MasterTwoTargetPreference: TwoTargetPreference, Preference.OnPreferenceCli
                 (layoutParams as ConstraintLayout.LayoutParams).bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
             }
         }*/
-
-
         mListener?.onBindViewHolder(holder)
     }
 
-    override fun onPreferenceClick(preference: Preference?): Boolean {
-        Timber.e("onPreferenceClick(). key = $key")
-        return true
-    }
 
 }

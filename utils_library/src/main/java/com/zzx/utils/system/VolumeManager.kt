@@ -2,6 +2,7 @@ package com.zzx.utils.system
 
 import android.content.Context
 import android.media.AudioManager
+import android.provider.Settings
 import timber.log.Timber
 
 /**@author Tomy
@@ -9,7 +10,7 @@ import timber.log.Timber
  *
  * 设置各声音通道音量.
  */
-class VolumeManager(context: Context, maxLevel: Int = MAX_LEVEL_DEFAULT) {
+class VolumeManager(var context: Context, maxLevel: Int = MAX_LEVEL_DEFAULT) {
     private val mManager: AudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var mMaxLevel = 0
 
@@ -133,7 +134,49 @@ class VolumeManager(context: Context, maxLevel: Int = MAX_LEVEL_DEFAULT) {
         return if (volume > maxVolume) (volume / maxVolume).toInt() else (maxVolume / volume).toInt()
     }
 
+    fun isVolumeEnabled(): Boolean {
+//        val zenMode = Settings.Global.getInt(context.contentResolver, ZEN_MODE, ZEN_MODE_OFF)
+        Timber.e("$TAG ringerMode = ${mManager.ringerMode}")
+        return mManager.ringerMode == AudioManager.RINGER_MODE_NORMAL
+    }
+
+    fun setVolumeEnabled(enable: Boolean) {
+        try {
+            Timber.e("$TAG setVolumeEnabled = $enable")
+            if (isVolumeEnabled() != enable) {
+//                Settings.Global.putInt(context.contentResolver, ZEN_MODE, if (enable) ZEN_MODE_OFF else ZEN_MODE_ALARMS)
+                mManager.ringerMode = if (enable) AudioManager.RINGER_MODE_NORMAL else AudioManager.RINGER_MODE_VIBRATE
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     companion object {
+
+        const val TAG = "VolumeManager"
+
         const val MAX_LEVEL_DEFAULT = 10
+
+        /**
+         * 勿扰模式
+         */
+        const val ZEN_MODE = "zen_mode"
+        /**
+         * 勿扰模式关
+         */
+        const val ZEN_MODE_OFF = 0
+        /**
+         * 勿扰模式：仅限重要打扰
+         */
+        const val ZEN_MODE_IMPORTANT_INTERRUPTIONS = 1
+        /**
+         * 勿扰模式：完全静音
+         */
+        const val ZEN_MODE_NO_INTERRUPTIONS = 2
+        /**
+         * 勿扰模式：仅限闹钟
+         */
+        const val ZEN_MODE_ALARMS = 3
     }
 }

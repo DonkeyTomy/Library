@@ -157,6 +157,12 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
+    <style name="SettingMainText">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">@dimen/setting_main_tv_main_size</item>
+        <item name="android:gravity">center</item>
+    </style>
+
     <style name="SettingMainTv" parent="ConCenterInParent">
         <item name="android:textColor">@android:color/black</item>
         <item name="android:textSize">@dimen/setting_main_tv_main_size</item>

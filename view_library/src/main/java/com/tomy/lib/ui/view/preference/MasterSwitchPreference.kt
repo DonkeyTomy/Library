@@ -13,7 +13,7 @@ import timber.log.Timber
 /**@author Tomy
  * Created by Tomy on 2018/11/20.
  */
-class MasterSwitchPreference: TwoTargetPreference, Preference.OnPreferenceClickListener {
+open class MasterSwitchPreference: TwoTargetPreference {
 
     private var mSwitch: Switch? = null
 
@@ -85,11 +85,6 @@ class MasterSwitchPreference: TwoTargetPreference, Preference.OnPreferenceClickL
 
     fun getSwitch(): Switch? {
         return mSwitch
-    }
-
-    override fun onPreferenceClick(preference: Preference?): Boolean {
-        Timber.e("onPreferenceClick(). key = $key")
-        return true
     }
 
 }
