@@ -7,6 +7,9 @@
     <TextView
         android:id="@android:id/title"
         style="@style/SettingMainTv"
+        android:layout_width="0dp"
+        android:gravity="center_vertical|start"
+        app:layout_constraintWidth_percent="0.6"
         app:layout_constraintHorizontal_bias="0.1"
          />
     <TextView

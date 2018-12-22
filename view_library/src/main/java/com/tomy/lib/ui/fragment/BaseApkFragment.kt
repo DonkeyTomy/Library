@@ -133,7 +133,7 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
             if (!checkPackageNeedShow(packageName) && (checkPackageNeedHide(packageName) || activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0)) {
                 continue
             }
-            Timber.e("packageName = ${activityInfo.packageName}")
+            Timber.e("packageName = ${activityInfo.packageName}; activityName = ${activityInfo.name}")
             val apkInfo = ApkInfo()
             apkInfo.mPackageName = activityInfo.packageName
             apkInfo.mActivityName = activityInfo.name

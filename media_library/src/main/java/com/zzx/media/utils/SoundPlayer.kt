@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
+import android.provider.Settings
 
 
 /**@author Tomy
@@ -37,6 +38,9 @@ class SoundPlayer private constructor() {
     }
 
     fun playSound(context: Context, soundRawId: Int, loop: Int = 0) {
+        if (!isSpeechEnabled(context)) {
+            return
+        }
         mSoundRawId = soundRawId
         mLoop = 0
         val soundId = mSoundIdMap[soundRawId]
@@ -45,6 +49,10 @@ class SoundPlayer private constructor() {
         } else {
             playSoundId(soundId, loop)
         }
+    }
+
+    private fun isSpeechEnabled(context: Context): Boolean {
+        return Settings.System.getInt(context.contentResolver, SPEECH_ENABLED, 1) == 1
     }
 
     fun stopPlay(soundRawId: Int) {
@@ -75,6 +83,8 @@ class SoundPlayer private constructor() {
     }
 
     companion object {
+        const val SPEECH_ENABLED = "zzx_speech_enabled"
+
         private var INSTANCE: SoundPlayer? = null
 
         fun getInstance(): SoundPlayer {

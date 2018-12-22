@@ -62,6 +62,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             Camera.getCameraInfo(i, info)
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                 Timber.e("${Const.TAG}openFrontCamera()")
+                if (getCameraCount() > 2) {
+                    if (info.orientation != 90) {
+                        continue
+                    }
+                }
                 mCameraId = i
                 mCameraFacing = info.facing
                 openSpecialCamera(mCameraId)
@@ -92,8 +97,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         if (mCamera != null) {
             return
         }
-        val id = if (getCameraCount() <= 1) {
-            0
+        val id = if (getCameraCount() <= cameraId) {
+            getCameraCount() - 1
         } else {
             cameraId
         }
@@ -104,6 +109,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun openExternalCamera() {
+        Timber.e("${Const.TAG}openBackCamera(): mCamera = $mCamera")
+        openSpecialCamera(1)
     }
 
     /**
@@ -169,12 +176,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun closeCamera() {
         mCamera?.release()
+        mCamera = null
     }
 
     override fun releaseCamera() {
         stopPreview()
-        mCamera?.release()
-        mCamera = null
+        closeCamera()
+        mStateCallback?.onCameraClosed()
     }
 
     override fun getCameraCount(): Int {

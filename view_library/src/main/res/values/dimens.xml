@@ -5,6 +5,7 @@
     <dimen name="height_switch">25dp</dimen>
     <dimen name="radius_track">11dp</dimen>
     <dimen name="setting_main_tv_main_size">20sp</dimen>
+    <dimen name="system_info_tv_size">18sp</dimen>
     <dimen name="switch_min_width">55dp</dimen>
 
     <dimen name="tool_bar_height">60dp</dimen>

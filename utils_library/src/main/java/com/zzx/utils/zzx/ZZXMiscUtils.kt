@@ -50,9 +50,12 @@ object ZZXMiscUtils {
 
     const val USER_INFO_PATH = "${MISC}zzx_police_num_stats"
 
+    const val PTT_SWITCH = "${MISC}zzx_ptt_exchange"
+
     const val LED_RED = "ff0000"
     const val LED_GREEN = "ff00"
     const val LED_BLUE = "ff"
+    const val LED_DOWN  = "000000"
 
     const val BREATH_LIGHT  = " 1 2 2 2 2 2"
     const val NORMAL_LIGHT  = " 0 0 0 0 0 0"
@@ -252,6 +255,10 @@ object ZZXMiscUtils {
     fun setIrRedState(open: Boolean) {
         write(IR_CUT_PATH, if (open) OPEN else CLOSE)
         write(IR_RED_PATH, if (open) OPEN else CLOSE)
+    }
+
+    fun setPttSwitch(enabled: Boolean) {
+        write(PTT_SWITCH, if (enabled) OPEN else CLOSE)
     }
 
     /**重置强制关机计时器.若不重置计时,则会在休眠开始后2分钟后若休眠失败则强制关机

@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**@author Tomy
  * Created by Tomy on 2018/6/11.
  */
-class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG flag: Int) {
+class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG flag: Int, private var mNeedLoop: Boolean = false) {
 
     var mRecorder: IRecorder = VideoRecorder(false)
 
@@ -54,6 +54,14 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     private var mRecordStateCallback: IRecorder.IRecordCallback? = null
 
     private var mQuality = CamcorderProfile.QUALITY_720P
+
+
+    /**
+     * @param needLoop 设置是否开启循环录像自动删除功能.
+     */
+    fun setNeedLoop(needLoop: Boolean) {
+        mNeedLoop = needLoop
+    }
 
 
     fun setCameraManager(cameraManager: ICameraManager<surface, camera>?) {
@@ -200,7 +208,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             return
         }
         mLooping.set(true)
-//        check()
+        checkNeedLoop()
         Observable.interval(0, mRecordDuration.toLong(),  TimeUnit.SECONDS)
                 .observeOn(Schedulers.newThread())
                 .subscribe(
@@ -220,6 +228,12 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                             mRecordLoopDisposable = it
                         }
                 )
+    }
+
+    private fun checkNeedLoop() {
+        if (mNeedLoop) {
+            check()
+        }
     }
 
     fun check() {
