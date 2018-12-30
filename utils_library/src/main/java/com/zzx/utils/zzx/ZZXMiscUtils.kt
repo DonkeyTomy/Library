@@ -1,13 +1,10 @@
 package com.zzx.utils.zzx
 
+import android.content.Context
+import android.provider.Settings
 import com.zzx.utils.rxjava.fixedThread
 import timber.log.Timber
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.FileReader
-import java.io.FileWriter
+import java.io.*
 
 /**@author Tomy
  * Created by Tomy on 2015-03-17.
@@ -293,7 +290,12 @@ object ZZXMiscUtils {
         write(USB_POWER_PATH, if (open) OPEN else CLOSE)
     }
 
-    fun toggleLed(status: String, breath: Boolean = false) {
+    fun toggleLed(status: String, breath: Boolean = false, context: Context? = null) {
+        if (breath) {
+            if (!isSpeechEnabled(context!!)) {
+                return
+            }
+        }
         val state = if (breath) {
             "$status$BREATH_LIGHT"
         } else {
@@ -301,6 +303,12 @@ object ZZXMiscUtils {
         }
         write(RGB_LED, state)
     }
+
+    private fun isSpeechEnabled(context: Context): Boolean {
+        return Settings.System.getInt(context.contentResolver, LED_ENABLED, 1) == 1
+    }
+
+        const val LED_ENABLED = "zzx_led_enabled"
 
     /**关屏
      */

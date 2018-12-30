@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import timber.log.Timber
 
 /**@author Tomy
  * Created by Tomy on 2018/7/30.
@@ -37,9 +38,11 @@ abstract class BasePagedListAdapter<T: BaseItemData>: PagedListAdapter<T, BasePa
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        bindToView(holder.itemView, getItem(position)!!)
+//        Timber.e("onBindViewHolder.position = $position")
+        val item = getItem(position)
+        bindToView(holder.itemView, item!!)
         holder.itemView.setOnClickListener {
-            mOnItemClickListener?.onItemClick(getItem(position)!!)
+            mOnItemClickListener?.onItemClick(item)
         }
     }
 

@@ -22,7 +22,7 @@ object ThumbnailUtil {
         if (width <= 0 || height <= 0) {
             return null
         }
-        var bitmap: Bitmap? = null
+        var bitmap: Bitmap?
         val options = BitmapFactory.Options()
         /**此变量设置为true,则表示在生成Bitmap时只根据原图来填充options属性,
          * 返回的Bitmap为null.

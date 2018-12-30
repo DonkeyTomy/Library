@@ -44,6 +44,7 @@ abstract class BaseSupportFragment: Fragment() {
             mRootView = inflater.inflate(getLayoutId(), container, false)
         }
         Timber.e("onCreateView")
+        createView(mRootView!!)
         return mRootView!!
     }
 
@@ -83,7 +84,15 @@ abstract class BaseSupportFragment: Fragment() {
      * */
     open fun resumeView() {}
 
+    /**
+     * @param root 调用在bindView()之后
+     */
     open fun initView(root: View) {}
+
+    /**
+     * @param root 调用在bindView()之前可追加View
+     */
+    open fun createView(root: View) {}
 
     open fun destroyView() {}
 

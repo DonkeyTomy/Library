@@ -208,7 +208,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             return
         }
         mLooping.set(true)
-        checkNeedLoop()
+        checkDelete()
         Observable.interval(0, mRecordDuration.toLong(),  TimeUnit.SECONDS)
                 .observeOn(Schedulers.newThread())
                 .subscribe(
@@ -232,11 +232,11 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     private fun checkNeedLoop() {
         if (mNeedLoop) {
-            check()
+            checkDelete()
         }
     }
 
-    fun check() {
+    fun checkDelete() {
         FlowableUtil.setMainThreadMapBackground<Unit>(
                 Function {
                     checkNeedDelete()
@@ -244,7 +244,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                     Observable.interval(0, 10L, TimeUnit.SECONDS)
                             .observeOn(Schedulers.io())
                             .doOnDispose {
-                                Timber.e("check Disposed")
+                                Timber.e("checkDelete Disposed")
                             }
                             .subscribe(
                                     {
@@ -262,7 +262,10 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     fun checkNeedDelete() {
         val freeSpace = FileUtil.getDirFreeSpaceByMB(FileUtil.getExternalStoragePath(mContext))
         Timber.e("currentFreeSpace = $freeSpace")
-        if (freeSpace <= 500) {
+        if (freeSpace <= 100) {
+            stopLooper()
+            mRecordStateCallback?.onRecordError()
+        } else if (freeSpace <= 500 && mNeedLoop) {
             if (mFileList?.size ?: 0 == 0) {
                 val dirList = FileUtil.sortDirTime(File(mDirPath!!).parentFile)
                 for (dir in dirList) {

@@ -1,4 +1,5 @@
 package com.zzx.media.camera
+import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.hardware.camera2.CameraDevice
@@ -58,6 +59,31 @@ interface ICameraManager<in surface, camera> {
     fun startRecord()
 
     fun setIRecorder(recorder: IRecorder)
+
+    /**
+     * 开始自动对焦
+     */
+    fun startAutoFocus()
+
+    /**
+     * 停止自动对焦
+     */
+    fun cancelAutoFocus()
+
+    /**
+     * @param focusRect 设置定点对焦的区域
+     */
+    fun focusOnRect(focusRect: Rect)
+
+    /**
+     * @return 获得可定点对焦的区域数.
+     */
+    fun getMaxNumFocusAreas(): Int
+
+    /**
+     * @return 获得定点对焦的区域.
+     */
+    fun getFocusRect(): List<Rect>
 
     /**
      * 停止录像

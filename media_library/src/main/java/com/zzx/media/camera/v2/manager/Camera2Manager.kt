@@ -3,6 +3,7 @@ package com.zzx.media.camera.v2.manager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.ImageFormat
+import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.hardware.camera2.params.StreamConfigurationMap
@@ -17,7 +18,6 @@ import com.zzx.media.camera.ICameraManager
 import com.zzx.media.recorder.IRecorder
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.ArrayList
 
 
 /**@author Tomy
@@ -543,6 +543,23 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
     }
 
     override fun startRecord() {
+    }
+
+    override fun startAutoFocus() {
+    }
+
+    override fun cancelAutoFocus() {
+    }
+
+    override fun focusOnRect(rect: Rect) {
+    }
+
+    override fun getFocusRect(): List<Rect> {
+        return emptyList()
+    }
+
+    override fun getMaxNumFocusAreas(): Int {
+        return 0
     }
 
 

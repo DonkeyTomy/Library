@@ -174,7 +174,7 @@ object DeviceUtils {
     fun getSuperAdminPassword(context: Context): String {
         val value = System.getString(context.contentResolver, ADMIN_SUPER_PSW)
         return if (TextUtils.isEmpty(value)) {
-            ADMIN_SUPER_PSW
+            DEVICE_H9_DEFAULT_SUPER_PASSWORD
         } else value
     }
 

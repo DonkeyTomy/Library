@@ -1,5 +1,6 @@
 package com.zzx.media.camera.v1.manager
 
+import android.graphics.Rect
 import android.hardware.Camera
 import android.os.Handler
 import android.os.HandlerThread
@@ -165,6 +166,29 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun setIRecorder(recorder: IRecorder) {
+    }
+
+    override fun startAutoFocus() {
+        mCamera?.autoFocus { success, camera ->  }
+    }
+
+    override fun cancelAutoFocus() {
+        mCamera?.cancelAutoFocus()
+    }
+
+    override fun focusOnRect(focusRect: Rect) {
+        if (getMaxNumFocusAreas() > 0) {
+            val focusAreas = ArrayList<Camera.Area>()
+        }
+        mCamera?.parameters = mParameters
+    }
+
+    override fun getFocusRect(): List<Rect> {
+        return emptyList()
+    }
+
+    override fun getMaxNumFocusAreas(): Int {
+        return mParameters.maxNumFocusAreas
     }
 
     /**
@@ -335,7 +359,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     private val mPictureCallback =
         Camera.PictureCallback { data, _ ->
             mPictureDataCallback?.onCaptureFinished(data)
-            Timber.e("mPictureCount = $mPictureCount; mBurstMode = $mBurstMode")
+            Timber.e("mPictureCount = $mPictureCount; mBurstMode = $mBurstMode; mContinuousShotCount = $mContinuousShotCount")
             if (mBurstMode) {
                 if (++mPictureCount >= mContinuousShotCount) {
                     if (!mIsRecording) {
@@ -429,6 +453,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                 mCamera?.parameters = this
             }
             restartPreview()
+        } else {
+            mParameters.apply {
+                set(BURST_NUM, pictureCount)
+                mCamera?.parameters = this
+            }
         }
     }
 

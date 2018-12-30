@@ -43,6 +43,7 @@ abstract class BaseSupportDialogFragment: DialogFragment() {
         if (mRootView == null) {
             mRootView = inflater.inflate(getLayoutId(), container, false)
         }
+        createView(mRootView!!)
         return mRootView!!
     }
 
@@ -72,9 +73,17 @@ abstract class BaseSupportDialogFragment: DialogFragment() {
         mRootView = null
     }
     /**
+     * 在bindView之后.
      * 初始化布局.
      * */
     abstract fun initView(root: View)
+
+    /**
+     *
+     * 在[isBindView]bindView之前,可用来追加View.
+     * @param root View
+     */
+    open fun createView(root: View) {}
 
     /**
      * 创建时初始化成员变量

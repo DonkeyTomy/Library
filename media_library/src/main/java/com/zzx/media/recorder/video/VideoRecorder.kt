@@ -73,6 +73,13 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                 init()
             })
         }
+        mMediaRecorder.setOnInfoListener { _, what, _ ->
+            when (what) {
+                MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED, MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED -> {
+                    stopRecord()
+                }
+            }
+        }
     }
 
     override fun setRecordCallback(callback: IRecorder.IRecordCallback?) {

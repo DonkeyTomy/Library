@@ -28,12 +28,19 @@ abstract class BaseFragment: Fragment() {
 
     override fun onAttach(context: Activity?) {
         super.onAttach(context)
+        Timber.e("onAttach()")
         mContext = context
         initMember()
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Timber.e("onCreate()")
+    }
+
     override fun onDetach() {
         super.onDetach()
+        Timber.e("onDetach()")
         releaseMember()
         mContext = null
     }
@@ -75,6 +82,7 @@ abstract class BaseFragment: Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Timber.e("onDestroy()")
         mRootView = null
     }
     /**
