@@ -545,13 +545,38 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
     override fun startRecord() {
     }
 
-    override fun startAutoFocus() {
+    override fun startAutoFocus(focusCallback: ICameraManager.AutoFocusCallback?) {
+    }
+
+    override fun setAutoFocusCallback(focusCallback: ICameraManager.AutoFocusCallback?) {
+    }
+
+    override fun focusOnRect(focusRect: Rect, focusCallback: ICameraManager.AutoFocusCallback?) {
+    }
+
+    override fun focusOnPoint(x: Int, y: Int, screenWidth: Int, screenHeight: Int, horWidth: Int, verHeight: Int, focusCallback: ICameraManager.AutoFocusCallback?) {
     }
 
     override fun cancelAutoFocus() {
     }
 
-    override fun focusOnRect(rect: Rect) {
+    override fun getSupportFocusMode(): List<String> {
+        return emptyList()
+    }
+
+    override fun setFocusMode(focusMode: String) {
+    }
+
+    override fun isAutoFocusSupported(): Boolean {
+        return false
+    }
+
+    override fun isVideoAutoFocusSupported(): Boolean {
+        return false
+    }
+
+    override fun isPictureAutoFocusSupported(): Boolean {
+        return false
     }
 
     override fun getFocusRect(): List<Rect> {

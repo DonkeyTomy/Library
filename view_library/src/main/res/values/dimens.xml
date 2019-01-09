@@ -11,4 +11,6 @@
     <dimen name="tool_bar_height">60dp</dimen>
     <dimen name="tv_size_tab_item">20sp</dimen>
     <dimen name="setting_dialog_tv_padding">10dp</dimen>
+    <dimen name="ic_focus_width">80dp</dimen>
+    <dimen name="ic_focus_width_small">60dp</dimen>
 </resources>

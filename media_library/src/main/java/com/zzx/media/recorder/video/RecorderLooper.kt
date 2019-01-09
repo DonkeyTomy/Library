@@ -127,6 +127,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     fun startRecord():Boolean {
         Timber.e("startRecord")
         mRecording.set(true)
+        mCameraManager?.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
         setupRecorder()
         try {
             return if (mCameraManager is Camera2Manager && mRecorder.getState() == IRecorder.State.PREPARED) {
@@ -279,14 +280,17 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 }
             }
             Timber.e("mFileList.size = ${mFileList?.size}")
-            for (file in mFileList!!) {
-                Timber.e("fileName = ${file.absolutePath}")
-                if (file.absolutePath != mOutputFile!!.absolutePath) {
-                    FileUtil.deleteFile(file)
-                    mFileList!!.remove(file)
-                    break
+            mFileList?.apply {
+                for (file in this) {
+                    Timber.e("fileName = ${file.absolutePath}")
+                    if (file.absolutePath != mOutputFile!!.absolutePath) {
+                        FileUtil.deleteFile(file)
+                        remove(file)
+                        break
+                    }
                 }
             }
+
         }
     }
 

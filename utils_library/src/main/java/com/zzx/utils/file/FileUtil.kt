@@ -91,6 +91,10 @@ object FileUtil {
         return bytes / 1024 / 1024f
     }
 
+    fun getFileLengthByKb(bytes: Long): Float {
+        return bytes / 1024f
+    }
+
     fun getDirFreeSpaceByMB(dir: String): Long {
         return getDirFreeSpace(File(dir)) / 1024 / 1024
     }

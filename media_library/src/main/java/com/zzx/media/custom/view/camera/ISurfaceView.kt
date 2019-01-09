@@ -1,5 +1,6 @@
 package com.zzx.media.custom.view.camera
 
+import android.view.View
 import com.zzx.media.camera.ICameraManager
 
 /**@author Tomy
@@ -20,6 +21,8 @@ interface ISurfaceView<Surface, Camera> {
     fun setCamera(camera: Camera)
 
     fun setRotation(rotation: Int)
+
+    fun setOnTouchListener(listener: View.OnTouchListener)
 
     fun setPreviewSize(width: Int, height: Int)
 

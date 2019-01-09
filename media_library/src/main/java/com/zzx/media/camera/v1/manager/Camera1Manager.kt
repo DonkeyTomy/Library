@@ -2,6 +2,7 @@ package com.zzx.media.camera.v1.manager
 
 import android.graphics.Rect
 import android.hardware.Camera
+import android.hardware.Camera.Parameters
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Size
@@ -50,6 +51,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mHandlerThread: HandlerThread = HandlerThread(Camera1Manager::class.simpleName)
     private var mHandler: Handler
+
+    private var mFocusCallback: ICameraManager.AutoFocusCallback? = null
+
+    private var mIsManualFocusSupported           = false
+    private var mIsPictureAutoFocusSupported    = false
+    private var mIsVideoAutoFocusSupported      = false
 
     init {
         mHandlerThread.start()
@@ -105,7 +112,23 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
         Timber.e("${Const.TAG}cameraId = $cameraId; getCameraCount = ${getCameraCount()}")
         mCamera = Camera.open(id)
-        mParameters = mCamera!!.parameters
+        mParameters = mCamera!!.parameters.apply {
+            supportedFocusModes.forEach {
+                Timber.e("focusMode = $it")
+                when (it) {
+                    "manual"   -> {
+                        mIsManualFocusSupported = true
+                    }
+                    Parameters.FOCUS_MODE_CONTINUOUS_PICTURE    -> {
+                        mIsPictureAutoFocusSupported = true
+                    }
+                    Parameters.FOCUS_MODE_CONTINUOUS_VIDEO  -> {
+                        mIsVideoAutoFocusSupported  = true
+                    }
+                }
+            }
+        }
+        setFocusMode(Parameters.FOCUS_MODE_AUTO)
         mStateCallback?.onCameraOpenSuccess(mCamera)
     }
 
@@ -139,6 +162,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             setPreviewSurface(surface)
             startPreview()
             mPreviewed.set(true)
+            startAutoFocus()
         }
     }
 
@@ -168,23 +192,84 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun setIRecorder(recorder: IRecorder) {
     }
 
-    override fun startAutoFocus() {
-        mCamera?.autoFocus { success, camera ->  }
+    override fun startAutoFocus(focusCallback: ICameraManager.AutoFocusCallback?) {
+        Timber.e("startAutoFocus")
+        cancelAutoFocus()
+        focusCallback?.apply {
+            mFocusCallback = this
+        }
+        mCamera?.autoFocus { success, _ ->
+            Timber.e("autoFocus.success = $success")
+//            cancelAutoFocus()
+            setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
+            mFocusCallback?.onAutoFocusCallbackSuccess(success)
+        }
+    }
+
+    override fun setAutoFocusCallback(focusCallback: ICameraManager.AutoFocusCallback?) {
+        mFocusCallback = focusCallback
     }
 
     override fun cancelAutoFocus() {
         mCamera?.cancelAutoFocus()
     }
 
-    override fun focusOnRect(focusRect: Rect) {
+    override fun focusOnRect(focusRect: Rect, focusCallback: ICameraManager.AutoFocusCallback?) {
         if (getMaxNumFocusAreas() > 0) {
-            val focusAreas = ArrayList<Camera.Area>()
+            mParameters.apply {
+                ArrayList<Camera.Area>().let {
+                    it.add(Camera.Area(focusRect, 1000))
+                    meteringAreas = it
+                    focusAreas  = it
+                }
+                focusMode = Camera.Parameters.FOCUS_MODE_AUTO
+                mCamera?.parameters = this
+            }
         }
-        mCamera?.parameters = mParameters
+        startAutoFocus(focusCallback)
+    }
+
+    override fun focusOnPoint(x: Int, y: Int, screenWidth: Int, screenHeight: Int, horWidth: Int, verHeight: Int, focusCallback: ICameraManager.AutoFocusCallback?) {
+        if (screenWidth == 0 || screenHeight == 0) {
+            return
+        }
+        val pointX = x * 2000 / screenWidth - 1000
+        val pointY = y * 2000 / screenHeight - 1000
+        Rect().apply {
+            left    = Math.max(pointX - horWidth, -1000)
+            right   = Math.min(pointX + horWidth, 1000)
+            top     = Math.max(pointY - verHeight, -1000)
+            bottom  = Math.min(pointY + verHeight, 1000)
+            Timber.e("\n***** \n[$x:$y];\n screen = [$screenWidth x $screenHeight];\n point = [$pointX:$pointY];\n rect = $this\n*****")
+            focusOnRect(this)
+        }
     }
 
     override fun getFocusRect(): List<Rect> {
         return emptyList()
+    }
+
+    override fun getSupportFocusMode(): List<String> {
+        return mParameters.supportedFocusModes
+    }
+
+    override fun setFocusMode(focusMode: String) {
+        mParameters.apply {
+            this.focusMode = focusMode
+            mCamera?.parameters = this
+        }
+    }
+
+    override fun isAutoFocusSupported(): Boolean {
+        return mIsManualFocusSupported
+    }
+
+    override fun isPictureAutoFocusSupported(): Boolean {
+        return mIsPictureAutoFocusSupported
+    }
+
+    override fun isVideoAutoFocusSupported(): Boolean {
+        return mIsVideoAutoFocusSupported
     }
 
     override fun getMaxNumFocusAreas(): Int {
@@ -199,6 +284,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun closeCamera() {
+        mIsVideoAutoFocusSupported = false
+        mIsPictureAutoFocusSupported = false
+        mIsManualFocusSupported = false
         mCamera?.release()
         mCamera = null
     }

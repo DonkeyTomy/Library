@@ -63,7 +63,13 @@ interface ICameraManager<in surface, camera> {
     /**
      * 开始自动对焦
      */
-    fun startAutoFocus()
+    fun startAutoFocus(focusCallback: AutoFocusCallback? = null)
+
+    /**
+     * 设置自动对焦回调,若已设置,则[startAutoFocus]可以不再传入
+     * @param focusCallback AutoFocusCallback?
+     */
+    fun setAutoFocusCallback(focusCallback: AutoFocusCallback?)
 
     /**
      * 停止自动对焦
@@ -73,7 +79,17 @@ interface ICameraManager<in surface, camera> {
     /**
      * @param focusRect 设置定点对焦的区域
      */
-    fun focusOnRect(focusRect: Rect)
+    fun focusOnRect(focusRect: Rect, focusCallback: AutoFocusCallback? = null)
+
+    /**
+     * @param x 在Camera窗口X相对坐标
+     * @param y 在Camera窗口Y相对坐标
+     * @param screenWidth Camera窗口的宽度
+     * @param screenHeight Camera窗口的高度
+     * @param horWidth 区域相对中心的左右扩展(-horWidth, horWidth)默认为100
+     * @param verHeight 区域相对中心的上下扩展.(-verHeight, verHeight)默认为100
+     */
+    fun focusOnPoint(x: Int, y: Int, screenWidth: Int, screenHeight: Int, horWidth: Int = 100, verHeight: Int = 100, focusCallback: ICameraManager.AutoFocusCallback? = null)
 
     /**
      * @return 获得可定点对焦的区域数.
@@ -84,6 +100,16 @@ interface ICameraManager<in surface, camera> {
      * @return 获得定点对焦的区域.
      */
     fun getFocusRect(): List<Rect>
+
+    fun getSupportFocusMode(): List<String>
+
+    fun setFocusMode(focusMode: String)
+
+    fun isAutoFocusSupported(): Boolean
+
+    fun isVideoAutoFocusSupported(): Boolean
+
+    fun isPictureAutoFocusSupported(): Boolean
 
     /**
      * 停止录像
@@ -195,6 +221,10 @@ interface ICameraManager<in surface, camera> {
 
     interface RecordPreviewReady {
         fun onRecordPreviewReady()
+    }
+
+    interface AutoFocusCallback {
+        fun onAutoFocusCallbackSuccess(success: Boolean)
     }
 
     companion object {
