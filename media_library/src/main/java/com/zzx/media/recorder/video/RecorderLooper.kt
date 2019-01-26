@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**@author Tomy
  * Created by Tomy on 2018/6/11.
  */
-class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG flag: Int, private var mNeedLoop: Boolean = false) {
+class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG flag: Int, private var mNeedLoopDelete: Boolean = false) {
 
     var mRecorder: IRecorder = VideoRecorder(false)
 
@@ -51,6 +51,11 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     private var mFileList: ArrayList<File>? = null
 
+    /**
+     * 代表是否录完立即就删除.预录模式下录一个删一个.
+     */
+    private var mAutoDelete = false
+
     private var mRecordStateCallback: IRecorder.IRecordCallback? = null
 
     private var mQuality = CamcorderProfile.QUALITY_720P
@@ -59,8 +64,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     /**
      * @param needLoop 设置是否开启循环录像自动删除功能.
      */
-    fun setNeedLoop(needLoop: Boolean) {
-        mNeedLoop = needLoop
+    fun setNeedLoopDelete(needLoop: Boolean) {
+        mNeedLoopDelete = needLoop
     }
 
 
@@ -126,6 +131,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     fun startRecord():Boolean {
         Timber.e("startRecord")
+        if (mRecording.get()) {
+            return true
+        }
         mRecording.set(true)
         mCameraManager?.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
         setupRecorder()
@@ -163,6 +171,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         return mLooping.get() || mRecording.get()
     }
 
+    /**
+     * @see startLooper
+     */
     fun stopLooper() {
         Timber.e("stopLooper.recording = ${mLooping.get()}")
         if (!mLooping.get())
@@ -190,8 +201,21 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
     }
 
+    /**
+     * @see startLooper
+     * 循环录像Looper的Disposable
+     */
     private var mRecordLoopDisposable: Disposable?  = null
+    /**
+     * 循环删除的Disposable
+     * @see checkDelete
+     */
     private var mCheckLoopDisposable: Disposable?   = null
+    /**
+     * 延迟录像的disposable,用于取消.
+     * @see delayStop
+     */
+    private var mRecordDelayDisposable: Disposable? = null
 
     fun record() {
         stopLooper()
@@ -204,59 +228,123 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 }
     }
 
-    fun startLooper() {
+    /**
+     * @param autoDelete 是否删除上一个录完的视频文件.
+     */
+    fun setAutoDelete(autoDelete: Boolean) {
+        mAutoDelete = autoDelete
+    }
+
+    /**
+     * 若[duration] > 0,则取消LooperTimer后,重新开启间隔为[duration]的新Looper.
+     * @see stopLooper
+     */
+    fun startLooper(duration: Int = 0, autoDelete: Boolean = false) {
+        mAutoDelete = autoDelete
+        /*if (mLooping.get()) {
+            return
+        }*/
+        cancelTimer()
+        if (duration > 0) {
+            setRecordDuration(duration)
+        }
+        Timber.e("startLooper.duration = $duration, autoDelete = $autoDelete")
+        mLooping.set(true)
+        checkNeedLoop()
+        Observable.just(Unit)
+                .observeOn(Schedulers.io())
+                .map {
+                    startRecord()
+                }.subscribe {
+                    Observable.interval(mRecordDuration.toLong(), mRecordDuration.toLong(),  TimeUnit.SECONDS)
+                            .observeOn(Schedulers.newThread())
+                            .subscribe(
+                                    {
+                                        stopRecord()
+                                        startRecord()
+                                    },
+                                    {
+                                        it.printStackTrace()
+                                    },
+                                    {
+                                    },
+                                    {
+                                        mRecordLoopDisposable = it
+                                    }
+                            )
+                }
+
+    }
+
+    /**
+     * 若当前已有循环则取消当前循环录像,延迟录像[newDuration]之后重新启动间隔为[newDuration]的新Looper
+     * @param newDuration Int
+     */
+    fun resetTimer(newDuration: Int) {
+        if (newDuration <= 0)
+            return
         if (mLooping.get()) {
+            Observable.just(Unit)
+                    .map {
+                        cancelTimer()
+                    }
+                    .delay(newDuration.toLong(), TimeUnit.SECONDS)
+                    .subscribe {
+                        startLooper(newDuration)
+                    }
+        } else {
+            startLooper(newDuration)
+        }
+
+    }
+
+    /**
+     * 延迟停止.延录
+     * @param delay Int
+     */
+    fun delayStop(delay: Int) {
+        if (delay <= 0) {
             return
         }
-        mLooping.set(true)
-        checkDelete()
-        Observable.interval(0, mRecordDuration.toLong(),  TimeUnit.SECONDS)
-                .observeOn(Schedulers.newThread())
-                .subscribe(
-                        {
-                            stopRecord()
-                            startRecord()
-                            Timber.e("onNext. Thread = ${Thread.currentThread().name}.\nRecordDuration = $mRecordDuration")
-                        },
-                        {
-                            it.printStackTrace()
-//                            Timber.e("onError. Thread = ${Thread.currentThread().name}")
-                        },
-                        {
-//                            Timber.e("onComplete. Thread = ${Thread.currentThread().name}")
-                        },
-                        {
-                            mRecordLoopDisposable = it
-                        }
-                )
+        mRecordDelayDisposable?.dispose()
+        mRecordDelayDisposable = Observable.just(Unit)
+                .map {
+                    cancelTimer()
+                }
+                .delay(delay.toLong(), TimeUnit.SECONDS)
+                .subscribe {
+                    stopRecord()
+                }
     }
 
     private fun checkNeedLoop() {
-        if (mNeedLoop) {
+        if (mNeedLoopDelete) {
             checkDelete()
         }
     }
 
     fun checkDelete() {
-        FlowableUtil.setMainThreadMapBackground<Unit>(
-                Function {
-                    checkNeedDelete()
-                }, Consumer {
-                    Observable.interval(0, 10L, TimeUnit.SECONDS)
-                            .observeOn(Schedulers.io())
-                            .doOnDispose {
-                                Timber.e("checkDelete Disposed")
-                            }
-                            .subscribe(
-                                    {
-                                        checkNeedDelete()
-                                    },{},{},
-                                    {
-                                        mCheckLoopDisposable = it
-                                    }
-                            )
-                }
-        )
+        if (mCheckLoopDisposable == null) {
+            FlowableUtil.setMainThreadMapBackground<Unit>(
+                    Function {
+                        checkNeedDelete()
+                    }, Consumer {
+                        Observable.interval(0, 10L, TimeUnit.SECONDS)
+                                .observeOn(Schedulers.io())
+                                .doOnDispose {
+                                    Timber.e("checkDelete Disposed")
+                                }
+                                .subscribe(
+                                        {
+                                            checkNeedDelete()
+                                        }, {}, {},
+                                        {
+                                            mCheckLoopDisposable = it
+                                        }
+                                )
+                    }
+            )
+        }
 
     }
 
@@ -266,7 +354,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         if (freeSpace <= 100) {
             stopLooper()
             mRecordStateCallback?.onRecordError()
-        } else if (freeSpace <= 500 && mNeedLoop) {
+        } else if (freeSpace <= 500 && mNeedLoopDelete) {
             if (mFileList?.size ?: 0 == 0) {
                 val dirList = FileUtil.sortDirTime(File(mDirPath!!).parentFile)
                 for (dir in dirList) {
@@ -305,7 +393,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
 
         override fun onRecordStart() {
-            mRecordStateCallback?.onRecordStart()
+//            if (!mAutoDelete) {
+                mRecordStateCallback?.onRecordStart()
+//            }
         }
 
         override fun onRecorderConfigureFailed() {
@@ -317,7 +407,11 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
 
         override fun onRecorderFinished(file: File?) {
-            mRecordStateCallback?.onRecorderFinished(file)
+            if (mAutoDelete) {
+                file?.delete()
+            } else {
+                mRecordStateCallback?.onRecorderFinished(file)
+            }
         }
 
         override fun onRecordPause() {

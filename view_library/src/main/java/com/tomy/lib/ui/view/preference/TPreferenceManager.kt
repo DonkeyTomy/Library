@@ -37,7 +37,7 @@ class TPreferenceManager(private var context: Context) {
         }
     }
 
-    private fun getPreferenceScreen(): PreferenceScreen {
+    fun getPreferenceScreen(): PreferenceScreen {
         return mGetScreenMethod.invoke(mPreferenceManager) as PreferenceScreen
     }
 

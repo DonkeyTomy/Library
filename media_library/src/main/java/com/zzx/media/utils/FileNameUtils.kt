@@ -1,7 +1,11 @@
 package com.zzx.media.utils
 
 import android.content.Context
+import android.content.Intent
+import android.media.MediaScannerConnection
+import android.net.Uri
 import android.provider.MediaStore
+import com.zzx.utils.MediaScanUtils
 import com.zzx.utils.rxjava.fixedThread
 import com.zzx.utils.zzx.DeviceUtils
 import java.io.File
@@ -117,7 +121,9 @@ class FileNameUtils {
         }
 
         fun insertImage(context: Context, file: File) = fixedThread {
-            MediaStore.Images.Media.insertImage(context.contentResolver, file.absolutePath, file.name, null)
+//            MediaStore.Images.Media.insertImage(context.contentResolver, file.absolutePath, file.name, null)
+//            context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://${file.absolutePath}")))
+            MediaScanUtils(context, file)
         }
 
         fun getUserName(context: Context): String {

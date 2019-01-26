@@ -95,7 +95,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         mVideoProperty = VideoProperty(profile.videoFrameWidth,
                 profile.videoFrameHeight,
                 profile.videoFrameRate,
-                profile.videoBitRate / 2, null).apply {
+                profile.videoBitRate, null).apply {
 
             audioProperty = mAudioProperty
         }
@@ -227,7 +227,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mMediaRecorder.setOutputFile(mFile)
         }
-        Timber.e("mFlag = $mFlag[1: Video. 2: Audio. 3:MuteVideo]")
+        Timber.e("mFlag = $mFlag [1: Video. 2: Audio. 3:MuteVideo]")
         Timber.e("mFile = ${mFile!!.absolutePath}.")
         try {
             mMediaRecorder.prepare()
