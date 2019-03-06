@@ -390,6 +390,9 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         mPreviewSurface = Surface(mPreviewSurfaceTexture)
     }
 
+    override fun setPreviewDataCallback(previewDataCallback: ICameraManager.PreviewDataCallback?) {
+    }
+
     /**
      * @see takePictureBurst
      * @see stopPreview

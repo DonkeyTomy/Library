@@ -49,6 +49,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mRecordPreviewReady: ICameraManager.RecordPreviewReady? = null
 
+    private var mPreviewDataCallback: ICameraManager.PreviewDataCallback? = null
+
     private var mHandlerThread: HandlerThread = HandlerThread(Camera1Manager::class.simpleName)
     private var mHandler: Handler
 
@@ -150,7 +152,16 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 此方法调用之前必须先调用[setPreviewSurface],自行决定决定何时启动预览.
      * */
     override fun startPreview() {
+        mPreviewDataCallback?.apply {
+            mCamera?.setPreviewCallback { data, _ ->
+                this.onPreviewDataCallback(data)
+            }
+        }
         mCamera?.startPreview()
+    }
+
+    override fun setPreviewDataCallback(previewDataCallback: ICameraManager.PreviewDataCallback?) {
+        mPreviewDataCallback = previewDataCallback
     }
 
     /**
@@ -168,6 +179,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun stopPreview() {
         if (mPreviewed.get()) {
+            mPreviewDataCallback?.apply {
+                mCamera?.setPreviewCallback(null)
+            }
             mCamera?.stopPreview()
             mCamera?.setPreviewDisplay(null)
             mPreviewed.set(false)

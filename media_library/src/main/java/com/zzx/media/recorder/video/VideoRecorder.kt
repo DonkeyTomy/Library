@@ -64,13 +64,14 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     override fun init() {
         mMediaRecorder = MediaRecorder().apply {
             reset()
+            setState(State.IDLE)
         }
         mMediaRecorder.setOnErrorListener { _, _, _ ->
             Timber.e("$TAG_RECORDER onRecordError")
             FlowableUtil.setBackgroundThread(Consumer {
                 mRecorderCallback?.onRecordError()
-                release()
-                init()
+                reset()
+//                init()
             })
         }
         mMediaRecorder.setOnInfoListener { _, what, _ ->
@@ -276,10 +277,15 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     override fun stopRecord() {
         Timber.e("$TAG_RECORDER stopRecord. mState = [$mState]")
         if (getState() == State.RECORDING || getState() == State.PAUSE) {
-            mMediaRecorder.resume()
-            mMediaRecorder.stop()
             setState(State.IDLE)
-            mRecorderCallback?.onRecorderFinished(mFile)
+            try {
+                mMediaRecorder.resume()
+                mMediaRecorder.stop()
+                mRecorderCallback?.onRecorderFinished(mFile)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                mRecorderCallback?.onRecorderFinished(null)
+            }
         }
     }
 

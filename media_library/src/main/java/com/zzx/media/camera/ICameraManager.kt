@@ -43,6 +43,8 @@ interface ICameraManager<in surface, camera> {
      * */
     fun startPreview()
 
+    fun setPreviewDataCallback(previewDataCallback: PreviewDataCallback?)
+
     /**
      * 等价于[setPreviewSurface]+[startPreview].
      * 设置完预览界面后即可启动预览.
@@ -217,6 +219,10 @@ interface ICameraManager<in surface, camera> {
         fun onCaptureFinished(buffer: ByteArray)
 
         fun onCaptureDone()
+    }
+
+    interface PreviewDataCallback {
+        fun onPreviewDataCallback(buffer: ByteArray)
     }
 
     interface RecordPreviewReady {

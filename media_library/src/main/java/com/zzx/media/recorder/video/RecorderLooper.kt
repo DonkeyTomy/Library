@@ -153,10 +153,23 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     fun stopRecord() {
         Timber.e("stopRecord")
-        mRecording.set(false)
-        mRecorder.reset()
-        mCameraManager?.stopRecord()
+        if (mRecording.get()) {
+            mRecording.set(false)
+            mRecorder.reset()
+            mCameraManager?.apply {
+                stopRecord()
+                startPreview()
+            }
+        }
 //        FileNameUtils.tmpFile2Video(mOutputFile)
+    }
+
+    fun stop() {
+        if (mLooping.get()) {
+            stopLooper()
+        } else {
+            stopRecord()
+        }
     }
 
     fun release() {
@@ -167,8 +180,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun isRecording(): Boolean {
-        Timber.e("isRecording: ${mLooping.get()}")
+        Timber.e("isRecording: loop[${mLooping.get()}], recording[${mRecording.get()}]")
         return mLooping.get() || mRecording.get()
+    }
+
+    fun isLoopRecording(): Boolean {
+        Timber.e("isLoopRecording: ${mLooping.get()}")
+        return mLooping.get()
     }
 
     /**
@@ -184,7 +202,6 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mRecordLoopDisposable?.dispose()
         mRecordLoopDisposable   = null
         stopRecord()
-        mCameraManager?.startPreview()
     }
 
     fun recordSection() {
@@ -194,10 +211,11 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
     }
 
-    fun cancelTimer() {
+    fun cancelLooperTimer() {
         if (mLooping.get()) {
             mRecordLoopDisposable?.dispose()
             mRecordLoopDisposable = null
+            mLooping.set(false)
         }
     }
 
@@ -237,6 +255,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     /**
      * 若[duration] > 0,则取消LooperTimer后,重新开启间隔为[duration]的新Looper.
+     * @param autoDelete 自动删除录像文件(预录模式下专用),默认为false
      * @see stopLooper
      */
     fun startLooper(duration: Int = 0, autoDelete: Boolean = false) {
@@ -244,7 +263,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         /*if (mLooping.get()) {
             return
         }*/
-        cancelTimer()
+        cancelLooperTimer()
+        mRecordDelayDisposable?.dispose()
+        mRecordDelayDisposable = null
         if (duration > 0) {
             setRecordDuration(duration)
         }
@@ -286,7 +307,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         if (mLooping.get()) {
             Observable.just(Unit)
                     .map {
-                        cancelTimer()
+                        cancelLooperTimer()
                     }
                     .delay(newDuration.toLong(), TimeUnit.SECONDS)
                     .subscribe {
@@ -307,9 +328,10 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             return
         }
         mRecordDelayDisposable?.dispose()
+        mRecordDelayDisposable = null
         mRecordDelayDisposable = Observable.just(Unit)
                 .map {
-                    cancelTimer()
+                    cancelLooperTimer()
                 }
                 .delay(delay.toLong(), TimeUnit.SECONDS)
                 .subscribe {
@@ -408,6 +430,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
         override fun onRecorderFinished(file: File?) {
             if (mAutoDelete) {
+                Timber.e("delete File: ${file?.absolutePath}")
                 file?.delete()
             } else {
                 mRecordStateCallback?.onRecorderFinished(file)

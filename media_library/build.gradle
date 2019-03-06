@@ -53,7 +53,7 @@ dependencies {
     implementation deps.timber
     implementation deps.rxjava2
     implementation deps.rx_android
-    implementation project(path: ':../../Library:utils_library')
+    implementation project(path: ':Library:utils_library')
     //    implementation project(':utils_library')
 }
 repositories {

@@ -51,6 +51,6 @@ dependencies {
     implementation deps.rx_android
     //Paged
     implementation deps.paging.runtime
-    implementation project(path: ':../../Library:utils_library')
+    implementation project(path: ':Library:utils_library')
 }
 

@@ -91,7 +91,10 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
                     searchApk()
                 }, Consumer {
                     Timber.e("========== mAdapter?.notifyDataSetChanged() ==========")
-                    mAdapter?.notifyDataSetChanged()
+                    mAdapter?.apply {
+                        notifyDataSetChanged()
+                        mPoint?.setPagePoint(count)
+                    }
                 }
         )
     }

@@ -13,7 +13,7 @@ import com.tomy.lib.ui.R;
  * Created by Tomy on 14-3-3.
  */
 public class PagePointLayout extends LinearLayout {
-    private Context mContext = null;
+    private Context mContext;
     private int mPrePageIndex = 0;
     public PagePointLayout(Context context, AttributeSet attrs) {
         super(context, attrs);

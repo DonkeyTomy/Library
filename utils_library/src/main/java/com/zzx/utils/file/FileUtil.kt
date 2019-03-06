@@ -51,6 +51,7 @@ object FileUtil {
 
     fun checkDirExist(dir: File, needCreate: Boolean = false): Boolean {
         val exist = dir.exists() && dir.isDirectory
+        Timber.e("dir.path = ${dir.absolutePath}. exist = $exist, needCreate = $needCreate")
         if (!exist) {
             if (needCreate) {
                 return dir.mkdirs()
@@ -167,7 +168,7 @@ object FileUtil {
             if (volume.isRemovable)
                 return true
         }
-        return true
+        return false
     }
 
     fun getExternalStoragePath(context: Context): String {

@@ -16,7 +16,7 @@ object FlowableUtil {
                 .observeOn(Schedulers.newThread())
                 .map(map)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mainThreadExec)
+                .subscribe(mainThreadExec, Consumer { it.printStackTrace() })
     }
 
     fun <C>setMainThreadMapBackground(mainThread: Function<Unit, C>, newThreadExec: Consumer<C>) {
@@ -24,26 +24,26 @@ object FlowableUtil {
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(mainThread)
                 .observeOn(Schedulers.newThread())
-                .subscribe(newThreadExec)
+                .subscribe(newThreadExec, Consumer { it.printStackTrace() })
     }
 
     fun <C>setBackgroundThread(map: Function<Unit, C>, onNext: Consumer<C>) {
         Flowable.just(Unit)
                 .observeOn(Schedulers.newThread())
                 .map(map)
-                .subscribe(onNext)
+                .subscribe(onNext, Consumer { it.printStackTrace() })
     }
 
     fun setMainThread(mainThreadExec: Consumer<Unit>) {
         Flowable.just(Unit)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mainThreadExec)
+                .subscribe(mainThreadExec, Consumer { it.printStackTrace() })
     }
 
     fun setBackgroundThread(onNext: Consumer<Unit>) {
         Flowable.just(Unit)
                 .observeOn(Schedulers.newThread())
-                .subscribe(onNext)
+                .subscribe(onNext, Consumer { it.printStackTrace() })
     }
 
 }

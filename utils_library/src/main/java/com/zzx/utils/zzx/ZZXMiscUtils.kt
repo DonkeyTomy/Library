@@ -52,10 +52,12 @@ object ZZXMiscUtils {
     const val LED_RED = "ff0000"
     const val LED_GREEN = "ff00"
     const val LED_BLUE = "ff"
+    const val LED_YELLOW    = "ffff00"
     const val LED_DOWN  = "000000"
 
     const val BREATH_LIGHT  = " 1 2 2 2 2 2"
     const val NORMAL_LIGHT  = " 0 0 0 0 0 0"
+    const val ONE_SHOT      = " 1 2 1 0 0 0"
 
 
     const val OTG = MISC + "otg_en"
@@ -222,10 +224,10 @@ object ZZXMiscUtils {
         write(LOCAL_OUT, CLOSE)
     }
 
-    private fun write(path: String, cmd: String) = fixedThread {
+    fun write(path: String, cmd: String) = fixedThread {
         var outputStream: FileWriter? = null
         try {
-            Timber.e("write: path = $path; cmd = $cmd")
+            Timber.e("write: path = $path; cmd = $cmd. Thread = ${Thread.currentThread().name}")
             outputStream = FileWriter(path)
             outputStream.write(cmd)
             outputStream.flush()
@@ -290,21 +292,21 @@ object ZZXMiscUtils {
         write(USB_POWER_PATH, if (open) OPEN else CLOSE)
     }
 
-    fun toggleLed(status: String, breath: Boolean = false, context: Context? = null) {
-        if (breath) {
-            if (!isSpeechEnabled(context!!)) {
+    fun toggleLed(status: String, breath: Boolean = false, context: Context? = null, oneShot: Boolean = false) {
+        if (breath || oneShot) {
+            if (!isLedEnabled(context!!)) {
                 return
             }
         }
-        val state = if (breath) {
-            "$status$BREATH_LIGHT"
-        } else {
-            "$status$NORMAL_LIGHT"
+        val state = when {
+            breath -> "$status$BREATH_LIGHT"
+            oneShot -> "$status$ONE_SHOT"
+            else -> "$status$NORMAL_LIGHT"
         }
         write(RGB_LED, state)
     }
 
-    private fun isSpeechEnabled(context: Context): Boolean {
+    private fun isLedEnabled(context: Context): Boolean {
         return Settings.System.getInt(context.contentResolver, LED_ENABLED, 1) == 1
     }
 
