@@ -37,6 +37,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     private var mCameraManager: ICameraManager<surface, camera>? = null
 
+    private var mLastDir: File? = null
+
     private var mRecordDuration = 20
 
     private var mDirPath: String? = null
@@ -65,6 +67,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      * @param needLoop 设置是否开启循环录像自动删除功能.
      */
     fun setNeedLoopDelete(needLoop: Boolean) {
+        Timber.e("setNeedLoopDelete: $needLoop")
         mNeedLoopDelete = needLoop
     }
 
@@ -117,7 +120,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mRecorder.setSensorRotationHint(Surface.ROTATION_90)
     }
 
-    fun setDirPath(dirPath: String) {
+    fun setDirPath(dirPath: String?) {
         mDirPath = dirPath
     }
 
@@ -130,9 +133,12 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun startRecord():Boolean {
-        Timber.e("startRecord")
+        Timber.e("startRecord. mRecording = ${mRecording.get()}; mDirPath = $mDirPath")
         if (mRecording.get()) {
             return true
+        }
+        if (mDirPath == null) {
+            return false
         }
         mRecording.set(true)
         mCameraManager?.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
@@ -340,9 +346,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     private fun checkNeedLoop() {
-        if (mNeedLoopDelete) {
-            checkDelete()
-        }
+//        if (mNeedLoopDelete) {
+        checkDelete()
+//        }
     }
 
     fun checkDelete() {
@@ -351,7 +357,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                     Function {
                         checkNeedDelete()
                     }, Consumer {
-                        Observable.interval(0, 10L, TimeUnit.SECONDS)
+                        Observable.interval(3, 10L, TimeUnit.SECONDS)
                                 .observeOn(Schedulers.io())
                                 .doOnDispose {
                                     Timber.e("checkDelete Disposed")
@@ -371,9 +377,51 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun checkNeedDelete() {
-        val freeSpace = FileUtil.getDirFreeSpaceByMB(FileUtil.getExternalStoragePath(mContext))
-        Timber.e("currentFreeSpace = $freeSpace")
-        if (freeSpace <= 100) {
+        var freeSpace = FileUtil.getDirFreeSpaceByMB(FileUtil.getExternalStoragePath(mContext))
+        Timber.e("currentFreeSpace = $freeSpace, mNeedLoopDelete = $mNeedLoopDelete")
+        if (mNeedLoopDelete) {
+
+            var count = 0
+            while (freeSpace <= 300) {
+                if (count++ >= 10) {
+                    stopLooper()
+                    mRecordStateCallback?.onRecordStop()
+                    break
+                }
+                if (mFileList?.size ?: 0 == 0) {
+                    mLastDir?.delete()
+                    val dirList = FileUtil.sortDirTime(File(mDirPath!!).parentFile)
+                    for (dir in dirList) {
+                        mFileList   = FileUtil.sortDirTime(dir)
+                        mLastDir = dir
+                        Timber.e("${dir.path}.size = ${mFileList?.size}")
+                        if (mFileList!!.isEmpty()) {
+                            FileUtil.deleteFile(dir)
+                        } else {
+                            break
+                        }
+                    }
+                }
+                Timber.e("mFileList.size = ${mFileList?.size}")
+                mFileList?.apply {
+                    for (file in this) {
+                        Timber.e("fileName = ${file.absolutePath}")
+                        if (file.absolutePath != mOutputFile!!.absolutePath) {
+                            FileUtil.deleteFile(file)
+                            remove(file)
+                            break
+                        }
+                    }
+                }
+                freeSpace = FileUtil.getDirFreeSpaceByMB(FileUtil.getExternalStoragePath(mContext))
+            }
+
+        } else if (freeSpace <= 150) {
+            stopLooper()
+            mRecordStateCallback?.onRecordStop()
+        }
+
+        /*if (freeSpace <= 100) {
             stopLooper()
             mRecordStateCallback?.onRecordError()
         } else if (freeSpace <= 500 && mNeedLoopDelete) {
@@ -401,7 +449,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 }
             }
 
-        }
+        }*/
     }
 
     inner class RecordStateCallback: IRecorder.IRecordCallback {
@@ -421,11 +469,17 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
 
         override fun onRecorderConfigureFailed() {
+            stopLooper()
             mRecordStateCallback?.onRecorderConfigureFailed()
         }
 
         override fun onRecordError() {
+            stopLooper()
             mRecordStateCallback?.onRecordError()
+        }
+
+        override fun onRecordStop() {
+            mRecordStateCallback?.onRecordStop()
         }
 
         override fun onRecorderFinished(file: File?) {

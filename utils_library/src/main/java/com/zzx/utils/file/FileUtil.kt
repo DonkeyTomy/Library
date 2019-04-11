@@ -5,6 +5,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
@@ -84,6 +85,10 @@ object FileUtil {
         return stateFs.availableBlocksLong * stateFs.blockSizeLong
     }
 
+    fun getDirFreeSpace(dir: String): Long {
+        return getDirFreeSpace(dir)
+    }
+
     fun getDirFreeSpaceByMB(dir: File): Long {
         return getDirFreeSpace(dir) / 1024 / 1024
     }
@@ -100,8 +105,21 @@ object FileUtil {
         return getDirFreeSpace(File(dir)) / 1024 / 1024
     }
 
+    fun getDirTotalSpaceByMB(dir: File): Long {
+        return FileUtil.getDirTotalSpace(dir) / 1024 / 1024
+    }
+
+    fun getDirTotalSpaceByMB(dir: String): Long {
+        return FileUtil.getDirTotalSpace(dir) / 1024 / 1024
+    }
+
     fun getDirTotalSpace(dir: File): Long {
-        return dir.totalSpace
+        val stateFs = StatFs(dir.absolutePath)
+        return stateFs.blockCountLong * stateFs.blockSizeLong
+    }
+
+    fun getDirTotalSpace(dir: String): Long {
+        return getDirTotalSpace(File(dir))
     }
 
     fun getStorageList(): Array<String> {
@@ -184,6 +202,14 @@ object FileUtil {
             e.printStackTrace()
         }
         return ""
+    }
+
+    fun getStoragePath(context: Context): String {
+        var path = getExternalStoragePath(context)
+        if (path == "") {
+            path = Environment.getExternalStorageDirectory().absolutePath
+        }
+        return path
     }
 
     fun deleteFile(file: File) {

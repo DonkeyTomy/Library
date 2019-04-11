@@ -1,6 +1,7 @@
 package com.tomy.lib.ui.activity
 
 import android.app.Application
+import com.zzx.utils.ExceptionHandler
 import com.zzx.utils.TTSToast
 import timber.log.Timber
 
@@ -15,11 +16,13 @@ open class BaseApplication: Application() {
             Timber.plant(Timber.DebugTree())
         }
         TTSToast.init(this)
+        ExceptionHandler.getInstance(this)
     }
 
     override fun onTerminate() {
         super.onTerminate()
         Timber.uprootAll()
+        ExceptionHandler.getInstance(this).release()
         TTSToast.release()
     }
 

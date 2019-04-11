@@ -36,8 +36,8 @@ object SystemInfo {
     }
 
     fun getBuildTime(): String {
-        val time = getSystemProperty(BUILD_TIME).toLong()
-        return mTimeFormat.format(System.currentTimeMillis())
+        val time = getSystemProperty(BUILD_TIME).toLong() * 1000
+        return mTimeFormat.format(time)
     }
 
     fun getVersionCode(): String {

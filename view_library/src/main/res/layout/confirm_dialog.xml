@@ -1,48 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@android:color/transparent"
-    android:layout_width="280dp"
+    android:layout_width="match_parent"
     android:layout_height="120dp">
-
-    <TextView
-        android:id="@+id/message"
-        android:layout_marginTop="15dp"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:layout_alignParentTop="true"
+    <RelativeLayout
+        android:background="@color/white_trans"
         android:layout_centerHorizontal="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/btn_cancel"
-                style="@style/WrapAll.TvWhite"
-                android:gravity="center" />
-        </LinearLayout>
+        android:layout_width="280dp"
+        android:layout_height="120dp">
+        <TextView
+            android:id="@+id/message"
+            android:layout_marginTop="15dp"
+            android:textSize="20sp"
+            android:textColor="@color/transDark"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/btn_ok"
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:gravity="center"
-                style="@style/WrapAll.TvWhite" />
+                android:layout_height="wrap_content">
+                <Button
+                    android:id="@+id/btn_cancel"
+                    android:text="@string/negative"
+                    android:textColor="@color/transDark"
+                    style="@style/WrapAll"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_height="wrap_content">
+                <Button
+                    android:id="@+id/btn_ok"
+                    android:text="@string/positive"
+                    android:textColor="@color/transDark"
+                    android:gravity="center"
+                    style="@style/WrapAll" />
+
+            </LinearLayout>
 
         </LinearLayout>
+    </RelativeLayout>
 
-    </LinearLayout>
 
 </RelativeLayout>

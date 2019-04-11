@@ -18,4 +18,9 @@ class VibrateUtil(context: Context) {
         mVibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 200, 200, 200, 200, 200), -1))
     }
 
+    fun vibrateOneShot(timeMills: Long = 200) {
+        mVibrator.cancel()
+        mVibrator.vibrate(VibrationEffect.createOneShot(timeMills, VibrationEffect.DEFAULT_AMPLITUDE))
+    }
+
 }

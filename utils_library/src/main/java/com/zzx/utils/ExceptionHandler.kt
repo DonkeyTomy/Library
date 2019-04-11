@@ -21,7 +21,7 @@ class ExceptionHandler private constructor(application: Application): Thread.Unc
     private var mContext: Application? = application
 
     private val LOG_DIR by lazy {
-        "${FileUtil.getExternalStoragePath(mContext!!)}/log"
+        "${FileUtil.getStoragePath(mContext!!)}/log"
     }
 
     init {
@@ -41,28 +41,27 @@ class ExceptionHandler private constructor(application: Application): Thread.Unc
     }
 
     private fun saveException2File(ex: Throwable) {
-        val writer = PrintWriter(StringWriter())
-        ex.printStackTrace(writer)
-        var cause = ex.cause
-        while (cause != null) {
-            cause.printStackTrace(writer)
-            cause = cause.cause
-        }
-        writer.close()
-        val result = writer.toString()
         try {
-            val time = mFormatter.format(Date())
-            val fileName = "$time.txt"
-            if (LOG_DIR != "") {
-                val dir = File(LOG_DIR)
-                if (!dir.exists() || !dir.isDirectory) {
-                    dir.mkdirs()
-                }
-                val fos = FileWriter(File(LOG_DIR, fileName))
-                fos.write(result)
-                fos.close()
+            val writer = PrintWriter(StringWriter())
+            ex.printStackTrace(writer)
+            var cause = ex.cause
+            while (cause != null) {
+                cause.printStackTrace(writer)
+                cause = cause.cause
             }
-
+            writer.close()
+            val result = writer.toString()
+                val time = mFormatter.format(Date())
+                val fileName = "$time.txt"
+                if (LOG_DIR != "") {
+                    val dir = File(LOG_DIR)
+                    if (!dir.exists() || !dir.isDirectory) {
+                        dir.mkdirs()
+                    }
+                    val fos = FileWriter(File(LOG_DIR, fileName))
+                    fos.write(result)
+                    fos.close()
+                }
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -20,15 +20,6 @@ import java.util.*
 @Suppress("UNCHECKED_CAST")
 class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
-    /**
-     * 每页Apk最多显示个数
-     */
-    private val COUNT_PAGE = 8
-
-    /**
-     * 每行显示个数.
-     */
-    private val COUNT_GRID_VIEW_COLUMNS = 2
 
     private val mInfoList by lazy {
         ArrayList<Int>()
@@ -202,5 +193,17 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
             }
             return convertView
         }
+    }
+
+    companion object {
+        /**
+         * 每页Apk最多显示个数
+         */
+        const val COUNT_PAGE = 8
+
+        /**
+         * 每行显示个数.
+         */
+        const val COUNT_GRID_VIEW_COLUMNS = 2
     }
 }

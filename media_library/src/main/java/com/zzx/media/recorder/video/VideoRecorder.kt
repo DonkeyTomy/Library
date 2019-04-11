@@ -180,57 +180,57 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * @see init
      * */
     override fun prepare() {
-        Timber.e("$TAG_RECORDER prepare. mState = [$mState]")
-        when(mFlag) {
-            IRecorder.AUDIO ->
-                mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-            IRecorder.VIDEO_MUTE ->
-                mMediaRecorder.setVideoSource(getVideoSource())
-            IRecorder.VIDEO -> {
-                mMediaRecorder.setVideoSource(getVideoSource())
-                mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-            }
-        }
-
-        when(mFlag) {
-            IRecorder.AUDIO ->
-                mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
-            IRecorder.VIDEO_MUTE,
-            IRecorder.VIDEO ->
-                mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-
-        }
-
-        when(mFlag) {
-            IRecorder.VIDEO,
-            IRecorder.VIDEO_MUTE -> {
-                mMediaRecorder.apply {
-                    setVideoFrameRate(mVideoProperty.frameRate)
-                    setVideoSize(mVideoProperty.width, mVideoProperty.height)
-                    setVideoEncodingBitRate(mVideoProperty.bitRate)
-                    setVideoEncoder(mVideoProperty.encoder)
-                    setOrientation()
-                }
-            }
-        }
-
-        when(mFlag) {
-            IRecorder.AUDIO,
-            IRecorder.VIDEO -> {
-                mMediaRecorder.apply {
-                    setAudioEncodingBitRate(mAudioProperty.bitRate)
-                    setAudioChannels(mAudioProperty.channels)
-                    setAudioSamplingRate(mAudioProperty.sampleRate)
-                    setAudioEncoder(mAudioProperty.encoder)
-                }
-            }
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mMediaRecorder.setOutputFile(mFile)
-        }
-        Timber.e("mFlag = $mFlag [1: Video. 2: Audio. 3:MuteVideo]")
-        Timber.e("mFile = ${mFile!!.absolutePath}.")
         try {
+            Timber.e("$TAG_RECORDER prepare. mState = [$mState]")
+            when(mFlag) {
+                IRecorder.AUDIO ->
+                    mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+                IRecorder.VIDEO_MUTE ->
+                    mMediaRecorder.setVideoSource(getVideoSource())
+                IRecorder.VIDEO -> {
+                    mMediaRecorder.setVideoSource(getVideoSource())
+                    mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+                }
+            }
+
+            when(mFlag) {
+                IRecorder.AUDIO ->
+                    mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
+                IRecorder.VIDEO_MUTE,
+                IRecorder.VIDEO ->
+                    mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+
+            }
+
+            when(mFlag) {
+                IRecorder.VIDEO,
+                IRecorder.VIDEO_MUTE -> {
+                    mMediaRecorder.apply {
+                        setVideoFrameRate(mVideoProperty.frameRate)
+                        setVideoSize(mVideoProperty.width, mVideoProperty.height)
+                        setVideoEncodingBitRate(mVideoProperty.bitRate)
+                        setVideoEncoder(mVideoProperty.encoder)
+                        setOrientation()
+                    }
+                }
+            }
+
+            when(mFlag) {
+                IRecorder.AUDIO,
+                IRecorder.VIDEO -> {
+                    mMediaRecorder.apply {
+                        setAudioEncodingBitRate(mAudioProperty.bitRate)
+                        setAudioChannels(mAudioProperty.channels)
+                        setAudioSamplingRate(mAudioProperty.sampleRate)
+                        setAudioEncoder(mAudioProperty.encoder)
+                    }
+                }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mMediaRecorder.setOutputFile(mFile)
+            }
+            Timber.e("mFlag = $mFlag [1: Video. 2: Audio. 3:MuteVideo]")
+            Timber.e("mFile = ${mFile!!.absolutePath}.")
             mMediaRecorder.prepare()
             setState(State.PREPARED)
             mRecorderCallback?.onRecorderPrepared()

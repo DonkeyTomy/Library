@@ -413,6 +413,10 @@ interface ICameraManager<in surface, camera> {
             Timber.e("preWidthIndex = $preWidthIndex, preHeightIndex = $preHeightIndex")
             return null
         }*/
+
+        const val CAMERA_OPEN_ERROR_OPEN_FAILED     = -1
+        const val CAMERA_OPEN_ERROR_NO_CAMERA       = -2
+        const val CAMERA_OPEN_ERROR_NOT_RELEASE     = -3
     }
 
 }

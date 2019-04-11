@@ -1,5 +1,6 @@
 package com.tomy.lib.ui.fragment
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -20,6 +21,7 @@ import com.tomy.lib.ui.view.dialog.ConfirmDialog
 import com.tomy.lib.ui.view.layout.PagePointLayout
 import com.zzx.utils.context.ContextUtil
 import com.zzx.utils.rxjava.FlowableUtil
+import com.zzx.utils.rxjava.fixedThread
 import io.reactivex.functions.Consumer
 import io.reactivex.functions.Function
 import timber.log.Timber
@@ -46,9 +48,10 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
         mList = ArrayList()
         initDialog()
         mManager = activity.packageManager
-        mAdapter = ApkViewPagerAdapter(activity)
-        mAdapter!!.setOnItemClickListener(this)
-        //        mAdapter.setOnItemLongClickListener(this);
+        mAdapter = ApkViewPagerAdapter(activity).apply {
+            setOnItemClickListener(this@BaseApkFragment)
+            setOnItemLongClickListener(this@BaseApkFragment)
+        }
         initUninstallReceiver()
         super.onAttach(activity)
     }
@@ -67,7 +70,7 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
     }
 
     private fun initDialog() {
-        mDialog = ConfirmDialog(mContext)
+        mDialog = ConfirmDialog(mContext!!)
         mDialog!!.setMessage(R.string.uninstall_apk_sure)
         mDialog!!.setPositiveListener(this)
         mDialog!!.setNegativeListener(this)
@@ -106,20 +109,21 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
     }
 
     override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        val index = mPosition * 8 + position
+        val index = mPosition * ApkViewPagerAdapter.COUNT_PAGE + position
         val info = mList!![index]
         ContextUtil.startOtherActivity(mContext!!, info.mPackageName, info.mActivityName)
     }
 
     override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
         mCurrent = position
-        mIndex = mPosition * 12 + position
-        if (!mDialog!!.isShowing)
-            mDialog!!.show()
+        mIndex = mPosition * ApkViewPagerAdapter.COUNT_PAGE + position
+
+        mDialog?.show()
         return true
     }
 
 
+    @SuppressLint("WrongConstant")
     private fun searchApk() {
         Timber.e("========== searchApk start ==========")
         val intent = Intent(Intent.ACTION_MAIN)
@@ -171,24 +175,17 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
     }
 
     override fun onClick(v: View) {
-        /*switch (v.getId()) {
-            case R.id.btn_ok:
-                uninstallPackage();
-                break;
-            case R.id.btn_cancel:
-                break;
+        when (v.id) {
+            R.id.btn_ok -> uninstallPackage()
         }
-        if (mDialog != null && mDialog.isShowing()) {
-            mDialog.dismiss();
-        }*/
+        mDialog?.dismiss()
     }
 
-    internal fun uninstallPackage() {
+    fun uninstallPackage() = fixedThread {
         val info = mList!![mIndex]
         val packageName = info.mPackageName
         try {
-            val packageClass = mManager!!.javaClass
-            val methods = packageClass.methods
+            val methods = mManager!!.javaClass.methods
             for (method in methods) {
                 if (method.name == "deletePackage") {
                     method.isAccessible = true

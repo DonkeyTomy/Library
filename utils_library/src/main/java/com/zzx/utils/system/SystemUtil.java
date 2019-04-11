@@ -117,9 +117,10 @@ public class SystemUtil {
     void setPreferredNetworkType(int networkType, Message response) {
     }
 
-    /*public static String getSystemProperties(String field) {
+    public static String getSystemProperties(String field) {
         String value = "";
         try {
+            @SuppressLint("PrivateApi")
             Class<?> classType = Class.forName(CLASS_SYSTEM_PROPERTIES);
             Method getMethod = classType.getDeclaredMethod(METHOD_GET, String.class);
             value = (String) getMethod.invoke(classType, field);
@@ -127,17 +128,18 @@ public class SystemUtil {
             e.printStackTrace();
         }
         return value;
-    }*/
+    }
 
-    /*public static void setSystemProperties(String key, String val) {
+    public static void setSystemProperties(String key, String val) {
         try {
+            @SuppressLint("PrivateApi")
             Class<?> classType = Class.forName(CLASS_SYSTEM_PROPERTIES);
             Method setMethod = classType.getDeclaredMethod(METHOD_SET, String.class, String.class);
             setMethod.invoke(classType, key, val);
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     public static void goToHome(Context context) {
         Intent homeIntent = new Intent(Intent.ACTION_MAIN);

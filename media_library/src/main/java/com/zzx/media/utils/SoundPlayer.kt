@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
 import android.provider.Settings
+import timber.log.Timber
 
 
 /**@author Tomy
@@ -44,6 +45,7 @@ class SoundPlayer private constructor() {
         mSoundRawId = soundRawId
         mLoop = 0
         val soundId = mSoundIdMap[soundRawId]
+        Timber.e("playSoundId = $soundId")
         if  (soundId == null) {
             mSoundPool.load(context, soundRawId, 1)
         } else {

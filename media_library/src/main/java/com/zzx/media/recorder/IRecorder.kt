@@ -140,6 +140,8 @@ interface IRecorder {
 
         fun onRecordStart()
 
+        fun onRecordStop()
+
         fun onRecorderConfigureFailed()
 
         fun onRecordError()

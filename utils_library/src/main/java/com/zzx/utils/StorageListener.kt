@@ -6,16 +6,25 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
+import com.zzx.utils.file.FileUtil
+import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 /**@author Tomy
  * Created by Tomy on 2018/6/20.
  */
-class StorageListener(var mContext: Context) {
+class StorageListener(var mContext: Context, var needComputeAvailablePercent: Boolean = false) {
 
     private val mReceiver = StorageBroadcast()
 
     private var mCallback: StorageCallback? = null
+
+    private var mDisposable: Disposable? = null
+
+    private var mExternalPath: String? = null
 
     init {
         val intentFilter = IntentFilter(Intent.ACTION_MEDIA_MOUNTED).apply {
@@ -24,6 +33,7 @@ class StorageListener(var mContext: Context) {
             addDataScheme("file")
         }
         mContext.registerReceiver(mReceiver, intentFilter)
+        storageAvailable()
         Timber.e("StorageListener.registerReceiver()")
     }
 
@@ -33,6 +43,51 @@ class StorageListener(var mContext: Context) {
 
     fun release() {
         mContext.unregisterReceiver(mReceiver)
+        mDisposable?.dispose()
+        mDisposable = null
+    }
+
+    fun storageAvailable() {
+        if (!needComputeAvailablePercent) {
+            return
+        }
+        Observable.just(Unit)
+                .observeOn(Schedulers.newThread())
+                .map {
+                    return@map FileUtil.checkExternalStorageMounted(mContext)
+                }
+                .subscribe {
+                    if (it) {
+                        mExternalPath = FileUtil.getExternalStoragePath(mContext)
+                        Observable.interval(1, 10, TimeUnit.SECONDS)
+                                .observeOn(Schedulers.computation())
+                                .subscribe(
+                                        {
+                                            computeAvailableSpace()
+                                        },
+                                        {},
+                                        {},
+                                        {
+                                            mDisposable = it
+                                        }
+                                )
+                    } else {
+                        mCallback?.onAvailablePercentChanged(-1)
+                    }
+                }
+
+    }
+
+    private fun computeAvailableSpace() {
+        mExternalPath?.apply {
+            val totalSpace = FileUtil.getDirTotalSpaceByMB(this@apply)
+            val availableSpace = FileUtil.getDirFreeSpaceByMB(this@apply)
+            val percent = availableSpace * 100 / totalSpace
+            Timber.e("availableSpace / totalSpace = $availableSpace / $totalSpace; percent = $percent")
+            mCallback?.onAvailablePercentChanged(percent.toInt())
+
+        }
+
     }
 
     inner class StorageBroadcast: BroadcastReceiver() {
@@ -44,10 +99,14 @@ class StorageListener(var mContext: Context) {
                 Intent.ACTION_MEDIA_EJECT,
                 Intent.ACTION_MEDIA_UNMOUNTED,
                 Intent.ACTION_MEDIA_BAD_REMOVAL -> {
+                    mDisposable?.dispose()
+                    mDisposable = null
                     mCallback?.onExternalStorageChanged(false)
+                    mCallback?.onAvailablePercentChanged(-1)
                 }
                 Intent.ACTION_MEDIA_MOUNTED -> {
                     mCallback?.onExternalStorageChanged(true)
+                    storageAvailable()
                     Log.e(this@StorageListener.javaClass.simpleName, "${intent.action}. file = ${intent.data}")
                 }
             }
@@ -56,6 +115,8 @@ class StorageListener(var mContext: Context) {
 
     interface StorageCallback {
         fun onExternalStorageChanged(mount: Boolean)
+
+        fun onAvailablePercentChanged(percent: Int)
     }
 
 }

@@ -28,7 +28,7 @@
         <item name="android:backgroundDimAmount">0.5</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowCloseOnTouchOutside">false</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 
     <style name="MatchAll">
@@ -171,11 +171,13 @@
         <item name="android:layout_marginBottom">@dimen/setting_main_tv_main</item>
     </style>
 
-    <style name="SystemInfoTv" parent="WrapAll">
+    <style name="SystemInfoTv" parent="MatchWidth">
         <item name="android:textColor">@color/system_info_tv</item>
         <item name="android:textSize">@dimen/system_info_tv_size</item>
-        <item name="android:paddingTop">2dp</item>
-        <item name="android:paddingBottom">2dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:background">@drawable/bg_item_rectangle_normal</item>
     </style>
 
 

@@ -100,24 +100,24 @@ class FileNameUtils {
         }
 
         fun tmpFile2Audio(file: File): File {
-            val dstFile = File(file.parent, "${file.nameWithoutExtension}$AUDIO_AAC")
+            val dstFile = File(file.parent, "${file.nameWithoutExtension}$AUDIO_SUB")
             file.renameTo(dstFile)
             return dstFile
         }
 
         fun tmpFileName2AudioName(file: File): File {
-            return File(file.parent, "${file.nameWithoutExtension}$AUDIO_AAC")
+            return File(file.parent, "${file.nameWithoutExtension}$AUDIO_SUB")
         }
 
 
         fun tmpFile2ImpAudio(file: File): File {
-            val dstFile = File(file.parent, "${file.nameWithoutExtension}$FILE_IMP$AUDIO_AAC")
+            val dstFile = File(file.parent, "${file.nameWithoutExtension}$FILE_IMP$AUDIO_SUB")
             file.renameTo(dstFile)
             return dstFile
         }
 
         fun tmpFileName2AudioImpName(file: File): File {
-            return File(file.parent, "${file.nameWithoutExtension}$FILE_IMP$AUDIO_AAC")
+            return File(file.parent, "${file.nameWithoutExtension}$FILE_IMP$AUDIO_SUB")
         }
 
         fun insertImage(context: Context, file: File) = fixedThread {
@@ -137,7 +137,8 @@ class FileNameUtils {
         const val VIDEO_MP4 = ".mp4"
         const val AUDIO_MP3 = ".mp3"
         const val AUDIO_AAC = ".aac"
-        const val PICTURE   = ".png"
+        const val AUDIO_SUB = AUDIO_MP3
+        const val PICTURE   = ".jpg"
         const val FILE_IMP  = "_IMP"
 
         const val TYPE_VIDEO_PRE    = "0_"
