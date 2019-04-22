@@ -1,5 +1,6 @@
 package com.zzx.media.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
@@ -14,6 +15,7 @@ import timber.log.Timber
 class SoundPlayer private constructor() {
 
 
+    @SuppressLint("UseSparseArrays")
     private val mSoundIdMap = HashMap<Int, Int>()
 
     private var mSoundRawId = 0

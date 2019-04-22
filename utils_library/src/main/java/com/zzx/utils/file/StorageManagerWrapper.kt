@@ -10,6 +10,9 @@ import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.support.annotation.RequiresApi
 import timber.log.Timber
+import android.net.ConnectivityManager.EXTRA_REASON
+
+
 
 /**@author Tomy
  * Created by Tomy on 2018/6/28.
@@ -17,6 +20,7 @@ import timber.log.Timber
 @SuppressLint("PrivateApi")
 object StorageManagerWrapper {
 
+    /*************** StorageVolume *****************/
     private val mGetPathMethod by lazy {
         StorageVolume::class.java.getDeclaredMethod("getPath")
     }
@@ -28,7 +32,10 @@ object StorageManagerWrapper {
     private val mStorageVolumeGetUUIDMethod by lazy {
         StorageVolume::class.java.getDeclaredMethod("getUuid")
     }
+    /***************************************/
 
+
+    /*************** StorageManager *****************/
     private val mGetVolumeStateMethod by lazy {
         StorageManager::class.java.getDeclaredMethod("getVolumeState", String::class.java)
     }
@@ -44,6 +51,10 @@ object StorageManagerWrapper {
     private val mGetDiskMethod by lazy {
         StorageManager::class.java.getDeclaredMethod("getDisks")
     }
+    private val mWipeAdoptableDisksMethod by lazy {
+        StorageManager::class.java.getDeclaredMethod("wipeAdoptableDisks")
+    }
+    /***************************************/
 
     /*************** DiskInfo *****************/
     private val mDiskInfoClass by lazy {
@@ -167,7 +178,7 @@ object StorageManagerWrapper {
 
     fun formatStorage(context: Context) {
         try {
-            StorageManagerWrapper.getExternalDiskId(context)?.let {
+            /*StorageManagerWrapper.getExternalDiskId(context)?.let {
                 Intent().apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     setClassName("com.android.settings", "com.android.settings.deviceinfo.StorageWizardFormatProgress")
@@ -180,7 +191,14 @@ object StorageManagerWrapper {
                     }
                     context.startActivity(this)
                 }
-            }
+            }*/
+            val intent = Intent(ACTION_FACTORY_RESET)
+            intent.setPackage("android")
+            intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+            intent.putExtra(EXTRA_REASON, "OnlyWipeStorage")
+            intent.putExtra(EXTRA_WIPE_EXTERNAL_STORAGE, true)
+            intent.putExtra(EXTRA_WIPE_ESIMS, true)
+            context.sendBroadcast(intent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -190,4 +208,8 @@ object StorageManagerWrapper {
     const val EXTRA_DISK_ID = "android.os.storage.extra.DISK_ID"
     const val EXTRA_FORMAT_PRIVATE = "format_private"
     const val EXTRA_FORGET_UUID = "forget_uuid"
+    const val ACTION_FACTORY_RESET = "android.intent.action.FACTORY_RESET"
+    const val EXTRA_REASON = "android.intent.extra.REASON"
+    const val EXTRA_WIPE_EXTERNAL_STORAGE = "android.intent.extra.WIPE_EXTERNAL_STORAGE"
+    const val EXTRA_WIPE_ESIMS = "com.android.internal.intent.extra.WIPE_ESIMS"
 }

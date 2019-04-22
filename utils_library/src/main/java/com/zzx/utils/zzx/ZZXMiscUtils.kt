@@ -49,6 +49,8 @@ object ZZXMiscUtils {
 
     const val PTT_SWITCH = "${MISC}zzx_ptt_exchange"
 
+    const val AUTO_INFRARED = "${MISC}camera_light_state"
+
     const val LED_RED = "ff0000"
     const val LED_GREEN = "ff00"
     const val LED_BLUE = "ff"
@@ -57,7 +59,8 @@ object ZZXMiscUtils {
 
     const val BREATH_LIGHT  = " 1 2 2 2 2 2"
     const val NORMAL_LIGHT  = " 0 0 0 0 0 0"
-    const val ONE_SHOT      = " 1 2 1 0 0 0"
+    const val ONE_SHOT  = " 0 0 0 0 0 0"
+//    const val ONE_SHOT      = " 1 2 1 0 0 0"
 
 
     const val OTG = MISC + "otg_en"
@@ -260,6 +263,10 @@ object ZZXMiscUtils {
         write(PTT_SWITCH, if (enabled) OPEN else CLOSE)
     }
 
+    fun setAutoInfrared(enabled: Boolean) {
+        write(AUTO_INFRARED, if (enabled) OPEN else CLOSE)
+    }
+
     /**重置强制关机计时器.若不重置计时,则会在休眠开始后2分钟后若休眠失败则强制关机
      */
     fun resetTimer() {
@@ -306,11 +313,11 @@ object ZZXMiscUtils {
         write(RGB_LED, state)
     }
 
-    private fun isLedEnabled(context: Context): Boolean {
+    fun isLedEnabled(context: Context): Boolean {
         return Settings.System.getInt(context.contentResolver, LED_ENABLED, 1) == 1
     }
 
-        const val LED_ENABLED = "zzx_led_enabled"
+    const val LED_ENABLED = "zzx_led_enabled"
 
     /**关屏
      */

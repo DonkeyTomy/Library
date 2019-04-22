@@ -141,6 +141,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     }
                 }
             }
+            mBurstMode = false
+            mIsRecording = false
             setFocusMode(Parameters.FOCUS_MODE_AUTO)
             mStateCallback?.onCameraOpenSuccess(mCamera)
         } catch (e: Exception) {
@@ -228,6 +230,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun startAutoFocus(focusCallback: ICameraManager.AutoFocusCallback?) {
+        if (mBurstMode) {
+            return
+        }
         Timber.e("startAutoFocus")
         cancelAutoFocus()
         focusCallback?.apply {
@@ -236,7 +241,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mCamera?.autoFocus { success, _ ->
             Timber.e("autoFocus.success = $success")
 //            cancelAutoFocus()
-            setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
+            if (mIsPictureAutoFocusSupported)
+                setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
             mFocusCallback?.onAutoFocusCallbackSuccess(success)
         }
     }
@@ -322,6 +328,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mIsVideoAutoFocusSupported = false
         mIsPictureAutoFocusSupported = false
         mIsManualFocusSupported = false
+        mBurstMode = false
+        mIsRecording = false
         mParameters = null
         mCamera?.release()
         mCamera = null

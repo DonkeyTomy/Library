@@ -3,6 +3,7 @@ package com.zzx.media.recorder.video
 import android.content.Context
 import android.hardware.Camera
 import android.media.CamcorderProfile
+import android.os.SystemClock
 import android.view.Surface
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.camera.v1.manager.Camera1Manager
@@ -33,6 +34,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mRecorder.setFlag(flag)
         mRecorder.setRecordCallback(RecordStateCallback())
     }
+
+    private var mStartTime = 0L
 
 
     private var mCameraManager: ICameraManager<surface, camera>? = null
@@ -133,6 +136,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun startRecord():Boolean {
+        mStartTime = SystemClock.elapsedRealtime()
         Timber.e("startRecord. mRecording = ${mRecording.get()}; mDirPath = $mDirPath")
         if (mRecording.get()) {
             return true
@@ -383,7 +387,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
             var count = 0
             while (freeSpace <= 300) {
-                if (count++ >= 10) {
+                if (count++ >= 5) {
                     stopLooper()
                     mRecordStateCallback?.onRecordStop()
                     break
@@ -416,9 +420,15 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 freeSpace = FileUtil.getDirFreeSpaceByMB(FileUtil.getExternalStoragePath(mContext))
             }
 
-        } else if (freeSpace <= 150) {
-            stopLooper()
-            mRecordStateCallback?.onRecordStop()
+        } else if (freeSpace <= 50) {
+            val currentTime = SystemClock.elapsedRealtime() - mStartTime
+            Observable.just(Unit)
+                    .delay(if (currentTime > 1000) 0L else 1000L, TimeUnit.MILLISECONDS)
+                    .subscribe {
+                        stopLooper()
+                        mRecordStateCallback?.onRecordStop()
+                    }
+
         }
 
         /*if (freeSpace <= 100) {

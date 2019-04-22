@@ -47,6 +47,12 @@ class FileSaver(var mContext: Context): IFileSaver {
     }
 
     override fun waitDone() {
+        Timber.e("waitDone()")
+        while (mQueue.isNotEmpty()) {
+            Timber.e("mQueue.size = ${mQueue.size}")
+            Thread.sleep(100)
+        }
+        Timber.e("done()")
         mDisposable?.dispose()
         mQueue.clear()
         mDisposable = null
