@@ -30,13 +30,9 @@
  * Define a structure with extra padding to a fixed size
  * This helps ensuring binary compatibility with future versions.
  */
-
-#define FF_PAD_STRUCTURE(name, size, ...) \
-struct ff_pad_helper_##name { __VA_ARGS__ }; \
-typedef struct name { \
+#define FF_PAD_STRUCTURE(size, ...) \
     __VA_ARGS__ \
-    char reserved_padding[size - sizeof(struct ff_pad_helper_##name)]; \
-} name;
+    char reserved_padding[size - sizeof(struct { __VA_ARGS__ })];
 
 /**
  * Buffer to print data progressively
@@ -78,14 +74,15 @@ typedef struct name { \
  * internal buffer is large enough to hold a reasonable paragraph of text,
  * such as the current paragraph.
  */
-
-FF_PAD_STRUCTURE(AVBPrint, 1024,
+typedef struct AVBPrint {
+    FF_PAD_STRUCTURE(1024,
     char *str;         /**< string so far */
     unsigned len;      /**< length so far */
     unsigned size;     /**< allocated memory */
     unsigned size_max; /**< maximum allocated memory */
     char reserved_internal_buffer[1];
-)
+    )
+} AVBPrint;
 
 /**
  * Convenience macros for special values for av_bprint_init() size_max
@@ -98,7 +95,7 @@ FF_PAD_STRUCTURE(AVBPrint, 1024,
 /**
  * Init a print buffer.
  *
- * @param buf        buffer to initParams
+ * @param buf        buffer to init
  * @param size_init  initial size (including the final 0)
  * @param size_max   maximum size;
  *                   0 means do not write anything, just count the length;
@@ -115,7 +112,7 @@ void av_bprint_init(AVBPrint *buf, unsigned size_init, unsigned size_max);
  *
  * The buffer will not be reallocated.
  *
- * @param buf     buffer structure to initParams
+ * @param buf     buffer structure to init
  * @param buffer  byte buffer to use for the string data
  * @param size    size of buffer
  */
@@ -182,7 +179,7 @@ void av_bprint_clear(AVBPrint *buf);
  * It may have been truncated due to a memory allocation failure
  * or the size_max limit (compare size and size_max if necessary).
  */
-static inline int av_bprint_is_complete(const AVBPrint *buf)
+static inline int av_bprint_is_complete(AVBPrint *buf)
 {
     return buf->len < buf->size;
 }

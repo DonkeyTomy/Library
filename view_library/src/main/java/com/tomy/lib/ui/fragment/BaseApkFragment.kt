@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.view.ViewPager
@@ -19,13 +20,14 @@ import com.tomy.lib.ui.R
 import com.tomy.lib.ui.bean.ApkInfo
 import com.tomy.lib.ui.view.dialog.ConfirmDialog
 import com.tomy.lib.ui.view.layout.PagePointLayout
+import com.zzx.utils.TTSToast
 import com.zzx.utils.context.ContextUtil
 import com.zzx.utils.rxjava.FlowableUtil
 import com.zzx.utils.rxjava.fixedThread
 import io.reactivex.functions.Consumer
 import io.reactivex.functions.Function
 import timber.log.Timber
-import java.util.*
+import kotlin.collections.ArrayList
 
 /**@author Tomy
  * Created by Tomy on 2015-01-10.
@@ -42,6 +44,8 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
     private var mReceiver: UninstallReceiver? = null
     private var mViewPager: ViewPager? = null
     private var mCurrent = 0
+    val mIconList = ArrayList<Drawable>()
+    val mNameList = ArrayList<String>()
 
     override fun onAttach(activity: Activity) {
         mContext = activity
@@ -70,10 +74,12 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
     }
 
     private fun initDialog() {
-        mDialog = ConfirmDialog(mContext!!)
-        mDialog!!.setMessage(R.string.uninstall_apk_sure)
-        mDialog!!.setPositiveListener(this)
-        mDialog!!.setNegativeListener(this)
+        mDialog = ConfirmDialog(mContext!!).apply {
+            setMessage(R.string.uninstall_apk_sure)
+            setPositiveListener(this@BaseApkFragment)
+            setNegativeListener(this@BaseApkFragment)
+        }
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -89,20 +95,29 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        FlowableUtil.setBackgroundThreadMapMain<Unit>(
-                Function {
-                    searchApk()
-                }, Consumer {
-                    Timber.e("========== mAdapter?.notifyDataSetChanged() ==========")
-                    mAdapter?.apply {
-                        notifyDataSetChanged()
-                        mPoint?.setPagePoint(count)
-                    }
-                }
-        )
+        try {
+            FlowableUtil.setBackgroundThreadMapMain<Unit>(
+                    Function {
+                        searchApk()
+                    }, Consumer {
+                        Timber.e("========== mAdapter?.notifyDataSetChanged() ==========")
+                        mAdapter?.apply {
+                            addIconList(mIconList)
+                            addInfoList(mNameList)
+                            addFinish()
+                            notifyDataSetChanged()
+                            mPoint?.setPagePoint(count)
+                        }
+            }
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 
     override fun onDestroyView() {
+        mAdapter = null
         mPoint = null
         mViewPager = null
         super.onDestroyView()
@@ -114,10 +129,22 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
         ContextUtil.startOtherActivity(mContext!!, info.mPackageName, info.mActivityName)
     }
 
+    /***
+     * @see uninstallPackage
+     * @param parent AdapterView<*>
+     * @param view View
+     * @param position Int
+     * @param id Long
+     * @return Boolean
+     */
     override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
         mCurrent = position
         mIndex = mPosition * ApkViewPagerAdapter.COUNT_PAGE + position
-
+        val info = mList!![mIndex]
+        if (info.mSystemFlag) {
+            TTSToast.showToast(R.string.system_app)
+            return true
+        }
         mDialog?.show()
         return true
     }
@@ -145,11 +172,11 @@ abstract class BaseApkFragment : Fragment(), AdapterView.OnItemClickListener, Vi
             apkInfo.mPackageName = activityInfo.packageName
             apkInfo.mActivityName = activityInfo.name
             apkInfo.mApkName = info.loadLabel(mManager).toString()
-            mAdapter!!.addIcon(info.loadIcon(mManager))
-            mAdapter!!.addName(apkInfo.mApkName)
-            mList!!.add(apkInfo)
+            apkInfo.mSystemFlag = activityInfo.applicationInfo.flags.and(ApplicationInfo.FLAG_SYSTEM) != 0
+            mIconList.add(info.loadIcon(mManager))
+            mNameList.add(apkInfo.mApkName)
+            mList?.add(apkInfo)
         }
-        mAdapter!!.addFinish()
         Timber.e("========== searchApk finish ==========")
     }
 

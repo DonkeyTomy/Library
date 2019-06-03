@@ -17,7 +17,7 @@ android {
             }
         }
         ndk {
-            abiFilters "armeabi-v7a"
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
     }
 
@@ -54,6 +54,9 @@ dependencies {
     implementation deps.rxjava2
     implementation deps.rx_android
     implementation project(path: ':Library:utils_library')
+//    api deps.ijkplayer.java
+//    api deps.ijkplayer.armv7a
+//    api deps.ijkplayer.arm64
     //    implementation project(':utils_library')
 }
 repositories {

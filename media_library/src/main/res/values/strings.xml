@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ZZXLibrary</string>
-    <string name="record_error">录像中发生错误</string>
-    <string name="not_support_format">格式不支持</string>
+    <string name="app_name" translatable="false">ZZXLibrary</string>
+    <string name="record_error">Record Error!</string>
+    <string name="record_too_short">Short recording time, delete file.</string>
 </resources>

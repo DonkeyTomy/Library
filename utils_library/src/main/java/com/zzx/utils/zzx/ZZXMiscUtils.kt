@@ -2,9 +2,10 @@ package com.zzx.utils.zzx
 
 import android.content.Context
 import android.provider.Settings
-import com.zzx.utils.rxjava.fixedThread
+import com.zzx.utils.file.JniFile
 import timber.log.Timber
 import java.io.*
+import java.util.concurrent.Executors
 
 /**@author Tomy
  * Created by Tomy on 2015-03-17.
@@ -78,8 +79,12 @@ object ZZXMiscUtils {
     const val AUX_SYS: Byte = '4'.toByte()//只有AUX输出
     const val AUX_BT: Byte = '5'.toByte()//只有AUX输出BT
     const val MUTE_ALL: Byte = '6'.toByte()//全部静音
+
     const val OPEN = "1"
     const val CLOSE = "0"
+
+    private val FIXED_EXECUTOR = Executors.newFixedThreadPool(3)
+    private val obj = Object()
 
     /**判断屏幕之前是否黑屏
      */
@@ -227,42 +232,50 @@ object ZZXMiscUtils {
         write(LOCAL_OUT, CLOSE)
     }
 
-    fun write(path: String, cmd: String) = fixedThread {
-        var outputStream: FileWriter? = null
-        try {
-            Timber.e("write: path = $path; cmd = $cmd. Thread = ${Thread.currentThread().name}")
-            outputStream = FileWriter(path)
-            outputStream.write(cmd)
-            outputStream.flush()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
+    /**
+     * @param path String
+     * @param cmd String
+     */
+    fun write(path: String, cmd: String)  {
+        FIXED_EXECUTOR.execute {
             try {
-                outputStream?.close()
+                synchronized(obj) {
+                    JniFile().writeOnce(path, cmd)
+                }
+                Timber.e("write: path = $path; cmd = $cmd.")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
         }
     }
 
+    @Synchronized
     fun setFlashState(open: Boolean) {
         write(FLASH_PATH, if (open) OPEN else CLOSE)
     }
 
+    @Synchronized
     fun setLaserState(open: Boolean) {
         write(LAZER_PATH, if (open) OPEN else CLOSE)
     }
 
+    @Synchronized
     fun setIrRedState(open: Boolean) {
-        write(IR_CUT_PATH, if (open) OPEN else CLOSE)
-        write(IR_RED_PATH, if (open) OPEN else CLOSE)
+        if (open) {
+            write(IR_CUT_PATH, OPEN)
+            write(IR_RED_PATH, OPEN)
+        } else {
+            write(IR_RED_PATH, CLOSE)
+            write(IR_CUT_PATH, CLOSE)
+        }
     }
 
+    @Synchronized
     fun setPttSwitch(enabled: Boolean) {
         write(PTT_SWITCH, if (enabled) OPEN else CLOSE)
     }
 
+    @Synchronized
     fun setAutoInfrared(enabled: Boolean) {
         write(AUTO_INFRARED, if (enabled) OPEN else CLOSE)
     }
@@ -273,22 +286,27 @@ object ZZXMiscUtils {
         write(RESET_TIMER_PATH, OPEN)
     }
 
-    private fun write(path: String, cmd: Byte) = fixedThread {
-        var outputStream: FileOutputStream? = null
-        try {
-            outputStream = FileOutputStream(path)
-            outputStream.write(cmd.toInt())
-            outputStream.flush()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            try {
-                outputStream?.close()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+    private fun write(path: String, cmd: Byte) {
+        /*Observable.just(path)
+                .subscribeOn(Schedulers.single())
+                .subscribe {*/
+                    Timber.e("write: path = $path; cmd = $cmd. Thread = ${Thread.currentThread().name}")
+                    var outputStream: FileOutputStream? = null
+                    try {
+                        outputStream = FileOutputStream(path)
+                        outputStream.write(cmd.toInt())
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        try {
+                            outputStream?.close()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
 
-        }
+                    }
+//                }
+
     }
 
     /**控制OTG功能

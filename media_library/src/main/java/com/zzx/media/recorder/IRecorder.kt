@@ -77,7 +77,7 @@ interface IRecorder {
      */
     fun setSensorRotationHint(degrees: Int)
 
-    fun setProperty(quality: Int)
+    fun setProperty(quality: Int, highQuality: Boolean = true)
 
     /**
      * 开始录像.
@@ -88,6 +88,8 @@ interface IRecorder {
      * 停止录像.
      * */
     fun stopRecord()
+
+    fun isRecordStartingOrStopping(): Boolean
 
     fun pauseRecord()
 
@@ -140,17 +142,24 @@ interface IRecorder {
 
         fun onRecordStart()
 
-        fun onRecordStop()
+        fun onRecordStop(stopCode: Int = -1)
 
         fun onRecorderConfigureFailed()
 
-        fun onRecordError()
+        fun onRecordError(errorCode: Int)
 
         fun onRecorderFinished(file: File?)
 
         fun onRecordPause()
 
         fun onRecordResume()
+
+        companion object {
+            const val RECORD_STOP_EXTERNAL_STORAGE_NOT_MOUNTED  = -1
+            const val RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH   = -2
+            const val RECORD_ERROR_TOO_SHORT = -1007
+        }
+
     }
 
 }

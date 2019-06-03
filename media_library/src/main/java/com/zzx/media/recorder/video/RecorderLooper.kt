@@ -11,15 +11,13 @@ import com.zzx.media.camera.v2.manager.Camera2Manager
 import com.zzx.media.recorder.IRecorder
 import com.zzx.media.utils.FileNameUtils
 import com.zzx.utils.file.FileUtil
-import com.zzx.utils.rxjava.FlowableUtil
 import com.zzx.utils.zzx.DeviceUtils
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
-import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.io.File
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -65,6 +63,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     private var mQuality = CamcorderProfile.QUALITY_720P
 
+    private var mHighQuality = true
+
+    private val mRecordScheduler = Schedulers.from(Executors.newSingleThreadExecutor())
 
     /**
      * @param needLoop 设置是否开启循环录像自动删除功能.
@@ -95,15 +96,16 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mRecorder.setCamera(mCameraManager?.getCameraDevice() as Camera)
     }
 
-    fun setQuality(quality: Int) {
+    fun setQuality(quality: Int, highQuality: Boolean = true) {
         mQuality = quality
+        mHighQuality = highQuality
     }
 
     private fun setupRecorder() {
         setRecordHintRotation()
         mOutputFile = File(mDirPath, FileNameUtils.getTmpVideoName("${DeviceUtils.getUserNum(mContext)}_"))
         mRecorder.setOutputFile(mOutputFile!!)
-        mRecorder.setProperty(mQuality)
+        mRecorder.setProperty(mQuality, mHighQuality)
     }
 
     private fun setRecordHintRotation() {
@@ -135,6 +137,12 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mRecordStateCallback = callback
     }
 
+    /**
+     * @see stopRecord
+     * @see stopLooper
+     * @see startLooper
+     * @return Boolean
+     */
     fun startRecord():Boolean {
         mStartTime = SystemClock.elapsedRealtime()
         Timber.e("startRecord. mRecording = ${mRecording.get()}; mDirPath = $mDirPath")
@@ -161,15 +169,19 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         return false
     }
 
+    /**
+     * @see startRecord
+     * @see stopLooper
+     */
     fun stopRecord() {
         Timber.e("stopRecord")
         if (mRecording.get()) {
-            mRecording.set(false)
             mRecorder.reset()
             mCameraManager?.apply {
                 stopRecord()
                 startPreview()
             }
+            mRecording.set(false)
         }
 //        FileNameUtils.tmpFile2Video(mOutputFile)
     }
@@ -199,19 +211,58 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         return mLooping.get()
     }
 
+    fun isRecordStartingOrStopping(): Boolean {
+        return mRecorder.isRecordStartingOrStopping()
+    }
+
     /**
      * @see startLooper
      */
-    fun stopLooper() {
-        Timber.e("stopLooper.recording = ${mLooping.get()}")
+    fun stopLooper(finish: ()-> Unit = {}) {
         if (!mLooping.get())
             return
-        mLooping.set(false)
-        mCheckLoopDisposable?.dispose()
-        mCheckLoopDisposable    = null
-        mRecordLoopDisposable?.dispose()
-        mRecordLoopDisposable   = null
-        stopRecord()
+        val timer = isRecordStartingOrStopping()
+        Timber.e("stopLooper.recording = ${mLooping.get()}. isRecordStartingOrStopping = $timer")
+        Observable.just(timer)
+                .observeOn(mRecordScheduler)
+                .subscribe {
+                    if (!it) {
+                        mRecordLoopDisposable?.dispose()
+                        mRecordLoopDisposable   = null
+                        mLooping.set(false)
+                        mCheckLoopDisposable?.dispose()
+                        mCheckLoopDisposable    = null
+                        stopRecord()
+                        finish()
+                    } else {
+                        Observable.interval(100L, 100L, TimeUnit.MILLISECONDS)
+                                .observeOn(mRecordScheduler)
+                                .subscribe(
+                                        {
+                                            if (!isRecordStartingOrStopping() && mStopDisposable?.isDisposed == false) {
+                                                mRecordLoopDisposable?.dispose()
+                                                mRecordLoopDisposable   = null
+                                                mLooping.set(false)
+                                                mCheckLoopDisposable?.dispose()
+                                                mCheckLoopDisposable    = null
+                                                stopRecord()
+                                                mStopDisposable?.dispose()
+                                                mStopDisposable = null
+                                                finish()
+                                            }
+                                        },
+                                        {},
+                                        {},
+                                        {
+                                            disposable ->
+                                            mStopDisposable = disposable
+                                        }
+                                )
+
+                    }
+                }
+
+
     }
 
     fun recordSection() {
@@ -236,7 +287,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     private var mRecordLoopDisposable: Disposable?  = null
     /**
      * 循环删除的Disposable
-     * @see checkDelete
+     * @see checkStorageSpace
      */
     private var mCheckLoopDisposable: Disposable?   = null
     /**
@@ -244,6 +295,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      * @see delayStop
      */
     private var mRecordDelayDisposable: Disposable? = null
+
+    private var mStopDisposable: Disposable? = null
 
     fun record() {
         stopLooper()
@@ -280,31 +333,41 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             setRecordDuration(duration)
         }
         Timber.e("startLooper.duration = $duration, autoDelete = $autoDelete")
-        mLooping.set(true)
-        checkNeedLoop()
         Observable.just(Unit)
-                .observeOn(Schedulers.io())
+                .observeOn(mRecordScheduler)
                 .map {
-                    startRecord()
-                }.subscribe {
-                    Observable.interval(mRecordDuration.toLong(), mRecordDuration.toLong(),  TimeUnit.SECONDS)
-                            .observeOn(Schedulers.newThread())
-                            .subscribe(
-                                    {
-                                        stopRecord()
-                                        startRecord()
-                                    },
-                                    {
-                                        it.printStackTrace()
-                                    },
-                                    {
-                                    },
-                                    {
-                                        mRecordLoopDisposable = it
-                                    }
-                            )
+                    checkNeedDelete(true)
                 }
-
+                .subscribe {
+                    mLooping.set(it)
+                    if (it) {
+                        checkStorageSpace()
+                        startRecord()
+                        Observable.interval(mRecordDuration.toLong(), mRecordDuration.toLong(), TimeUnit.SECONDS)
+                                .observeOn(mRecordScheduler)
+                                .subscribe(
+                                        {
+                                            stopRecord()
+                                            if (mRecordLoopDisposable?.isDisposed == false) {
+                                                startRecord()
+                                            }
+                                        },
+                                        {
+                                            throwable ->
+                                            throwable.printStackTrace()
+                                        },
+                                        {
+                                        },
+                                        {
+                                            disposable ->
+                                            mRecordLoopDisposable = disposable
+                                        }
+                                )
+                    } else {
+                        mRecordStateCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH)
+                        stopRecord()
+                    }
+                }
     }
 
     /**
@@ -344,53 +407,58 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                     cancelLooperTimer()
                 }
                 .delay(delay.toLong(), TimeUnit.SECONDS)
+                .observeOn(mRecordScheduler)
                 .subscribe {
                     stopRecord()
                 }
     }
 
-    private fun checkNeedLoop() {
-//        if (mNeedLoopDelete) {
-        checkDelete()
-//        }
-    }
-
-    fun checkDelete() {
+    /***
+     * @see startLooper
+     */
+    fun checkStorageSpace() {
         if (mCheckLoopDisposable == null) {
-            FlowableUtil.setMainThreadMapBackground<Unit>(
-                    Function {
-                        checkNeedDelete()
-                    }, Consumer {
-                        Observable.interval(3, 10L, TimeUnit.SECONDS)
-                                .observeOn(Schedulers.io())
-                                .doOnDispose {
-                                    Timber.e("checkDelete Disposed")
-                                }
-                                .subscribe(
-                                        {
-                                            checkNeedDelete()
-                                        }, {}, {},
-                                        {
-                                            mCheckLoopDisposable = it
-                                        }
-                                )
-                    }
-            )
+            Observable.just(Unit)
+                    .subscribeOn(Schedulers.io())
+                    .subscribe {
+                            Observable.interval(5, 10L, TimeUnit.SECONDS)
+                                    .observeOn(Schedulers.io())
+                                    .doOnDispose {
+                                        Timber.e("checkStorageSpace Disposed")
+                                    }
+                                    .subscribe(
+                                            {
+                                                checkNeedDelete()
+                                            }, {}, {},
+                                            {
+                                                disposable ->
+                                                mCheckLoopDisposable = disposable
+                                            }
+                                    )
+
+                        }
+
         }
 
     }
 
-    fun checkNeedDelete() {
+    fun checkNeedDelete(first: Boolean = false): Boolean {
         var freeSpace = FileUtil.getDirFreeSpaceByMB(FileUtil.getExternalStoragePath(mContext))
+        val needSpace = if (first) 20 else 300
         Timber.e("currentFreeSpace = $freeSpace, mNeedLoopDelete = $mNeedLoopDelete")
         if (mNeedLoopDelete) {
-
             var count = 0
-            while (freeSpace <= 300) {
-                if (count++ >= 5) {
-                    stopLooper()
-                    mRecordStateCallback?.onRecordStop()
-                    break
+            while (freeSpace <= needSpace) {
+                if (first) {
+                    if (count++ >= 10) {
+                        if (freeSpace >= needSpace) {
+                            break
+                        } else {
+                            stopLooper()
+                            mRecordStateCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH)
+                            break
+                        }
+                    }
                 }
                 if (mFileList?.size ?: 0 == 0) {
                     mLastDir?.delete()
@@ -399,7 +467,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                         mFileList   = FileUtil.sortDirTime(dir)
                         mLastDir = dir
                         Timber.e("${dir.path}.size = ${mFileList?.size}")
-                        if (mFileList!!.isEmpty()) {
+                        if (mFileList?.isEmpty() == true) {
                             FileUtil.deleteFile(dir)
                         } else {
                             break
@@ -410,7 +478,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 mFileList?.apply {
                     for (file in this) {
                         Timber.e("fileName = ${file.absolutePath}")
-                        if (file.absolutePath != mOutputFile!!.absolutePath) {
+                        if (file.absolutePath != mOutputFile?.absolutePath) {
                             FileUtil.deleteFile(file)
                             remove(file)
                             break
@@ -421,45 +489,18 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             }
 
         } else if (freeSpace <= 50) {
-            val currentTime = SystemClock.elapsedRealtime() - mStartTime
-            Observable.just(Unit)
-                    .delay(if (currentTime > 1000) 0L else 1000L, TimeUnit.MILLISECONDS)
-                    .subscribe {
-                        stopLooper()
-                        mRecordStateCallback?.onRecordStop()
-                    }
-
+            if (isLoopRecording()) {
+                val currentTime = SystemClock.elapsedRealtime() - mStartTime
+                Observable.just(Unit)
+                        .delay(if (currentTime > 1000) 0L else 1000L, TimeUnit.MILLISECONDS)
+                        .subscribe {
+                            stopLooper()
+                            mRecordStateCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH)
+                        }
+            }
+            return false
         }
-
-        /*if (freeSpace <= 100) {
-            stopLooper()
-            mRecordStateCallback?.onRecordError()
-        } else if (freeSpace <= 500 && mNeedLoopDelete) {
-            if (mFileList?.size ?: 0 == 0) {
-                val dirList = FileUtil.sortDirTime(File(mDirPath!!).parentFile)
-                for (dir in dirList) {
-                    mFileList   = FileUtil.sortDirTime(dir)
-                    Timber.e("delete Dir ${dir.path}.size = ${mFileList?.size}")
-                    if (mFileList!!.isEmpty()) {
-                        FileUtil.deleteFile(dir)
-                    } else {
-                        break
-                    }
-                }
-            }
-            Timber.e("mFileList.size = ${mFileList?.size}")
-            mFileList?.apply {
-                for (file in this) {
-                    Timber.e("fileName = ${file.absolutePath}")
-                    if (file.absolutePath != mOutputFile!!.absolutePath) {
-                        FileUtil.deleteFile(file)
-                        remove(file)
-                        break
-                    }
-                }
-            }
-
-        }*/
+        return true
     }
 
     inner class RecordStateCallback: IRecorder.IRecordCallback {
@@ -483,13 +524,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             mRecordStateCallback?.onRecorderConfigureFailed()
         }
 
-        override fun onRecordError() {
+        override fun onRecordError(errorCode: Int) {
             stopLooper()
-            mRecordStateCallback?.onRecordError()
+            mRecordStateCallback?.onRecordError(errorCode)
         }
 
-        override fun onRecordStop() {
-            mRecordStateCallback?.onRecordStop()
+        override fun onRecordStop(stopCode: Int) {
+            mRecordStateCallback?.onRecordStop(stopCode)
         }
 
         override fun onRecorderFinished(file: File?) {

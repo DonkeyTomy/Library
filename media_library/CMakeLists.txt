@@ -32,28 +32,28 @@ add_library( avcodec-57
             IMPORTED )
 set_target_properties( avcodec-57
                         PROPERTIES IMPORTED_LOCATION
-                         ${distribution_DIR}/armeabi-v7a/libavcodec.so )
+                         ${distribution_DIR}/${ANDROID_ABI}/libavcodec-56.so )
 
-add_library( avdevice-57
+#[[add_library( avdevice-57
             SHARED
             IMPORTED )
 set_target_properties( avdevice-57
                         PROPERTIES IMPORTED_LOCATION
-                         ${distribution_DIR}/armeabi-v7a/libavdevice.so )
+                         ${distribution_DIR}/${ANDROID_ABI}/libavdevice.so )]]
 
 add_library( avfilter-6
             SHARED
             IMPORTED )
 set_target_properties( avfilter-6
                         PROPERTIES IMPORTED_LOCATION
-                         ${distribution_DIR}/armeabi-v7a/libavfilter.so )
+                         ${distribution_DIR}/${ANDROID_ABI}/libavfilter-5.so )
 
 add_library( avformat-57
             SHARED
             IMPORTED )
 set_target_properties( avformat-57
                         PROPERTIES IMPORTED_LOCATION
-                         ${distribution_DIR}/armeabi-v7a/libavformat.so )
+                         ${distribution_DIR}/${ANDROID_ABI}/libavformat-56.so )
 
 
 add_library( avutil-55
@@ -61,21 +61,21 @@ add_library( avutil-55
             IMPORTED )
 set_target_properties( avutil-55
                         PROPERTIES IMPORTED_LOCATION
-                         ${distribution_DIR}/armeabi-v7a/libavutil.so )
+                         ${distribution_DIR}/${ANDROID_ABI}/libavutil-54.so )
 
 add_library( swresample-2
             SHARED
             IMPORTED )
 set_target_properties( swresample-2
                         PROPERTIES IMPORTED_LOCATION
-                         ${distribution_DIR}/armeabi-v7a/libswresample.so )
+                         ${distribution_DIR}/${ANDROID_ABI}/libswresample-1.so )
 
 add_library( swscale-4
             SHARED
             IMPORTED )
 set_target_properties( swscale-4
                         PROPERTIES IMPORTED_LOCATION
-                         ${distribution_DIR}/armeabi-v7a/libswscale.so )
+                         ${distribution_DIR}/${ANDROID_ABI}/libswscale-3.so )
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
@@ -102,5 +102,5 @@ include_directories(libs/include)
 # build script, prebuilt third-party libraries, or system libraries.
 
 #target_link_libraries( native-lib avcodec avfilter avformat avdevice avutil swresample swscale ${log-lib} )
-target_link_libraries( native-lib swresample-2 avcodec-57 swscale-4 avdevice-57 avformat-57 avutil-55
+target_link_libraries( native-lib swresample-2 avcodec-57 swscale-4 avformat-57 avutil-55
                        ${log-lib} )

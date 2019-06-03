@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ViewLibrary</string>
+    <string name="monday">星期一</string>
+    <string name="tuesday">星期二</string>
+    <string name="wednesday">星期三</string>
+    <string name="thursday">星期四</string>
+    <string name="friday">星期五</string>
+    <string name="saturday">星期六</string>
+    <string name="sunday">星期天</string>
+    <string name="uninstall_apk_sure">是否确定卸载?</string>
+    <string name="switch_off_text">关</string>
+    <string name="disconnect">断开连接</string>
+    <string name="negative">取消</string>
+    <string name="positive">确定</string>
+    <string name="system_app">系统应用无法卸载.</string>
+</resources>

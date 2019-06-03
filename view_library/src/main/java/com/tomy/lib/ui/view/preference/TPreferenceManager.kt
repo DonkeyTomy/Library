@@ -60,4 +60,8 @@ class TPreferenceManager(private var context: Context) {
         val screen = getPreferenceScreen()
         screen.bind(listView)
     }
+
+    fun removeAll() {
+        getPreferenceScreen().removeAll()
+    }
 }

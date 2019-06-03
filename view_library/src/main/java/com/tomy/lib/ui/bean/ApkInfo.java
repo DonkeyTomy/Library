@@ -17,4 +17,5 @@ public class ApkInfo {
     public String mApkName;
     public String mPackageName;
     public String mActivityName;
+    public boolean mSystemFlag = false;
 }

@@ -15,6 +15,7 @@ import com.zzx.utils.rxjava.FlowableUtil
 import io.reactivex.functions.Consumer
 import timber.log.Timber
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy
  * Created by Tomy on 2018/6/8.
@@ -39,6 +40,10 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     private var mDegrees    = 90
 
     private var mCamera: Camera? = null
+
+    private val mRecordStarting = AtomicBoolean(false)
+
+    private val mRecordStopping = AtomicBoolean(false)
 
 
     override fun setFlag(@IRecorder.FLAG flag: Int) {
@@ -66,10 +71,11 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             reset()
             setState(State.IDLE)
         }
-        mMediaRecorder.setOnErrorListener { _, _, _ ->
-            Timber.e("$TAG_RECORDER onRecordError")
+        mMediaRecorder.setOnErrorListener { _, what, extra ->
+            Timber.e("$TAG_RECORDER onRecordError.what [$what] extraCode[$extra]")
             FlowableUtil.setBackgroundThread(Consumer {
-                mRecorderCallback?.onRecordError()
+                mFile?.delete()
+                mRecorderCallback?.onRecordError(extra)
                 reset()
 //                init()
             })
@@ -87,8 +93,10 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         mRecorderCallback = callback
     }
 
-    override fun setProperty(quality: Int) {
+    override fun setProperty(quality: Int, highQuality: Boolean) {
+        mRecordStarting.set(true)
         val profile = CamcorderProfile.get(quality)
+        val min = if (highQuality) 1 else 2
         mAudioProperty = AudioProperty(profile.audioSampleRate,
                 profile.audioChannels,
                 8,
@@ -96,14 +104,14 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         mVideoProperty = VideoProperty(profile.videoFrameWidth,
                 profile.videoFrameHeight,
                 profile.videoFrameRate,
-                profile.videoBitRate, null).apply {
+                profile.videoBitRate / min, null).apply {
 
             audioProperty = mAudioProperty
         }
         if (quality == CamcorderProfile.QUALITY_480P) {
             mVideoProperty.width = 864
         }
-        Timber.e("$TAG_RECORDER $mVideoProperty")
+        Timber.tag(TAG_RECORDER).e("$mVideoProperty")
         prepare()
     }
 
@@ -240,6 +248,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 //            unlockCamera()
             setState(State.ERROR)
             mRecorderCallback?.onRecorderConfigureFailed()
+            reset()
             Timber.e("$TAG_RECORDER onRecorderConfigureFailed")
         }
     }
@@ -269,6 +278,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         } else {
             throw object : IllegalStateException("Current state is {$mState}.Not Prepared!") {}
         }
+        mRecordStarting.set(false)
     }
 
     /**
@@ -276,7 +286,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun stopRecord() {
         Timber.e("$TAG_RECORDER stopRecord. mState = [$mState]")
-        if (getState() == State.RECORDING || getState() == State.PAUSE) {
+        mRecordStopping.set(true)
+        val state = getState()
+        if (state == State.RECORDING || state == State.PAUSE) {
             setState(State.IDLE)
             try {
                 mMediaRecorder.resume()
@@ -287,6 +299,11 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                 mRecorderCallback?.onRecorderFinished(null)
             }
         }
+        mRecordStopping.set(false)
+    }
+
+    override fun isRecordStartingOrStopping(): Boolean {
+        return mRecordStarting.get() || mRecordStopping.get()
     }
 
     override fun pauseRecord() {
@@ -318,6 +335,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             mMediaRecorder.reset()
             setState(State.IDLE)
         }
+        mRecordStarting.set(false)
+        mRecordStopping.set(false)
     }
 
     /**
@@ -330,6 +349,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             mMediaRecorder.release()
             setState(State.RELEASE)
         }
+        mRecordStarting.set(false)
+        mRecordStopping.set(false)
     }
 
     /**

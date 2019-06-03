@@ -20,10 +20,18 @@ class MediaScanUtils(context: Context, private val mPath: String) : MediaScanner
     constructor(context: Context, file: File) : this(context, file.absolutePath)
 
     override fun onMediaScannerConnected() {
-        mConnection.scanFile(mPath, null)
+        try {
+            mConnection.scanFile(mPath, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun onScanCompleted(path: String, uri: Uri) {
-        mConnection.disconnect()
+        try {
+            mConnection.disconnect()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

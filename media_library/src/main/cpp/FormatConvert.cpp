@@ -30,7 +30,7 @@ JNIEXPORT void JNICALL convert(JNIEnv* env, jobject , jbyteArray _data, jbyteArr
     env->SetByteArrayRegion(outData, 0, mDstLen, (const jbyte *) mBufferDst);
 }
 
-JNIEXPORT void JNICALL release() {
+JNIEXPORT void JNICALL releaseConverter() {
     free(mBufferSrc);
     free(mBufferDst);
     delete mFormatConverter;
@@ -38,9 +38,9 @@ JNIEXPORT void JNICALL release() {
 
 
 const static JNINativeMethod convertNativeMethod[] = {
-        {"initParams",    "(IIIIII)I",      (void *) init},
-        {"convert", "([B)V",       (void *) convert},
-        {"release", "(V)V",       (void *) release}
+        {"init",    "(IIIIII)I",      (void *) init},
+        {"convert", "([B[B)V",       (void *) convert},
+        {"releaseConverter", "()V",       (void *) releaseConverter}
 };
 
 jint registerConvertMethod(JNIEnv* env) {

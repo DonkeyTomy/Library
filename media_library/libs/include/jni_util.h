@@ -1,5 +1,5 @@
 //
-// Created by donke on 2017/4/14.
+// Created by Tomy on 2017/4/14.
 //
 
 #ifndef FFMPEG_JNI_UTIL_H

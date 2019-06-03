@@ -43,6 +43,7 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
     private var mItemLongClickListener: AdapterView.OnItemLongClickListener? = null
     private val mInflater: LayoutInflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
+    private var mRefreshData = false
 
     fun setOnItemClickListener(listener: AdapterView.OnItemClickListener) {
         mListener = listener
@@ -52,12 +53,16 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
         mItemLongClickListener = listener
     }
 
-    fun addIconList(iconListId: Int) {
-        mIconList.add(iconListId)
+    fun addIconList(iconListId: List<Drawable>) {
+        iconListId.forEach {
+            addIcon(it)
+        }
     }
 
-    fun addInfoList(infoListId: Int) {
-        mInfoList.add(infoListId)
+    fun addInfoList(infoListId: List<String>) {
+        infoListId.forEach {
+            addName(it)
+        }
     }
 
     fun addName(name: String) {
@@ -84,6 +89,7 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
             nameList.clear()
             iconList.clear()
         }
+        mRefreshData = true
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
@@ -120,6 +126,10 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
 
     override fun getCount(): Int {
         Timber.e("getCount = ${mNameList.size}")
+        /*if (mRefreshData) {
+            notifyDataSetChanged()
+            mRefreshData = false
+        }*/
         return mNameList.size
     }
 

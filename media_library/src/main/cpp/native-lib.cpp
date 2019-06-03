@@ -158,10 +158,15 @@ jint register_jni(JNIEnv* env) {
     }*/
     registerConvertMethod(env);
     jclass encodeClazz = env->FindClass("com/zzx/media/G726Codec");
+    if (encodeClazz == NULL) {
+        LOG_E(TAG, "cannot find class");
+        return JNI_ERR;
+    }
     if (env->RegisterNatives(encodeClazz, g726Method, sizeof(g726Method) / sizeof(g726Method[0])) != JNI_OK) {
         LOG_E(TAG, "RegisterNatives failed");
         return JNI_ERR;
     }
+    LOG_W(TAG, "RegisterNatives success");
     return JNI_OK;
 }
 

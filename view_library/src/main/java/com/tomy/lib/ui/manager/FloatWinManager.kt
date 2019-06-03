@@ -60,6 +60,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     }
 
     fun showFloatWindow() {
+        Timber.w("showFloatWindow()")
         mParameter.x = 0
         mParameter.alpha = 1f
         mParameter.flags = mParameter.flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
@@ -94,17 +95,19 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     }
 
     private fun updateView(width: Int, height: Int) {
+        Timber.w("updateView. width x height = [$width x $height]")
         setResolutionRation(width, height)
-        Observable.just(Unit)
+        /*Observable.just(Unit)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
+                .subscribe {*/
+                    Timber.w("updateView. mShowed = ${mShowed.get()}")
                     if (!mShowed.get()) {
                         mWindowManager.addView(mRootView, mParameter)
                         mShowed.set(true)
                     } else {
                         mWindowManager.updateViewLayout(mRootView, mParameter)
                     }
-                }
+//                }
     }
 
     private fun setResolutionRation(width: Int, height: Int) {

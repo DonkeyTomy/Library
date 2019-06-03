@@ -14,13 +14,13 @@ import timber.log.Timber
  */
 class SoundPlayer private constructor() {
 
-
     @SuppressLint("UseSparseArrays")
     private val mSoundIdMap = HashMap<Int, Int>()
 
     private var mSoundRawId = 0
 
     private var mLoop = 0
+
 
 
     private val mSoundPool by lazy {
@@ -33,7 +33,6 @@ class SoundPlayer private constructor() {
                 .build().apply {
                     setOnLoadCompleteListener { _, sampleId, status ->
                         if (status == 0) {
-                            mSoundIdMap[mSoundRawId] = sampleId
                             playSoundId(sampleId, mLoop)
                         }
                     }
@@ -45,11 +44,11 @@ class SoundPlayer private constructor() {
             return
         }
         mSoundRawId = soundRawId
-        mLoop = 0
+        mLoop = loop
         val soundId = mSoundIdMap[soundRawId]
         Timber.e("playSoundId = $soundId")
         if  (soundId == null) {
-            mSoundPool.load(context, soundRawId, 1)
+            mSoundIdMap[soundRawId] = mSoundPool.load(context, soundRawId, 1)
         } else {
             playSoundId(soundId, loop)
         }

@@ -22,6 +22,11 @@ android {
     }
 
     useLibrary 'org.apache.http.legacy'
+    externalNativeBuild {
+        cmake {
+            path file('CMakeLists.txt')
+        }
+    }
 }
 
 dependencies {

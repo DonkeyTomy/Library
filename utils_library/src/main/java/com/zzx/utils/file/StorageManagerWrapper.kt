@@ -3,6 +3,7 @@
 package com.zzx.utils.file
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -10,8 +11,12 @@ import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.support.annotation.RequiresApi
 import timber.log.Timber
-import android.net.ConnectivityManager.EXTRA_REASON
-
+import com.zzx.utils.R
+import com.zzx.utils.TTSToast
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 
 /**@author Tomy
@@ -176,9 +181,37 @@ object StorageManagerWrapper {
         return null
     }
 
+
+
+
     fun formatStorage(context: Context) {
-        try {
-            /*StorageManagerWrapper.getExternalDiskId(context)?.let {
+        val messageDialog = ProgressDialog(context).apply {
+            setTitle("")
+            setMessage(context.getString(R.string.formatting))
+            setCanceledOnTouchOutside(false)
+            setCancelable(false)
+        }
+        Observable.just(context)
+                .observeOn(AndroidSchedulers.mainThread())
+                .map {
+                    messageDialog.show()
+                    TTSToast.showToast(R.string.formatting)
+                    context.sendBroadcast(Intent("StopRecord"))
+                }
+                .delay(500, TimeUnit.MILLISECONDS)
+                .observeOn(Schedulers.io())
+                .map {
+                    if (FileUtil.checkExternalStorageMounted(context)) {
+                        FileUtil.deleteFile("${FileUtil.getExternalStoragePath(context)}/DCIM")
+                    }
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    messageDialog.dismiss()
+                }
+
+        /*try {
+            *//*StorageManagerWrapper.getExternalDiskId(context)?.let {
                 Intent().apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     setClassName("com.android.settings", "com.android.settings.deviceinfo.StorageWizardFormatProgress")
@@ -191,7 +224,7 @@ object StorageManagerWrapper {
                     }
                     context.startActivity(this)
                 }
-            }*/
+            }*//*
             val intent = Intent(ACTION_FACTORY_RESET)
             intent.setPackage("android")
             intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
@@ -201,7 +234,7 @@ object StorageManagerWrapper {
             context.sendBroadcast(intent)
         } catch (e: Exception) {
             e.printStackTrace()
-        }
+        }*/
     }
 
 

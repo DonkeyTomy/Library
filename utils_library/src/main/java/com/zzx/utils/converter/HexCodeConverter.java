@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import timber.log.Timber;
+
 /**@author Tomy
  * Created by Tomy on 2014/10/29.
  */
@@ -129,5 +131,35 @@ public class HexCodeConverter {
             temp = (temp | value[i]) << 8;
         }
         return temp;
+    }
+
+    public static String parseUnicode2String(String unicodeStr) {
+        String regex = "&#(\\d+);";
+        Pattern p = Pattern.compile(regex);
+        Matcher ma = p.matcher(unicodeStr);
+        while (ma.find()) {
+            String src = ma.group();
+            String tmp = ma.group(1);
+            int value = Integer.parseInt(tmp);
+            String dst = String.valueOf(Character.toChars(value));
+            Timber.w("%s - %s -> %s\n",src, tmp, dst);
+            unicodeStr = unicodeStr.replace(src, dst);
+        }
+        return unicodeStr;
+    }
+
+    public static String parseUnicodeX2String(String unicodeStr) {
+        String regex = "&#x(\\d+);";
+        Pattern p = Pattern.compile(regex);
+        Matcher ma = p.matcher(unicodeStr);
+        while (ma.find()) {
+            String src = ma.group();
+            String tmp = ma.group(1);
+            int value = Integer.parseInt(tmp);
+            String dst = String.valueOf(Character.toChars(value));
+            Timber.w("%s - %s -> %s\n",src, tmp, dst);
+            unicodeStr = unicodeStr.replace(src, dst);
+        }
+        return unicodeStr;
     }
 }

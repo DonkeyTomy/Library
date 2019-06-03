@@ -9,7 +9,9 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.custom.view.camera.ISurfaceView
+import io.reactivex.Observable
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy
@@ -63,8 +65,10 @@ class MySurfaceView(context: Context, attributeSet: AttributeSet): SurfaceView(c
     }
 
     override fun surfaceCreated(holder: SurfaceHolder?) {
-        mSurfaceStateCallback?.onSurfaceCreate(holder)
-        startPreview()
+        Observable.timer(200, TimeUnit.MILLISECONDS)
+                .subscribe {
+                    mSurfaceStateCallback?.onSurfaceCreate(holder)
+                }
     }
 
     override fun initParams() {
