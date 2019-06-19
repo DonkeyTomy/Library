@@ -212,6 +212,8 @@ interface ICameraManager<in surface, camera> {
         fun onCameraClosed()
 
         fun onCameraErrorClose(errorCode: Int)
+
+        fun onCameraPreviewSuccess()
     }
 
     interface PictureDataCallback {

@@ -73,8 +73,8 @@ class FileSaver(var mContext: Context): IFileSaver {
                                             Thread.sleep(100)
                                         }
                                     }
-                                    if (request != null) {
-                                        saveRequest(request!!)
+                                    request?.apply {
+                                        saveRequest(this)
                                     }
 
                                 }

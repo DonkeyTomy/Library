@@ -103,7 +103,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         } catch (e: Exception) {
             ExceptionHandler.getInstance().saveException2File(e)
             e.printStackTrace()
-            try {
+            /*try {
                 Observable.timer(300, TimeUnit.MILLISECONDS)
                         .subscribe {
                             for (i in 0 until getCameraCount()) {
@@ -124,11 +124,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                                 }
                             }
                         }
-            } catch (e: Exception) {
+            } catch (e: Exception) {*/
                 mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_GET_INFO_FAILED)
-                ExceptionHandler.getInstance().saveException2File(e)
-                e.printStackTrace()
-            }
+//                ExceptionHandler.getInstance().saveException2File(e)
+//                e.printStackTrace()
+//            }
         }
     }
 
@@ -149,7 +149,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         } catch (e: Exception) {
             ExceptionHandler.getInstance().saveException2File(e)
             e.printStackTrace()
-            try {
+            /*try {
                 Observable.timer(300, TimeUnit.MILLISECONDS)
                         .subscribe {
                             for (i in 0 until getCameraCount()) {
@@ -165,11 +165,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                                 }
                             }
                         }
-            } catch (e: Exception) {
+            } catch (e: Exception) {*/
                 mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_GET_INFO_FAILED)
-                ExceptionHandler.getInstance().saveException2File(e)
-                e.printStackTrace()
-            }
+//                ExceptionHandler.getInstance().saveException2File(e)
+//                e.printStackTrace()
+//            }
         }
     }
 
@@ -196,6 +196,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             cameraId
         }
         Timber.e("${Const.TAG}cameraId = $cameraId; getCameraCount = ${getCameraCount()}")
+        var openSuccess = false
         try {
             mCamera = Camera.open(id)
             mCamera?.apply {
@@ -228,15 +229,18 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             mBurstMode = false
             stopRecord()
             setFocusMode(Parameters.FOCUS_MODE_AUTO)
-            mStateCallback?.onCameraOpenSuccess(mCamera)
+            openSuccess = true
             mCameraOpening.set(false)
         } catch (e: Exception) {
             e.printStackTrace()
+            openSuccess = false
             ExceptionHandler.getInstance(null, "Camera")
             mCameraOpening.set(false)
             mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_OPEN_FAILED)
         }
-
+        if (openSuccess) {
+            mStateCallback?.onCameraOpenSuccess(mCamera)
+        }
     }
 
     override fun openExternalCamera() {
@@ -266,9 +270,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                 }
                 mCamera?.startPreview()
                 mPreviewed.set(true)
+                mStateCallback?.onCameraPreviewSuccess()
             } catch (e: Exception) {
                 e.printStackTrace()
-                mPreviewed.set(false)
                 releaseCamera()
                 mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_PREVIEW_FAILED)
             }
@@ -433,11 +437,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mCameraOpening.set(false)
         mCamera?.release()
         mCamera = null
+        stopRecord()
         mIsVideoAutoFocusSupported = false
         mIsPictureAutoFocusSupported = false
         mIsManualFocusSupported = false
         mBurstMode = false
-        stopRecord()
         mParameters = null
         mStateCallback?.onCameraClosed()
     }

@@ -11,7 +11,7 @@ import java.util.concurrent.Executors
  * Created by Tomy on 2015-03-17.
  */
 object ZZXMiscUtils {
-    const val MISC = "/sys/devices/platform/zzxcomm_dev/"
+    const val MISC = "/sys/devices/platform/zzx-misc/"
     const val BRIGHTNESS_PATH = "/sys/class/leds/lcd-backlight/brightness"
     const val ACC_PATH = MISC + "accdet_sleep"
     const val ACC_IGNORE_PATH = MISC + "close_acc_eint"
@@ -34,21 +34,21 @@ object ZZXMiscUtils {
     const val AUDIO_OUT = MISC + "audio_sw_state"
 
 
-    const val FLASH_PATH = MISC + "zzx_flash_stats"
+    const val FLASH_PATH = MISC + "flash_stats"
 
-    const val IR_CUT_PATH = MISC + "zzx_ir_cut_stats"
+    const val IR_CUT_PATH = MISC + "ir_cut_stats"
 
-    const val IR_RED_PATH = MISC + "zzx_ir_led_stats"
+    const val IR_RED_PATH = MISC + "ir_led_stats"
 
-    const val LAZER_PATH = MISC + "zzx_lazer_stats"
+    const val LAZER_PATH = MISC + "lazer_stats"
 
     const val RGB_LED = MISC + "rgb_led_stats"
 
-    const val GPS_PATH = "${MISC}zzx_gps_stats"
+    const val GPS_PATH = "${MISC}gps_stats"
 
-    const val USER_INFO_PATH = "${MISC}zzx_police_num_stats"
+    const val USER_INFO_PATH = "${MISC}police_num_stats"
 
-    const val PTT_SWITCH = "${MISC}zzx_ptt_exchange"
+    const val PTT_SWITCH = "${MISC}ptt_exchange"
 
     const val AUTO_INFRARED = "${MISC}camera_light_state"
 
