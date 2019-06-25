@@ -95,40 +95,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     }
                     mCameraFacing = info.facing
                     openSpecialCamera(i)
-                    setDisplayOrientation(0)
-                    setPictureRotation(0)
                     return
                 }
             }
         } catch (e: Exception) {
             ExceptionHandler.getInstance().saveException2File(e)
             e.printStackTrace()
-            /*try {
-                Observable.timer(300, TimeUnit.MILLISECONDS)
-                        .subscribe {
-                            for (i in 0 until getCameraCount()) {
-                                val info = Camera.CameraInfo()
-                                Camera.getCameraInfo(i, info)
-                                if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                                    Timber.e("${Const.TAG}openFrontCamera()")
-                                    if (getCameraCount() > 2) {
-                                        if (info.orientation != 90) {
-                                            continue
-                                        }
-                                    }
-                                    mCameraFacing = info.facing
-                                    openSpecialCamera(i)
-                                    setDisplayOrientation(0)
-                                    setPictureRotation(0)
-                                    break
-                                }
-                            }
-                        }
-            } catch (e: Exception) {*/
-                mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_GET_INFO_FAILED)
-//                ExceptionHandler.getInstance().saveException2File(e)
-//                e.printStackTrace()
-//            }
+            mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_GET_INFO_FAILED)
         }
     }
 
@@ -141,35 +114,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     Timber.e("${Const.TAG}openBackCamera()")
                     mCameraFacing = info.facing
                     openSpecialCamera(i)
-                    setDisplayOrientation(0)
-                    setPictureRotation(0)
                     return
                 }
             }
         } catch (e: Exception) {
             ExceptionHandler.getInstance().saveException2File(e)
             e.printStackTrace()
-            /*try {
-                Observable.timer(300, TimeUnit.MILLISECONDS)
-                        .subscribe {
-                            for (i in 0 until getCameraCount()) {
-                                val info = Camera.CameraInfo()
-                                Camera.getCameraInfo(i, info)
-                                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                                    Timber.e("${Const.TAG}openBackCamera()")
-                                    mCameraFacing = info.facing
-                                    openSpecialCamera(i)
-                                    setDisplayOrientation(0)
-                                    setPictureRotation(0)
-                                    break
-                                }
-                            }
-                        }
-            } catch (e: Exception) {*/
-                mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_GET_INFO_FAILED)
-//                ExceptionHandler.getInstance().saveException2File(e)
-//                e.printStackTrace()
-//            }
+            mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_GET_INFO_FAILED)
         }
     }
 
@@ -230,6 +181,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             stopRecord()
             setFocusMode(Parameters.FOCUS_MODE_AUTO)
             openSuccess = true
+            setDisplayOrientation(0)
+            setPictureRotation(0)
             mCameraOpening.set(false)
         } catch (e: Exception) {
             e.printStackTrace()

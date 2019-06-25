@@ -100,7 +100,7 @@ interface IFileSaver {
      * receives callback after save finish.
      * @return true or false
      */
-    fun savePhotoFile(photoData: ByteArray, file: File, date: Long = 0,
+    fun savePhotoFile(photoData: ByteArray?, file: File?, date: Long = 0,
                       location: Location? = null, tag: Int = 0, listener: OnFileSavedListener? = null): Boolean
 
     /**

@@ -6,6 +6,6 @@ import java.io.File
  * Created by Tomy on 2018/10/23.
  */
 data class SaveRequest(
-        val data: ByteArray,
-        val file: File
+        val data: ByteArray?,
+        val file: File?
 )
