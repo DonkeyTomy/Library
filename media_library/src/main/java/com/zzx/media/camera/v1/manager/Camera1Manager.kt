@@ -10,19 +10,17 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import com.zzx.media.bean.Const
 import com.zzx.media.camera.ICameraManager
-import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_PREVIEW_FAILED
 import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_GET_INFO_FAILED
 import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_NOT_RELEASE
 import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_NO_CAMERA
 import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_OPEN_FAILED
+import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_PREVIEW_FAILED
 import com.zzx.media.camera.ICameraManager.Companion.SENSOR_BACK_CAMERA
 import com.zzx.media.camera.ICameraManager.Companion.SENSOR_FRONT_CAMERA
 import com.zzx.media.recorder.IRecorder
 import com.zzx.utils.ExceptionHandler
 import com.zzx.utils.rxjava.singleThread
-import io.reactivex.Observable
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy

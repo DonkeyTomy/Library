@@ -15,6 +15,11 @@ import android.support.annotation.RequiresApi
 import android.support.v4.content.FileProvider
 import timber.log.Timber
 import java.io.*
+import java.nio.file.Files
+import java.nio.file.LinkOption
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.attribute.BasicFileAttributeView
 import java.util.*
 
 
@@ -43,11 +48,47 @@ object FileUtil {
         list.sortWith(Comparator { file1, file2 ->
             if (file1.lastModified() < file2.lastModified()) {
                 if (dec) -1 else 1
+            } else if (file1.lastModified() == file2.lastModified()) {
+                0
             } else {
                 if (dec) 1 else -1
             }
         })
         return list
+    }
+
+    /**@param dec if true 则递减排序,反之递增.
+     */
+    fun sortDirLongTime(dir: File, dec: Boolean = true, filter: FileFilter? = null): ArrayList<File> {
+        val list = ArrayList<File>()
+
+        if (!dir.exists() || !dir.isDirectory) {
+            return list
+        }
+        val files = if (filter == null) dir.listFiles() else dir.listFiles(filter)
+        if (files == null || files.isEmpty()) {
+            return list
+        }
+        Collections.addAll(list, *files)
+        list.sortWith(Comparator { file1, file2 ->
+            try {
+                if (file1.name.toLong() < file2.name.toLong()) {
+                    if (dec) -1 else 1
+                } else if (file1.lastModified() == file2.lastModified()) {
+                    0
+                } else {
+                    if (dec) 1 else -1
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+                return@Comparator -1
+            }
+        })
+        return list
+    }
+
+    fun getFileCreateTime(file: File): Long {
+        return Files.getFileAttributeView(Paths.get(file.absolutePath), BasicFileAttributeView::class.java, LinkOption.NOFOLLOW_LINKS).readAttributes().creationTime().toMillis()
     }
 
     fun checkDirExist(dir: File, needCreate: Boolean = false): Boolean {

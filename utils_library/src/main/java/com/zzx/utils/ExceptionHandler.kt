@@ -59,9 +59,37 @@ class ExceptionHandler private constructor(application: Application, dir: String
                         if (!dir.exists() || !dir.isDirectory) {
                             dir.mkdirs()
                         }
-                        val fos = FileWriter(File(LOG_DIR, fileName))
-                        fos.write(result)
-                        fos.close()
+                        try {
+                            val fos = FileWriter(File(LOG_DIR, fileName))
+                            fos.write(result)
+                            fos.close()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+    }
+
+    @Synchronized
+    fun saveLog2File(log: String) {
+        Observable.just(log)
+                .observeOn(Schedulers.io())
+                .subscribe {
+                    val time = mFormatter.format(Date())
+                    val fileName = "$time.txt"
+                    if (LOG_DIR.isNotEmpty()) {
+                        val dir = File(LOG_DIR)
+                        if (!dir.exists() || !dir.isDirectory) {
+                            dir.mkdirs()
+                        }
+                        try {
+                            val fos = FileWriter(File(LOG_DIR, fileName))
+                            fos.write("$log \n")
+                            fos.close()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+
                     }
                 }
     }

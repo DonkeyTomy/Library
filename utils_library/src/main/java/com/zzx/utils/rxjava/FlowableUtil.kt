@@ -19,7 +19,7 @@ object FlowableUtil {
                 .subscribe(mainThreadExec, Consumer { it.printStackTrace() })
     }
 
-    fun <C>setMainThreadMapBackground(mainThread: Function<Unit, C>, newThreadExec: Consumer<C>) {
+    fun <out>setMainThreadMapBackground(mainThread: Function<Unit, out>, newThreadExec: Consumer<out>) {
         Flowable.just(Unit)
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(mainThread)

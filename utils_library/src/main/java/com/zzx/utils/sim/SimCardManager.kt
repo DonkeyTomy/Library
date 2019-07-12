@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.telephony.SubscriptionManager
-import com.zzx.utils.telephony.TelephonyManagerWrapper
 import timber.log.Timber
 
 @SuppressLint("PrivateApi")

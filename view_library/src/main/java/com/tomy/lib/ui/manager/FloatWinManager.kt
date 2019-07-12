@@ -75,7 +75,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
      * @see showFloatWindow
      * */
     fun dismissWindow() {
-        mParameter.x = -480
+        mParameter.x = -800
         mParameter.alpha = 1f
         mParameter.flags = mParameter.flags.or(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
         updateView(480, mHeight)
