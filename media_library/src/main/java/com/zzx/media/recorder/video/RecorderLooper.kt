@@ -17,6 +17,7 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.io.File
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -225,6 +226,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     /**
      * @see startLooper
+     * @see stopRecord
      */
     fun stopLooper(finish: ()-> Unit = {}) {
         if (!mLooping.get())
@@ -458,13 +460,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      */
     fun checkNeedDelete(first: Boolean = false): Boolean {
         var freeSpace = FileUtil.getDirFreeSpaceByMB(FileUtil.getExternalStoragePath(mContext))
-        val needSpace = if (first) 30 else 300
+        val needSpace = if (first) 50 else 1000
         Timber.e("currentFreeSpace = $freeSpace, mNeedLoopDelete = $mNeedLoopDelete")
         if (mNeedLoopDelete) {
             var count = 0
             while (freeSpace <= needSpace) {
                 if (first) {
-                    if (count++ >= 10) {
+                    if (count++ >= 50) {
                         return if (freeSpace >= needSpace) {
                             true
                         } else {
@@ -476,12 +478,23 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 }
                 if (mFileList?.size ?: 0 == 0) {
                     mLastDir?.delete()
-                    val dirList = FileUtil.sortDirTime(File(mDirPath!!).parentFile)
+                    val dirList = FileUtil.sortDirLongTime(File(mDirPath!!).parentFile)
                     for (dir in dirList) {
-                        if (dir == mLastDir) {
-                            break
-                        }
                         mFileList   = FileUtil.sortDirTime(dir)
+                        if (dir == mLastDir && mFileList?.size ?: 0 == 1) {
+                            var needBreak = false
+                            mFileList?.apply {
+                                for (it in this) {
+                                    if (it.absolutePath == mOutputFile?.absolutePath) {
+                                        mLastDir = null
+                                        needBreak = true
+                                        break
+                                    }
+                                }
+                            }
+                            if (needBreak)
+                                continue
+                        }
                         mLastDir = dir
                         Timber.e("${dir.path}.size = ${mFileList?.size}")
                         if (mFileList?.isEmpty() == true) {
