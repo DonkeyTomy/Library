@@ -201,6 +201,16 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         takePictureBurst(count)
     }
 
+    override fun startContinuousShot(count: Int, callback: ICameraManager.PictureDataCallback?) {
+        takePictureBurst(count, callback)
+    }
+
+    override fun cancelContinuousShot() {
+    }
+
+    override fun setContinuousShotSpeed(speed: Int) {
+
+    }
 
     override fun setPictureCallback(callback: ICameraManager.PictureDataCallback?) {
         mPictureCallback = callback

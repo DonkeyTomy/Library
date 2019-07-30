@@ -73,6 +73,14 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private val mCameraOpening = AtomicBoolean(false)
 
+    private val mMtkSetContinuousSpeedMethod by lazy {
+        Camera::class.java.getDeclaredMethod("setContinuousShotSpeed", Integer::class.java)
+    }
+
+    private val mMtkCancelContinuousMethod by lazy {
+        Camera::class.java.getDeclaredMethod("cancelContinuousShot")
+    }
+
     init {
         mHandlerThread.start()
         mHandler = Handler(mHandlerThread.looper)
@@ -512,6 +520,29 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         takePictureBurst(count)
     }
 
+    override fun startContinuousShot(count: Int, callback: ICameraManager.PictureDataCallback?) {
+        takePictureBurst(count, callback)
+    }
+
+    override fun cancelContinuousShot() {
+        try {
+            mMtkCancelContinuousMethod.invoke(mCamera)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * @param speed Int : the speed set for continuous shot(xx fps)
+     */
+    override fun setContinuousShotSpeed(speed: Int) {
+        try {
+            mMtkSetContinuousSpeedMethod.invoke(mCamera, speed)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     override fun setPictureCallback(callback: ICameraManager.PictureDataCallback?) {
         mPictureDataCallback = callback
     }
@@ -619,19 +650,21 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             Timber.e("mPictureCount = $mPictureCount; mBurstMode = $mBurstMode; mContinuousShotCount = $mContinuousShotCount; mIsRecording = ${mIsRecording.get()}")
             if (mBurstMode && !mIsRecording.get()) {
                 if (++mPictureCount >= mContinuousShotCount) {
-                    mPictureDataCallback?.onCaptureDone()
-                    mContinuousShotCount = 0
                     if (!mIsRecording.get()) {
                         mPreviewed.set(false)
                         startPreview()
                     }
+                    mPictureDataCallback?.onCaptureDone()
+                    mContinuousShotCount = 0
+
                 }
             } else {
-                mPictureDataCallback?.onCaptureDone()
                 if (!mIsRecording.get()) {
                     mPreviewed.set(false)
                     startPreview()
                 }
+                mPictureDataCallback?.onCaptureDone()
+
             }
         }
 //    }

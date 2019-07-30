@@ -25,7 +25,7 @@ class SoundPlayer private constructor() {
 
     private val mSoundPool by lazy {
         SoundPool.Builder()
-                .setMaxStreams(1)
+                .setMaxStreams(2)
                 .setAudioAttributes(AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .setLegacyStreamType(AudioManager.STREAM_SYSTEM)
                         .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -67,7 +67,7 @@ class SoundPlayer private constructor() {
 
 
     fun startContinuousCapture() {
-        mSoundPool.load("/system/media/audio/ui/camera_shutter.ogg", 1)
+        mSoundPool.load("/system/media/audio/ui/Effect_Tick.ogg", 1)
     }
 
 

@@ -144,6 +144,15 @@ interface ICameraManager<in surface, camera> {
 
     fun takePictureBurst(count: Int, callback: PictureDataCallback? = null)
 
+    fun startContinuousShot(count: Int, callback: PictureDataCallback? = null)
+
+    fun cancelContinuousShot()
+
+    /**
+     * @param speed Int : the speed set for continuous shot(xx fps)
+     */
+    fun setContinuousShotSpeed(speed: Int)
+
     fun setPictureCallback(callback: PictureDataCallback?)
 
     fun setRecordPreviewCallback(callback: RecordPreviewReady?)

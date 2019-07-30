@@ -15,11 +15,6 @@ import android.support.annotation.RequiresApi
 import android.support.v4.content.FileProvider
 import timber.log.Timber
 import java.io.*
-import java.nio.file.Files
-import java.nio.file.LinkOption
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.attribute.BasicFileAttributeView
 import java.util.*
 
 
@@ -85,10 +80,6 @@ object FileUtil {
             }
         })
         return list
-    }
-
-    fun getFileCreateTime(file: File): Long {
-        return Files.getFileAttributeView(Paths.get(file.absolutePath), BasicFileAttributeView::class.java, LinkOption.NOFOLLOW_LINKS).readAttributes().creationTime().toMillis()
     }
 
     fun checkDirExist(dir: File, needCreate: Boolean = false): Boolean {

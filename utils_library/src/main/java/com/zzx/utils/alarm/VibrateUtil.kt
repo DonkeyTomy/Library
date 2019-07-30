@@ -23,4 +23,15 @@ class VibrateUtil(context: Context) {
         mVibrator.vibrate(VibrationEffect.createOneShot(timeMills, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
+    companion object {
+
+        private var INSTANCE: VibrateUtil ? = null
+        fun getInstance(context: Context): VibrateUtil {
+            if (INSTANCE == null) {
+                INSTANCE = VibrateUtil(context)
+            }
+            return INSTANCE!!
+        }
+    }
+
 }

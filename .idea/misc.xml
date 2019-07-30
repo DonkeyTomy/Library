@@ -50,6 +50,13 @@
             <SvnBranchConfiguration />
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/../RV123/LauncherDemo">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="svn://120.55.162.188/LauncherDemo" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

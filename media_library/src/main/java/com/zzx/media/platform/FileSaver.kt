@@ -5,7 +5,6 @@ import android.location.Location
 import com.zzx.media.bean.SaveRequest
 import com.zzx.media.utils.FileNameUtils
 import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.io.File
@@ -71,7 +70,6 @@ class FileSaver(var mContext: Context): IFileSaver {
         if (mSubscribe == null) {
             mSubscribe = Observable.just(Unit)
                     .observeOn(Schedulers.io())
-                    .subscribeOn(Schedulers.newThread())
                     .map {
 //                        Timber.tag(FileSaver::class.java.simpleName).e("thread = ${Thread.currentThread().name}")
                         while (!mSaveDone) {
@@ -88,6 +86,7 @@ class FileSaver(var mContext: Context): IFileSaver {
                                 request?.apply {
                                     if (file != null && data != null) {
                                         saveRequest(this)
+                                        Thread.sleep(100)
                                     } else {
                                         mSaveDone = true
                                         Timber.tag(FileSaver::class.java.simpleName).e("mSaveDone = $mSaveDone")
@@ -111,6 +110,7 @@ class FileSaver(var mContext: Context): IFileSaver {
         output.write(request.data!!)
         output.close()
         FileNameUtils.insertImage(mContext, request.file)
+        Timber.tag(FileSaver::class.java.simpleName).w("saveRequest done")
     }
 
 
