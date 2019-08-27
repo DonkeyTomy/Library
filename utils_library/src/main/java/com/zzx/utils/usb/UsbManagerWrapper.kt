@@ -19,6 +19,10 @@ class UsbManagerWrapper(context: Context) {
         setCurrentModel(FUNCTION_FTP)
     }
 
+    fun enableMassModel() {
+        setCurrentModel(FUNCTION_MASS)
+    }
+
     private fun setCurrentModel(function: String) {
         setModelFunction.invoke(mUsbManager, function, true)
     }
@@ -26,6 +30,7 @@ class UsbManagerWrapper(context: Context) {
     companion object {
         const val FUNCTION_MTP  = "mtp"
         const val FUNCTION_FTP  = "ftp"
+        const val FUNCTION_MASS  = "mass_storage"
     }
 
 }
