@@ -325,7 +325,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     meteringAreas = it
                     focusAreas  = it
                 }
-                focusMode = Camera.Parameters.FOCUS_MODE_AUTO
+                focusMode = Parameters.FOCUS_MODE_AUTO
                 mCamera?.parameters = this
             }
         }
@@ -368,7 +368,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     }
 
-    override fun isAutoFocusSupported(): Boolean {
+    override fun isManualFocusSupported(): Boolean {
         return mIsManualFocusSupported
     }
 

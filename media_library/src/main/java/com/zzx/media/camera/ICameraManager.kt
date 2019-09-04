@@ -107,7 +107,7 @@ interface ICameraManager<in surface, camera> {
 
     fun setFocusMode(focusMode: String)
 
-    fun isAutoFocusSupported(): Boolean
+    fun isManualFocusSupported(): Boolean
 
     fun isVideoAutoFocusSupported(): Boolean
 

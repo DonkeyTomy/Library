@@ -58,6 +58,7 @@ class VolumeManager(var context: Context, maxLevel: Int = MAX_LEVEL_DEFAULT) {
         setRingVolume(level)
         setNotifyVolume(level)
         setAlarmVolume(level)
+        setVoiceCallVolume(level)
     }
 
     fun maxAll() {
@@ -98,6 +99,10 @@ class VolumeManager(var context: Context, maxLevel: Int = MAX_LEVEL_DEFAULT) {
 
     fun setAlarmVolume(level: Int, needSound: Boolean = false) {
         setVolume(AudioManager.STREAM_ALARM, level, needSound)
+    }
+
+    fun setVoiceCallVolume(level: Int, needSound: Boolean = false) {
+        setVolume(AudioManager.STREAM_VOICE_CALL, level, needSound)
     }
 
     @JvmOverloads

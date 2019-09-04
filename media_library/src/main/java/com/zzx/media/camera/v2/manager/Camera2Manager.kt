@@ -580,7 +580,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
     override fun setFocusMode(focusMode: String) {
     }
 
-    override fun isAutoFocusSupported(): Boolean {
+    override fun isManualFocusSupported(): Boolean {
         return false
     }
 
