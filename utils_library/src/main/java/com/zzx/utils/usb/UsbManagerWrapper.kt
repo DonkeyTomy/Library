@@ -31,6 +31,10 @@ class UsbManagerWrapper(context: Context) {
         const val FUNCTION_MTP  = "mtp"
         const val FUNCTION_FTP  = "ftp"
         const val FUNCTION_MASS  = "mass_storage"
+
+        const val ACTION_USB_STATE  = "android.hardware.usb.action.USB_STATE"
+        const val USB_CONNECTED     = "connected"
+        const val USB_CONFIGURED = "configured"
     }
 
 }
