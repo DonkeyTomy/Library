@@ -55,7 +55,7 @@ object ZZXMiscUtils {
     const val LED_RED = "ff0000"
     const val LED_GREEN = "ff00"
     const val LED_BLUE = "ff"
-    const val LED_YELLOW    = "ffff00"
+    const val LED_YELLOW    = "ee2200"
     const val LED_DOWN  = "000000"
 
     const val BREATH_LIGHT  = " 1 2 2 2 2 2"
