@@ -38,7 +38,6 @@
 package com.zzx.media.platform
 
 import android.location.Location
-import android.net.Uri
 import java.io.File
 
 interface IFileSaver {
@@ -59,12 +58,14 @@ interface IFileSaver {
         REFOCUSIMAGE
     }
 
-    interface OnFileSavedListener {
-        /**
-         *
-         * @param uri the uri file saved.
-         */
-        fun onFileSaved(uri: Uri)
+    interface OnFileSaveListener {
+
+        fun onQueueStatus(full: Boolean)
+
+        fun onFileSaved(request: ISaveRequest)
+
+        fun onSaveDone()
+
     }
 
     /**
@@ -75,7 +76,7 @@ interface IFileSaver {
      */
     fun init(fileType: FILE_TYPE, outputFileFormat: Int, resolution: String, rotation: Int)
 
-    fun uninit()
+    fun unInit()
 
     /**
      * whether dng capturing is enabled.
@@ -101,7 +102,7 @@ interface IFileSaver {
      * @return true or false
      */
     fun savePhotoFile(photoData: ByteArray?, file: File?, date: Long = 0,
-                      location: Location? = null, tag: Int = 0, listener: OnFileSavedListener? = null): Boolean
+                      location: Location? = null, tag: Int = 0, listener: OnFileSaveListener? = null): Boolean
 
     /**
      * save the dng image.
@@ -125,10 +126,10 @@ interface IFileSaver {
      */
     fun saveRawFile(dngData: ByteArray, width: Int, height: Int,
                     fileName: String, date: Long, location: Location, tag: Int,
-                    listener: OnFileSavedListener): Boolean
+                    listener: OnFileSaveListener): Boolean
 
     fun saveVideoFile(location: Location, tempPath: String, duration: Long,
-                      tag: Int, listener: OnFileSavedListener): Boolean
+                      tag: Int, listener: OnFileSaveListener): Boolean
 
     fun waitDone()
 }

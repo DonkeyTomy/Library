@@ -30,6 +30,8 @@ interface ICameraManager<in surface, camera> {
 
     fun openExternalCamera()
 
+    fun isCameraOpening(): Boolean
+
     fun openSpecialCamera(cameraId: Int = 0)
 
     /**

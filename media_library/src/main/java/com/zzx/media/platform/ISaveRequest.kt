@@ -38,26 +38,27 @@ package com.zzx.media.platform
 
 import android.location.Location
 import android.net.Uri
+import java.io.File
 
-interface SaveRequest {
+interface ISaveRequest {
 
-    var isIgnoreThumbnail: Boolean
+    fun isIgnoreThumbnail(): Boolean
 
-    val isQueueFull: Boolean
+    fun isQueueFull(): Boolean
 
-    val tempFilePath: String
+//    fun getTempFilePath(): String
 
-    val filePath: String
+    fun getFilePath(): String
 
-    val dataSize: Int
+    fun getFileName(): String
 
-    val uri: Uri
+    fun getDataSize(): Int
 
-    var location: Location
+    fun getUri(): Uri?
 
-    var jpegRotation: Int
+    fun getLocation(): Location?
 
-//    val fileSaverListener: FileSaverService.FileSaverListener
+    fun getJpegRotation(): Int
 
     fun prepareRequest()
 
@@ -65,11 +66,11 @@ interface SaveRequest {
 
     fun saveRequest()
 
-//    fun createThumbnail(thumbnailWidth: Int): Thumbnail
+//    fun createThumbnail(thumbnailWidth: Int): Bitmap?
 
     fun releaseUri()
 
-    fun setData(data: ByteArray)
+    fun setData(data: ByteArray?)
 
     /**
      * set width and height, so it can be written to database.
@@ -80,19 +81,23 @@ interface SaveRequest {
 
     fun setDuration(duration: Long)
 
-    fun setSlowMotionSpeed(speed: Int)
+//    fun setSlowMotionSpeed(speed: Int)
 
     fun setTag(tag: Int)
 
-    fun setTempPath(path: String)
+//    fun setTempPath(path: String)
 
-    fun setFileName(name: String)
+    fun setFile(file: File)
 
-//    fun setListener(listener: FileSaver.FileSaverListener)
+    fun setListener(listener: IFileSaver.OnFileSaveListener?)
+
+    fun getListener(): IFileSaver.OnFileSaveListener?
 
     fun notifyListener()
 
     fun updateDataTaken(time: Long)
 
     fun saveSync()
+
+
 }

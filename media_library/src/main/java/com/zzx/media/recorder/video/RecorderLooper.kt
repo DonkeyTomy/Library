@@ -183,6 +183,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     fun stopRecord() {
         Timber.e("stopRecord")
         if (mRecording.get()) {
+            mRecording.set(false)
             mDelayRecord.set(false)
             mRecordDelayDisposable?.dispose()
             mRecorder.reset()
@@ -190,7 +191,6 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 stopRecord()
                 startPreview()
             }
-            mRecording.set(false)
         }
 //        FileNameUtils.tmpFile2Video(mOutputFile)
     }

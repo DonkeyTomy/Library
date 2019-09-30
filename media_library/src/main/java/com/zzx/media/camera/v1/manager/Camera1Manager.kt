@@ -89,6 +89,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun openFrontCamera() {
         try {
+            if (mCameraOpening.get()) {
+                return
+            }
+            mCameraOpening.set(true)
             for (i in 0 until getCameraCount()) {
                 val info = Camera.CameraInfo()
                 Camera.getCameraInfo(i, info)
@@ -113,6 +117,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun openBackCamera() {
         try {
+            if (mCameraOpening.get()) {
+                return
+            }
+            mCameraOpening.set(true)
             for (i in 0 until getCameraCount()) {
                 val info = Camera.CameraInfo()
                 Camera.getCameraInfo(i, info)
@@ -132,10 +140,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun openSpecialCamera(cameraId: Int) {
         Timber.e("openSpecialCamera.cameraId = $cameraId. mCamera = $mCamera")
-        if (mCameraOpening.get()) {
+        /*if (mCameraOpening.get()) {
             return
         }
-        mCameraOpening.set(true)
+        mCameraOpening.set(true)*/
         if (mCamera != null) {
             mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_NOT_RELEASE)
             mCameraOpening.set(false)
@@ -204,7 +212,15 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun openExternalCamera() {
         Timber.e("${Const.TAG}openExternalCamera(): mCamera = $mCamera")
+        if (mCameraOpening.get()) {
+            return
+        }
+        mCameraOpening.set(true)
         openSpecialCamera(1)
+    }
+
+    override fun isCameraOpening(): Boolean {
+        return mCameraOpening.get()
     }
 
     /**

@@ -371,6 +371,10 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         openSpecialCamera(mCameraId)
     }
 
+    override fun isCameraOpening(): Boolean {
+        return false
+    }
+
     @SuppressLint("MissingPermission")
     fun openSpecialCamera(id: String) {
         if (id == "") {
