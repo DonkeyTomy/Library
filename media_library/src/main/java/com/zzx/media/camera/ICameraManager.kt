@@ -216,7 +216,7 @@ interface ICameraManager<in surface, camera> {
 
     interface CameraStateCallback<C> {
 
-        fun onCameraOpenSuccess(camera: C?)
+        fun onCameraOpenSuccess(camera: C)
 
         fun onCameraOpenFailed(errorCode: Int)
 

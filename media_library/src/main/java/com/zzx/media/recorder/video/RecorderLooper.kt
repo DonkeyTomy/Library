@@ -4,12 +4,14 @@ import android.content.Context
 import android.hardware.Camera
 import android.media.CamcorderProfile
 import android.os.SystemClock
+import android.provider.MediaStore
 import android.view.Surface
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.camera.v1.manager.Camera1Manager
 import com.zzx.media.camera.v2.manager.Camera2Manager
 import com.zzx.media.recorder.IRecorder
 import com.zzx.media.utils.FileNameUtils
+import com.zzx.media.utils.MediaInfoUtil
 import com.zzx.utils.file.FileUtil
 import com.zzx.utils.zzx.DeviceUtils
 import io.reactivex.Observable
@@ -99,8 +101,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
     }
 
-    fun setCamera() {
-        mRecorder.setCamera(mCameraManager?.getCameraDevice() as Camera)
+    fun setCamera(camera: camera) {
+        mRecorder.setCamera(camera as Camera)
     }
 
     fun setQuality(quality: Int, highQuality: Boolean = true) {
@@ -577,7 +579,10 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 mAutoDeleteFileCount++
                 Timber.e("File: ${file?.absolutePath}. mAutoDeleteFileCount = $mAutoDeleteFileCount")
                 if (mAutoDeleteFileCount > 1) {
-                    mAutoDeleteFilePre?.delete()
+                    mAutoDeleteFilePre?.apply {
+                        delete()
+                        MediaInfoUtil.deleteDatabase(mContext, absolutePath, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                    }
                     Timber.e("delete File: ${mAutoDeleteFilePre?.absolutePath}")
                 }
                 mRecordStateCallback?.onRecorderFinished(file)

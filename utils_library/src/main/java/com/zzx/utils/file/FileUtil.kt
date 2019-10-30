@@ -27,8 +27,9 @@ object FileUtil {
         return sortDirTime(File(path), dec, filter)
     }
 
-    /**@param dec if true 则递减排序,反之递增.
+    /**@param dec if true 则递减排序,反之递增(越新的越在上).
      */
+    @Synchronized
     fun sortDirTime(dir: File, dec: Boolean = true, filter: FileFilter? = null): ArrayList<File> {
         val list = ArrayList<File>()
 
@@ -41,6 +42,13 @@ object FileUtil {
         }
         Collections.addAll(list, *files)
         list.sortWith(Comparator { file1, file2 ->
+            /*try {
+                if (file1.name.toInt() < file2.name.toInt()) {
+                    return@Comparator if (dec) -1 else 1
+                }
+            } catch (e: Exception) {
+
+            }*/
             if (file1.lastModified() < file2.lastModified()) {
                 if (dec) -1 else 1
             } else if (file1.lastModified() == file2.lastModified()) {

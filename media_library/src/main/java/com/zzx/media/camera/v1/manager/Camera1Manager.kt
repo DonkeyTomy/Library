@@ -206,7 +206,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             mStateCallback?.onCameraOpenFailed(CAMERA_OPEN_ERROR_OPEN_FAILED)
         }
         if (openSuccess) {
-            mStateCallback?.onCameraOpenSuccess(mCamera)
+            mStateCallback?.onCameraOpenSuccess(mCamera!!)
         }
     }
 

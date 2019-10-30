@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**@author Tomy
  * Created by Tomy on 2019/9/25.
  */
-class WackLockUtil(context: Context) {
+class WakeLockUtil(context: Context) {
 
     private val mLockAcquire = AtomicBoolean(false)
 

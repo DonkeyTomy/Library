@@ -1,7 +1,6 @@
 package com.tomy.lib.ui.view.preference
 
 import android.content.Context
-import android.support.v7.preference.Preference
 import android.support.v7.preference.PreferenceViewHolder
 import android.util.AttributeSet
 import com.tomy.lib.ui.R
