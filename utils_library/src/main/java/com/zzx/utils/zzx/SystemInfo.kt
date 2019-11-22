@@ -29,10 +29,16 @@ object SystemInfo {
 
     fun getSystemInfo(): String {
         return "${getDeviceModel()}-V${getVersionCode()}-${getBuildTime()}"
+//        return "${getDeviceModel()}-V${getVersionCode()}-20191109"
     }
 
     fun getDeviceModel(): String {
-        return getSystemProperty(MODEL_CODE)
+        val fullModel = getSystemProperty(MODEL_CODE)
+         return if (fullModel.contains('_')) {
+            fullModel.split('_')[0]
+        } else {
+             fullModel
+         }
     }
 
     fun getBuildTime(): String {

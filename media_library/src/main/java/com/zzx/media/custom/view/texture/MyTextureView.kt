@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Matrix
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
-import android.hardware.Camera
 import android.hardware.camera2.CameraDevice
 import android.support.annotation.Keep
 import android.util.AttributeSet
@@ -12,7 +11,6 @@ import android.util.Size
 import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
-import android.view.View
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.custom.view.camera.ISurfaceView
 import io.reactivex.annotations.NonNull
@@ -144,9 +142,7 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
         if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
             bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
             matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
-            val scale = Math.max(
-                    viewHeight.toFloat() / previewSize.height,
-                    viewWidth.toFloat() / previewSize.width)
+            val scale = (viewHeight.toFloat() / previewSize.height).coerceAtLeast(viewWidth.toFloat() / previewSize.width)
             with(matrix) {
                 postScale(scale, scale, centerX, centerY)
                 postRotate(90 * (rotation - 2f), centerX, centerY)
@@ -163,9 +159,7 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
     private var ratioHeight: Int    = 0
 
     fun setAspectRatio(width: Int, height: Int) {
-        if (width < 0 || height < 0) {
-            throw IllegalArgumentException("Size cannot be negative.")
-        }
+        require(!(width < 0 || height < 0)) { "Size cannot be negative." }
         ratioWidth = width
         ratioHeight = height
         requestLayout()
@@ -173,8 +167,8 @@ class MyTextureView: TextureView, TextureView.SurfaceTextureListener, ISurfaceVi
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        val width = View.MeasureSpec.getSize(widthMeasureSpec)
-        val height = View.MeasureSpec.getSize(heightMeasureSpec)
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        val height = MeasureSpec.getSize(heightMeasureSpec)
         if (ratioWidth == 0 || ratioHeight == 0) {
             setMeasuredDimension(width, height)
         } else {

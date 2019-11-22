@@ -39,7 +39,7 @@ versions.constraint_layout = "2.0.0-alpha3"
 versions.multidex = "1.0.3"
 versions.glide = "4.7.1"
 versions.timber = "4.7.0"
-versions.android_gradle_plugin = '3.4.2'
+versions.android_gradle_plugin = '3.5.2'
 //versions.android_gradle_plugin = '3.3.1'
 // versions.android_gradle_plugin = '3.2.1'
 versions.rxjava2 = "2.1.10"
@@ -200,6 +200,11 @@ ijkplayer.java = "tv.danmaku.ijk.media:ijkplayer-java:$versions.ijkplayer"
 ijkplayer.armv7a = "tv.danmaku.ijk.media:ijkplayer-armv7a:$versions.ijkplayer"
 ijkplayer.arm64 = "tv.danmaku.ijk.media:ijkplayer-arm64:$versions.ijkplayer"
 deps.ijkplayer = ijkplayer
+
+def bugly = [:]
+bugly.runtime = "com.tencent.bugly:crashreport:latest.release"
+bugly.ndk = "com.tencent.bugly:nativecrashreport:latest.release"
+deps.bugly = bugly
 
 ext.deps = deps
 

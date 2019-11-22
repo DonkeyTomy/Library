@@ -139,7 +139,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun openSpecialCamera(cameraId: Int) {
-        Timber.e("openSpecialCamera.cameraId = $cameraId. mCamera = $mCamera")
+        Timber.w("openSpecialCamera.cameraId = $cameraId. mCamera = $mCamera")
         /*if (mCameraOpening.get()) {
             return
         }
@@ -160,15 +160,15 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         } else {
             cameraId
         }
-        Timber.e("${Const.TAG}cameraId = $cameraId; getCameraCount = ${getCameraCount()}")
-        var openSuccess = false
+        Timber.i("${Const.TAG}cameraId = $cameraId; getCameraCount = ${getCameraCount()}")
+        var openSuccess: Boolean
         try {
             mCamera = Camera.open(id)
             mCamera?.apply {
                 mParameters = parameters
                 mParameters?.apply {
                     supportedFocusModes.forEach {
-                        Timber.e("focusMode = $it")
+                        Timber.i("focusMode = $it")
                         when (it) {
                             "manual"   -> {
                                 mIsManualFocusSupported = true
@@ -184,9 +184,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                 }
                 setErrorCallback {
                     error, _ ->
+                    releaseCamera()
                     mPreviewed.set(false)
                     mCamera = null
-                    releaseCamera()
                     mStateCallback?.onCameraErrorClose(error)
                 }
             }
@@ -211,7 +211,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun openExternalCamera() {
-        Timber.e("${Const.TAG}openExternalCamera(): mCamera = $mCamera")
+        Timber.w("${Const.TAG}openExternalCamera(): mCamera = $mCamera")
         if (mCameraOpening.get()) {
             return
         }
@@ -228,6 +228,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 此方法跟[startPreview]共同使用由自身决定何时启动预览.
      * */
     override fun setPreviewSurface(surface: SurfaceHolder) {
+        Timber.i("startPreviewSurface(). mCamera = $mCamera")
         mPreviewSurface = surface
         mCamera?.setPreviewDisplay(mPreviewSurface)
     }
@@ -236,6 +237,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 此方法调用之前必须先调用[setPreviewSurface],自行决定决定何时启动预览.
      * */
     override fun startPreview() {
+        Timber.i("startPreview(). mCamera = $mCamera")
         if (!mPreviewed.get()) {
             try {
                 mPreviewDataCallback?.apply {
@@ -243,9 +245,11 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                         this.onPreviewDataCallback(data)
                     }
                 }
-                mCamera?.startPreview()
-                mPreviewed.set(true)
-                mStateCallback?.onCameraPreviewSuccess()
+                mCamera?.apply {
+                    startPreview()
+                    mStateCallback?.onCameraPreviewSuccess()
+                }
+                mPreviewed.set(mCamera != null)
             } catch (e: Exception) {
                 e.printStackTrace()
                 releaseCamera()
@@ -263,10 +267,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * 设置完预览界面后即可启动预览.
      * */
     override fun startPreview(surface: SurfaceHolder) {
-        if (!mPreviewed.get()) {
-            setPreviewSurface(surface)
-            startPreview()
-            startAutoFocus()
+        synchronized(this) {
+            Timber.i("startPreview.mPreviewed = ${mPreviewed.get()}")
+            if (!mPreviewed.get()) {
+                setPreviewSurface(surface)
+                startPreview()
+                startAutoFocus()
+            }
         }
     }
 
@@ -408,17 +415,20 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun closeCamera() {
-        stopPreview()
-        mCameraOpening.set(false)
-        mCamera?.release()
-        mCamera = null
-        stopRecord()
-        mIsVideoAutoFocusSupported = false
-        mIsPictureAutoFocusSupported = false
-        mIsManualFocusSupported = false
-        mBurstMode = false
-        mParameters = null
-        mStateCallback?.onCameraClosed()
+        synchronized(this) {
+            stopPreview()
+            mCameraOpening.set(false)
+            mCamera?.release()
+            mCamera = null
+            Timber.i("closeCamera. mCamera = $mCamera")
+            stopRecord()
+            mIsVideoAutoFocusSupported = false
+            mIsPictureAutoFocusSupported = false
+            mIsManualFocusSupported = false
+            mBurstMode = false
+            mParameters = null
+            mStateCallback?.onCameraClosed()
+        }
     }
 
     override fun releaseCamera() {

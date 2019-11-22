@@ -13,6 +13,10 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        ndk {
+            abiFilters 'armeabi-v7a'
+        }
+
     }
     buildTypes {
         release {
@@ -46,6 +50,9 @@ dependencies {
 //    api 'de.greenrobot:eventbus:3.0.0-beta1'
     implementation deps.glide.runtime
     kapt deps.glide.compiler
+
+    api deps.bugly.runtime
+    api deps.bugly.ndk
 
     api 'org.greenrobot:eventbus:3.1.1'
     api 'com.yanzhenjie:permission:2.0.0-rc12'

@@ -62,6 +62,10 @@ class TPreferenceManager(private var context: Context) {
     }
 
     fun removeAll() {
-        getPreferenceScreen().removeAll()
+        try {
+            getPreferenceScreen().removeAll()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

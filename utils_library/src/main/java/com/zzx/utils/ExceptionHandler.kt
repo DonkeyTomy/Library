@@ -1,9 +1,11 @@
 package com.zzx.utils
 
 import android.app.Application
+import com.tencent.bugly.crashreport.CrashReport
 import com.zzx.utils.file.FileUtil
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
@@ -24,12 +26,34 @@ class ExceptionHandler private constructor(application: Application, dir: String
     }
 
     init {
-        Thread.setDefaultUncaughtExceptionHandler(this)
+        val strategy = CrashReport.UserStrategy(application)
+        strategy.apply {
+            appPackageName = application.packageName
+            appVersion = application.packageManager.getPackageInfo(application.packageName, 0).versionName
+            appChannel = appPackageName
+            appReportDelay = 5000
+            setCrashHandleCallback(CrashCallback())
+        }
+        CrashReport.initCrashReport(application, "9ae676a08f", true, strategy)
+//        Thread.setDefaultUncaughtExceptionHandler(this)
+    }
+
+    inner class CrashCallback: CrashReport.CrashHandleCallback() {
+        override fun onCrashHandleStart(crashType: Int, errorType: String?, errorMessage: String?, errorStack: String): MutableMap<String, String> {
+            Timber.i("stack = $errorStack")
+            saveLog2File(errorStack)
+            return super.onCrashHandleStart(crashType, errorType, errorMessage, errorStack)
+        }
+
+        override fun onCrashHandleStart2GetExtraDatas(p0: Int, p1: String?, p2: String?, p3: String?): ByteArray {
+            return super.onCrashHandleStart2GetExtraDatas(p0, p1, p2, p3)
+        }
     }
 
     fun release() {
+        CrashReport.closeBugly()
         mContext = null
-        Thread.setDefaultUncaughtExceptionHandler(null)
+//        Thread.setDefaultUncaughtExceptionHandler(null)
     }
 
     private fun handleException(ex: Throwable) {

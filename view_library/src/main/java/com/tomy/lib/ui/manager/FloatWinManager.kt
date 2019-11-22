@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import com.zzx.utils.system.PermissionChecker
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import timber.log.Timber
@@ -18,7 +19,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
 
     private lateinit var mWindowManager: WindowManager
 
-    private lateinit var mParameter: WindowManager.LayoutParams
+    private var mParameter: WindowManager.LayoutParams? = null
 
     private var mShowed: AtomicBoolean = AtomicBoolean(false)
 
@@ -35,22 +36,26 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
 
     private fun initWindowManager() {
         mWindowManager  = mContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        initParameters()
+        if (PermissionChecker.checkSystemAlertDialog(mContext)) {
+            initParameters()
+        }
     }
 
     private fun initParameters() {
         mParameter      = WindowManager.LayoutParams()
-        mParameter.x    = 0
-        mParameter.y    = 0
-        mParameter.gravity  = Gravity.START or Gravity.TOP
-        mParameter.format = PixelFormat.RGBA_8888
-        mParameter.flags = mParameter.flags.or(WindowManager.LayoutParams.FLAG_FULLSCREEN) or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        mParameter?.apply {
+            x = 0
+            y = 0
+            gravity = Gravity.START or Gravity.TOP
+            format = PixelFormat.RGBA_8888
+            flags = flags.or(WindowManager.LayoutParams.FLAG_FULLSCREEN) or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 //        mParameter.flags = mParameter.flags.or(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN).and(WindowManager.LayoutParams.FLAG_FULLSCREEN.inv())
-        Timber.e("flags = ${mParameter.flags}")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mParameter.type = mWinType
-        } else {
-            mParameter.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+            Timber.e("flags = $flags")
+            type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mWinType
+            } else {
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+            }
         }
     }
 
@@ -61,10 +66,12 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
 
     fun showFloatWindow() {
         Timber.w("showFloatWindow()")
-        mParameter.x = 0
-        mParameter.alpha = 1f
-        mParameter.flags = mParameter.flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
-        updateView(mWidth, mHeight)
+        mParameter?.apply {
+            x = 0
+            alpha = 1f
+            flags = flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
+            updateView(mWidth, mHeight)
+        }
     }
 
     fun setOnWindowDismissListener(listener: OnDismissListener) {
@@ -75,11 +82,14 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
      * @see showFloatWindow
      * */
     fun dismissWindow() {
-        mParameter.x = -800
-        mParameter.alpha = 1f
-        mParameter.flags = mParameter.flags.or(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
-        updateView(480, mHeight)
-        mDismissListener?.onWindowDismiss()
+        mParameter?.apply {
+            x = -800
+            alpha = 1f
+            flags = flags.or(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+            updateView(480, mHeight)
+            mDismissListener?.onWindowDismiss()
+        }
+
     }
 
     fun removeFloatWindow() {
@@ -111,17 +121,17 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     }
 
     private fun setResolutionRation(width: Int, height: Int) {
-        mParameter.width    = width
-        mParameter.height   = height
+        mParameter?.width    = width
+        mParameter?.height   = height
     }
 
     private fun setKeepScreenOn(keep: Boolean) {
         if (keep) {
-            mParameter.flags.apply {
+            mParameter?.flags?.apply {
                 or(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         } else {
-            mParameter.flags.apply {
+            mParameter?.flags?.apply {
                 and(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON.inv())
             }
         }

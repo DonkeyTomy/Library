@@ -27,7 +27,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
 
 
     override fun getSensorOrientation(): Int {
-        return getBackCameraConfiguration()!!.get(CameraCharacteristics.SENSOR_ORIENTATION)
+        return getBackCameraConfiguration()!!.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
     }
 
     private var mCamera: CameraDevice? = null
@@ -122,7 +122,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * @see getCameraProperty
      * */
     private fun getStreamConfigurationMap(cameraId: String): StreamConfigurationMap {
-        return getCameraProperty(cameraId).get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        return getCameraProperty(cameraId).get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
     }
 
     override fun getSupportCaptureSizeList(): Array<Size> {
@@ -394,8 +394,8 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
     /**
      * @see setPreviewParams
      * */
-    override fun setPreviewSurface(surfaceTexture: SurfaceTexture) {
-        mPreviewSurfaceTexture = surfaceTexture
+    override fun setPreviewSurface(surface: SurfaceTexture) {
+        mPreviewSurfaceTexture = surface
     }
 
     private fun initSurface() {

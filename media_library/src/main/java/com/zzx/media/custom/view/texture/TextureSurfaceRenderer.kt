@@ -23,7 +23,7 @@ abstract class TextureSurfaceRenderer(surfaceTexture: SurfaceTexture, width: Int
 
     lateinit var mEGL: EGL11
     lateinit var mEGLContext: EGLContext
-    lateinit var mEGLSurface: EGLSurface
+    var mEGLSurface: EGLSurface? = null
     lateinit var mEGLDisplay: EGLDisplay
 
     override fun run() {
