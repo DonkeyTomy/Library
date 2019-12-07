@@ -15,6 +15,7 @@ import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_NOT_RELEA
 import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_NO_CAMERA
 import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_OPEN_FAILED
 import com.zzx.media.camera.ICameraManager.Companion.CAMERA_OPEN_ERROR_PREVIEW_FAILED
+import com.zzx.media.camera.ICameraManager.Companion.FOCUS_MODE_MANUAL
 import com.zzx.media.camera.ICameraManager.Companion.SENSOR_BACK_CAMERA
 import com.zzx.media.camera.ICameraManager.Companion.SENSOR_FRONT_CAMERA
 import com.zzx.media.recorder.IRecorder
@@ -49,12 +50,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mCameraFacing = Camera.CameraInfo.CAMERA_FACING_BACK
 
-    private val mObject = Object()
-
     private var mPreviewSurface: SurfaceHolder? = null
 
-
-    private var mVideoRecorder: IRecorder? = null
 
     private var mPictureDataCallback: ICameraManager.PictureDataCallback? = null
 
@@ -170,7 +167,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     supportedFocusModes.forEach {
                         Timber.i("focusMode = $it")
                         when (it) {
-                            "manual"   -> {
+                            FOCUS_MODE_MANUAL   -> {
                                 mIsManualFocusSupported = true
                             }
                             Parameters.FOCUS_MODE_CONTINUOUS_PICTURE    -> {

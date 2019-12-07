@@ -6,7 +6,6 @@ import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
@@ -19,12 +18,7 @@ import android.support.v4.app.ActivityCompat
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.widget.Toast
-
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.IOException
+import java.io.*
 import java.lang.reflect.Method
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -227,8 +221,7 @@ class SystemUtil {
             if (context == null) {
                 return ""
             }
-            var imei: String?
-            try {
+            val imei = try {
                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                     //    ActivityCompat#requestPermissions
                     // here to request the missing permissions, and then overriding
@@ -238,10 +231,10 @@ class SystemUtil {
                     // for ActivityCompat#requestPermissions for more details.
                     return ""
                 }
-                imei = (context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
+                (context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
             } catch (e: Exception) {
                 e.printStackTrace()
-                imei = ""
+                ""
             }
 
             return imei ?: ""
@@ -447,8 +440,8 @@ class SystemUtil {
                 try {
                     val sdcardDir = File("/sdcard")
                     val statFs = StatFs(sdcardDir.absolutePath)
-                    val blockCount = statFs.blockCount.toFloat()
-                    val availableSize = statFs.availableBlocks.toFloat()
+                    val blockCount = statFs.blockCountLong
+                    val availableSize = statFs.availableBlocksLong.toFloat()
                     val percent = availableSize / blockCount
                     if (percent > 0.01)
                         return (percent * 100).toInt()

@@ -560,10 +560,10 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 //            }
         }
 
-        override fun onRecorderConfigureFailed() {
+        /*override fun onRecorderConfigureFailed() {
             stopLooper()
             mRecordStateCallback?.onRecorderConfigureFailed()
-        }
+        }*/
 
         override fun onRecordError(errorCode: Int) {
             stopLooper()

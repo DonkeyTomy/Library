@@ -4,8 +4,10 @@ import android.hardware.Camera
 import android.media.CamcorderProfile
 import android.media.MediaRecorder
 import android.os.Build
+import android.os.StatFs
 import android.util.SparseIntArray
 import android.view.Surface
+import com.tencent.bugly.crashreport.CrashReport
 import com.zzx.media.parameters.AudioProperty
 import com.zzx.media.parameters.VideoProperty
 import com.zzx.media.recorder.IRecorder
@@ -247,8 +249,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             e.printStackTrace()
 //            unlockCamera()
             setState(State.ERROR)
-            mRecorderCallback?.onRecorderConfigureFailed()
+            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED)
             reset()
+            CrashReport.postCatchedException(e)
             Timber.e("$TAG_RECORDER onRecorderConfigureFailed")
         }
     }
@@ -266,10 +269,23 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         }*/
     }
 
+    private fun checkStorageEnough(): Boolean {
+        var enough = false
+        mFile?.apply {
+            enough = FileUtil.getDirFreeSpaceByMB(parentFile) >= 2
+        }
+        return enough
+    }
+
     /**
      * 开始录像.
      * */
     override fun startRecord() {
+        if (!checkStorageEnough()) {
+            reset()
+            mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH)
+            return
+        }
         Timber.e("$TAG_RECORDER startRecord. mState = [$mState]")
         if (getState() == State.PREPARED) {
             mMediaRecorder.start()

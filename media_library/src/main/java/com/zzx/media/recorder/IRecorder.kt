@@ -144,7 +144,7 @@ interface IRecorder {
 
         fun onRecordStop(stopCode: Int = -1)
 
-        fun onRecorderConfigureFailed()
+//        fun onRecorderConfigureFailed()
 
         fun onRecordError(errorCode: Int)
 
@@ -158,6 +158,7 @@ interface IRecorder {
             const val RECORD_STOP_EXTERNAL_STORAGE_NOT_MOUNTED  = -1
             const val RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH   = -2
             const val RECORD_ERROR_TOO_SHORT = -1007
+            const val RECORD_ERROR_CONFIGURE_FAILED = -3
         }
 
     }
