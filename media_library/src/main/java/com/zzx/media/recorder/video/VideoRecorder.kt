@@ -4,7 +4,6 @@ import android.hardware.Camera
 import android.media.CamcorderProfile
 import android.media.MediaRecorder
 import android.os.Build
-import android.os.StatFs
 import android.util.SparseIntArray
 import android.view.Surface
 import com.tencent.bugly.crashreport.CrashReport
@@ -43,9 +42,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 
     private var mCamera: Camera? = null
 
-    private val mRecordStarting = AtomicBoolean(false)
+//    private val mRecordStarting = AtomicBoolean(false)
 
-    private val mRecordStopping = AtomicBoolean(false)
+//    private val mRecordStopping = AtomicBoolean(false)
 
 
     override fun setFlag(@IRecorder.FLAG flag: Int) {
@@ -96,7 +95,6 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     }
 
     override fun setProperty(quality: Int, highQuality: Boolean) {
-        mRecordStarting.set(true)
         val profile = CamcorderProfile.get(quality)
         val min = if (highQuality) 1 else 2
         mAudioProperty = AudioProperty(profile.audioSampleRate,
@@ -190,6 +188,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * @see init
      * */
     override fun prepare() {
+        mRecorderCallback?.onRecordStarting()
+//        mRecordStarting.set(true)
         try {
             Timber.e("$TAG_RECORDER prepare. mState = [$mState]")
             when(mFlag) {
@@ -290,11 +290,12 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         if (getState() == State.PREPARED) {
             mMediaRecorder.start()
             setState(State.RECORDING)
+//            mRecordStarting.set(false)
             mRecorderCallback?.onRecordStart()
         } else {
+//            mRecordStarting.set(false)
             throw object : IllegalStateException("Current state is {$mState}.Not Prepared!") {}
         }
-        mRecordStarting.set(false)
     }
 
     /**
@@ -302,7 +303,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun stopRecord() {
         Timber.e("$TAG_RECORDER stopRecord. mState = [$mState]")
-        mRecordStopping.set(true)
+//        mRecordStopping.set(true)
+        mRecorderCallback?.onRecordStopping()
         val state = getState()
         if (state == State.RECORDING || state == State.PAUSE) {
             setState(State.IDLE)
@@ -312,22 +314,24 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                 mRecorderCallback?.onRecorderFinished(mFile)
             } catch (e: Exception) {
                 e.printStackTrace()
-                mRecorderCallback?.onRecorderFinished(null)
+                mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_STOP_UNKNOWN_ERROR)
             }
+        } else {
+            mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_NOT_RECORDING)
         }
-        mRecordStopping.set(false)
+//        mRecordStopping.set(false)
     }
 
-    override fun isRecordStartingOrStopping(): Boolean {
+    /*override fun isRecordStartingOrStopping(): Boolean {
         return mRecordStarting.get() || mRecordStopping.get()
-    }
+    }*/
 
     override fun pauseRecord() {
         Timber.e("$TAG_RECORDER pauseRecord. mState = [$mState]")
         if (getState() == State.RECORDING) {
             mMediaRecorder.pause()
             setState(State.PAUSE)
-
+            mRecorderCallback?.onRecordPause()
         }
     }
 
@@ -336,7 +340,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         if (getState() == State.PAUSE) {
             mMediaRecorder.resume()
             setState(State.RECORDING)
-
+            mRecorderCallback?.onRecordResume()
         }
     }
 
@@ -351,8 +355,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             mMediaRecorder.reset()
             setState(State.IDLE)
         }
-        mRecordStarting.set(false)
-        mRecordStopping.set(false)
+//        mRecordStarting.set(false)
+//        mRecordStopping.set(false)
     }
 
     /**
@@ -365,15 +369,15 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             mMediaRecorder.release()
             setState(State.RELEASE)
         }
-        mRecordStarting.set(false)
-        mRecordStopping.set(false)
+//        mRecordStarting.set(false)
+//        mRecordStopping.set(false)
     }
 
     /**
      * 返回当前状态.
      * @see State
      * */
-    override fun getState(): IRecorder.State {
+    override fun getState(): State {
         Timber.e("$TAG_RECORDER getState() = $mState")
         return mState
     }
@@ -382,7 +386,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * 设置当前状态.
      * @see State
      * */
-    override fun setState(state: IRecorder.State) {
+    override fun setState(state: State) {
         mState = state
         Timber.e("$TAG_RECORDER setState. mState = [$mState]")
     }
