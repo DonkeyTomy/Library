@@ -115,6 +115,8 @@ interface ICameraManager<in surface, camera> {
 
     fun isPictureAutoFocusSupported(): Boolean
 
+    fun getCameraCore(): CameraCore<camera>
+
     /**
      * 停止录像
      * */
@@ -216,15 +218,21 @@ interface ICameraManager<in surface, camera> {
 
     interface CameraStateCallback<C> {
 
+        fun onCameraOpening()
+
         fun onCameraOpenSuccess(camera: C)
 
         fun onCameraOpenFailed(errorCode: Int)
+
+        fun onCameraClosing()
 
         fun onCameraClosed()
 
         fun onCameraErrorClose(errorCode: Int)
 
         fun onCameraPreviewSuccess()
+
+        fun onCameraPreviewStop()
     }
 
     interface PictureDataCallback {

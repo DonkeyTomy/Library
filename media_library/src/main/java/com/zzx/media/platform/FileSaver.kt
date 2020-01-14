@@ -197,7 +197,7 @@ class FileSaver(var mContext: Context): IFileSaver {
         synchronized(mQueue) {
             mQueue.add(r)
         }
-        Timber.tag(TAG).e("addSaveRequest add")
+//        Timber.tag(TAG).e("addSaveRequest add")
     }
 
     inner class PhotoOperator(file: File, fileType: Int): RequestOperator(file) {
@@ -230,7 +230,7 @@ class FileSaver(var mContext: Context): IFileSaver {
                 saveImageToStorage(mFile.absolutePath, this)
             }
             saveToDatabase(this)
-            Timber.tag(TAG).w("saveRequest Done")
+//            Timber.tag(TAG).w("saveRequest Done")
         }
 
 
@@ -284,10 +284,10 @@ class FileSaver(var mContext: Context): IFileSaver {
                 mRequest?.apply {
                     saveRequest()
                 }
-                Timber.tag(TAG).w("------------- pop One -----------3")
+//                Timber.tag(TAG).w("------------- pop One -----------3")
                 mRequest?.notifyListener()
                 synchronized(mQueue) {
-                    Timber.tag(TAG).w("------------- pop One -----------33")
+//                    Timber.tag(TAG).w("------------- pop One -----------33")
                     mQueue.remove()
                 }
 //                Timber.tag(TAG).w("------------- pop One -----------4")
@@ -303,7 +303,7 @@ class FileSaver(var mContext: Context): IFileSaver {
                     mRequest?.getListener()?.onFileSaved(mRequest!!)
                 }
                 lastFileSaverListener   = mRequest?.getListener()
-                Timber.tag(TAG).w("============== next One =============")
+//                Timber.tag(TAG).w("============== next One =============")
             }
             mSaveTask = null
             synchronized(mListenerObject) {
@@ -312,7 +312,7 @@ class FileSaver(var mContext: Context): IFileSaver {
             try {
                 synchronized(mObject) {
                     mObject.notifyAll()
-                    Timber.tag(TAG).w("saveDone notifyAll")
+//                    Timber.tag(TAG).w("saveDone notifyAll")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -10,6 +10,7 @@ import com.zzx.media.camera.ICameraManager
 import com.zzx.media.camera.v1.manager.Camera1Manager
 import com.zzx.media.camera.v2.manager.Camera2Manager
 import com.zzx.media.recorder.IRecorder
+import com.zzx.media.recorder.RecordCore
 import com.zzx.media.utils.FileNameUtils
 import com.zzx.media.utils.MediaInfoUtil
 import com.zzx.utils.file.FileUtil
@@ -48,13 +49,17 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     private var mRotation = 0
 
-    private var mLooping = AtomicBoolean(false)
+    private val mRecordCore = RecordCore()
+
+//    private var mLooping = AtomicBoolean(false)
 
     private val mRecordStarting = AtomicBoolean(false)
 
     private val mRecordStopping = AtomicBoolean(false)
 
-    private var mRecording = AtomicBoolean(false)
+    private val mLoopNeedStop = AtomicBoolean(false)
+
+//    private var mRecording = AtomicBoolean(false)
 
     private var mDelayRecord = AtomicBoolean(false)
 
@@ -157,14 +162,15 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      */
     fun startRecord():Boolean {
         mStartTime = SystemClock.elapsedRealtime()
-        Timber.e("startRecord. mRecording = ${mRecording.get()}; mDirPath = $mDirPath")
-        if (mRecording.get()) {
+        Timber.e("startRecord. mRecording = ${mRecordCore.isRecording()}; mDirPath = $mDirPath")
+        if (mRecordCore.isRecording()) {
             return true
         }
         if (mDirPath == null) {
             return false
         }
-        mRecording.set(true)
+//        mRecording.set(true)
+        mRecordCore.startRecord()
         mCameraManager?.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
         setupRecorder()
         try {
@@ -175,7 +181,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 false
             }
         } catch (e: Exception) {
-            mRecording.set(false)
+//            mRecording.set(false)
+            mRecordCore.stopRecord()
             e.printStackTrace()
         }
         return false
@@ -187,8 +194,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      */
     fun stopRecord() {
         Timber.e("stopRecord")
-        if (mRecording.get()) {
-            mRecording.set(false)
+        if (mRecordCore.isRecording()) {
+//            mRecording.set(false)
             mDelayRecord.set(false)
             mRecordDelayDisposable?.dispose()
             mRecorder.reset()
@@ -196,14 +203,15 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 stopRecord()
                 startPreview()
             }
+            mRecordCore.stopRecord()
         }
 //        FileNameUtils.tmpFile2Video(mOutputFile)
     }
 
     fun stop() {
-        if (mLooping.get()) {
+        if (mRecordCore.isLooping()) {
             stopLooper()
-        } else {
+        } else if (mRecordCore.isRecording()) {
             stopRecord()
         }
     }
@@ -216,13 +224,14 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun isRecording(): Boolean {
-        Timber.e("isRecording: loop[${mLooping.get()}], recording[${mRecording.get()}]")
-        return mLooping.get() || mRecording.get()
+        Timber.e("isRecording: loop[${mRecordCore.isLooping()}], recording[${mRecordCore.isRecording()}]")
+//        return mLooping.get() || mRecording.get()
+        return !mRecordCore.isIDLE()
     }
 
     fun isLoopRecording(): Boolean {
-        Timber.e("isLoopRecording: ${mLooping.get()}")
-        return mLooping.get()
+        Timber.e("isLoopRecording: ${mRecordCore.isLooping()}")
+        return mRecordCore.isLooping()
     }
 
     fun isRecordStartingOrStopping(): Boolean {
@@ -234,19 +243,31 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      * @see stopRecord
      */
     fun stopLooper(finish: ()-> Unit = {}) {
-        if (!mLooping.get()) {
+        if (!mRecordCore.isLooping()) {
             mRecordStateCallback?.onLoopStop(IRecordLoopCallback.STOP_CODE_LOOP_NOT_EXIST)
             return
         }
+        when {
+            mRecordStopping.get() -> {
+                performStopLoop(false)
+            }
+            mRecordStarting.get() -> {
+                mLoopNeedStop.set(true)
+            }
+            else -> {
+                performStopLoop(true)
+            }
+        }
         val timer = isRecordStartingOrStopping()
-        Timber.e("stopLooper.recording = ${mLooping.get()}. isRecordStartingOrStopping = $timer")
-        Observable.just(timer)
+        Timber.e("stopLooper.recording = ${mRecordCore.isLooping()}. isRecordStartingOrStopping = $timer")
+        /*Observable.just(timer)
                 .observeOn(mRecordScheduler)
                 .subscribe {
                     if (!it) {
                         mRecordLoopDisposable?.dispose()
                         mRecordLoopDisposable   = null
-                        mLooping.set(false)
+//                        mLooping.set(false)
+                        mRecordCore.stopLoop()
                         mCheckLoopDisposable?.dispose()
                         mCheckLoopDisposable    = null
                         stopRecord()
@@ -260,7 +281,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                                             if (!isRecordStartingOrStopping() && mStopDisposable?.isDisposed == false) {
                                                 mRecordLoopDisposable?.dispose()
                                                 mRecordLoopDisposable   = null
-                                                mLooping.set(false)
+//                                                mLooping.set(false)
+                                                mRecordCore.stopLoop()
                                                 mCheckLoopDisposable?.dispose()
                                                 mCheckLoopDisposable    = null
                                                 stopRecord()
@@ -279,24 +301,37 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                                 )
 
                     }
-                }
+                }*/
 
 
     }
 
+    private fun performStopLoop(needStopRecord: Boolean) {
+        mRecordLoopDisposable?.dispose()
+        mRecordLoopDisposable   = null
+        mRecordCore.stopLoop()
+        mCheckLoopDisposable?.dispose()
+        mCheckLoopDisposable    = null
+        if (needStopRecord) {
+            stopRecord()
+        }
+        mRecordStateCallback?.onLoopStop()
+    }
 
     fun recordSection() {
-        if (mLooping.get()) {
-            mLooping.set(false)
+        if (mRecordCore.isLooping()) {
+//            mLooping.set(false)
+            mRecordCore.stopLoop()
             startLooper()
         }
     }
 
     fun cancelLooperTimer() {
-        if (mLooping.get()) {
+        if (mRecordCore.isLooping()) {
             mRecordLoopDisposable?.dispose()
             mRecordLoopDisposable = null
-            mLooping.set(false)
+//            mLooping.set(false)
+            mRecordCore.stopLoop()
         }
     }
 
@@ -361,8 +396,10 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 }
                 .observeOn(mRecordScheduler)
                 .subscribe {
-                    mLooping.set(it)
+//                    mLooping.set(it)
+
                     if (it) {
+                        mRecordCore.startLoop()
                         mRecordStateCallback?.onLoopStart()
                         checkStorageSpace()
                         startRecord()
@@ -389,6 +426,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                     } else {
                         mRecordStateCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH)
                         stopRecord()
+                        mRecordCore.stopLoop()
                     }
                 }
     }
@@ -400,7 +438,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     fun resetTimer(newDuration: Int) {
         if (newDuration <= 0)
             return
-        if (mLooping.get()) {
+        if (mRecordCore.isLooping()) {
             Observable.just(Unit)
                     .map {
                         cancelLooperTimer()
@@ -568,7 +606,11 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         override fun onRecordStart() {
 //            if (!mAutoDelete) {
             mRecordStarting.set(false)
-                mRecordStateCallback?.onRecordStart()
+            mRecordStateCallback?.onRecordStart()
+            if (mLoopNeedStop.get()) {
+                mLoopNeedStop.set(false)
+                performStopLoop(true)
+            }
 //            }
         }
 
@@ -590,6 +632,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         override fun onRecordError(errorCode: Int) {
             mRecordStarting.set(false)
             mRecordStopping.set(false)
+            mLoopNeedStop.set(false)
             stopLooper()
             mRecordStateCallback?.onRecordError(errorCode)
         }

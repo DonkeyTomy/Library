@@ -40,7 +40,7 @@ class CameraCore<camera> {
         mCameraID = cameraID
     }
 
-    fun setParameters(parameters: Camera.Parameters) {
+    fun setParameters(parameters: Camera.Parameters?) {
         mParameter = parameters
     }
 
@@ -74,7 +74,7 @@ class CameraCore<camera> {
     fun getFocusMode() = mFocusMode
 
 
-    fun setCamera(camera: camera) {
+    fun setCamera(camera: camera?) {
         mCamera = camera
     }
     fun getCamera(): camera? {
@@ -89,16 +89,78 @@ class CameraCore<camera> {
         return mStatus
     }
 
+    fun isPreview(): Boolean {
+        return mStatus == Status.PREVIEW
+    }
+
+    fun canPreview(): Boolean {
+        return mStatus == Status.OPENED
+    }
+
+    fun isOpened(): Boolean {
+        return mStatus == Status.OPENED
+    }
+
+    fun isOpening(): Boolean {
+        return mStatus == Status.OPENING
+    }
+
+    fun isClosing(): Boolean {
+        return mStatus == Status.CLOSING
+    }
+
+    fun canOpen(): Boolean {
+        return mStatus == Status.RELEASE
+    }
+
+    fun canClose(): Boolean {
+        return mStatus == Status.PREVIEW || mStatus == Status.OPENED
+    }
+
+    fun isCapturing(): Boolean {
+        return mStatus == Status.CAPTURING || mStatus == Status.RECORDING_CAPTURING
+    }
+
+    fun canCapture(): Boolean {
+        return mStatus == Status.PREVIEW || mStatus == Status.RECORDING
+    }
+
+    fun isIDLE(): Boolean {
+        return mStatus != Status.RECORDING && mStatus != Status.RECORDING_CAPTURING && mStatus != Status.CAPTURING
+    }
+
+    fun isBusy(): Boolean {
+        return mStatus == Status.RECORDING || mStatus == Status.RECORDING_CAPTURING || mStatus == Status.CAPTURING
+    }
+
+    fun isRecording(): Boolean {
+        return mStatus == Status.RECORDING || mStatus == Status.RECORDING_CAPTURING
+    }
+
+    fun isRecordingCapturing(): Boolean {
+        return mStatus == Status.RECORDING_CAPTURING
+    }
+
+    fun canRecord(): Boolean {
+        return mStatus == Status.PREVIEW
+    }
+
 
     enum class Status {
-        RELEASE, IDLE, OPENING, OPENED, PREVIEW, CAPTURING, RECORDING, CLOSING
+        RELEASE,
+        OPENING,
+        OPENED,
+        PREVIEW,
+        CAPTURING,
+        RECORDING,
+        RECORDING_CAPTURING,
+        CLOSING
     }
 
     companion object {
-        const val STATUS_RELEASE    = 0x0
-        const val STATUS_IDLE       = 0x1
+        const val STATUS_RELEASE    = 0x1
         const val STATUS_OPENING    = 0x2
         const val STATUS_CLOSING    = 0x4
-        const val STATUS_CAPTURING  = 0x4
+        const val STATUS_CAPTURING  = 0x8
     }
 }

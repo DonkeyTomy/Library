@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
+import com.zzx.media.camera.CameraCore
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.recorder.IRecorder
 import timber.log.Timber
@@ -81,6 +82,9 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
     private var mRecordPreviewReady: ICameraManager.RecordPreviewReady? = null
 
     private var mCameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+    private val mCameraCore = CameraCore<CameraDevice>()
+
 
     init {
         mHandlerThread.start()
@@ -604,6 +608,9 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         return 0
     }
 
+    override fun getCameraCore(): CameraCore<CameraDevice> {
+        return mCameraCore
+    }
 
     /**
      * @see sendPreviewRequest

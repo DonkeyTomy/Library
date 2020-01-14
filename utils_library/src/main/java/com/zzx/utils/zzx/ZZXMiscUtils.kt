@@ -242,7 +242,7 @@ object ZZXMiscUtils {
                 synchronized(obj) {
                     JniFile().writeOnce(path, cmd)
                 }
-                Timber.e("write: path = $path; cmd = $cmd.")
+//                Timber.e("write: path = $path; cmd = $cmd.")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -290,7 +290,7 @@ object ZZXMiscUtils {
         /*Observable.just(path)
                 .subscribeOn(Schedulers.single())
                 .subscribe {*/
-                    Timber.e("write: path = $path; cmd = $cmd. Thread = ${Thread.currentThread().name}")
+//                    Timber.e("write: path = $path; cmd = $cmd. Thread = ${Thread.currentThread().name}")
                     var outputStream: FileOutputStream? = null
                     try {
                         outputStream = FileOutputStream(path)
