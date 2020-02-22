@@ -69,8 +69,17 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
         mParameter?.apply {
             x = 0
             alpha = 1f
-            flags = flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
+//            flags = flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
             updateView(mWidth, mHeight)
+        }
+    }
+
+    fun showAt(x: Int, y: Int, width: Int, height: Int) {
+        mParameter?.apply {
+            this.x = x
+            this.y = y
+//            flags = flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
+            updateView(width, height)
         }
     }
 

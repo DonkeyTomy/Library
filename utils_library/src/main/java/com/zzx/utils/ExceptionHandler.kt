@@ -16,7 +16,7 @@ import java.util.*
 /**@author Tomy
  * Created by Tomy on 2018/8/12.
  */
-class ExceptionHandler private constructor(application: Application, dir: String): Thread.UncaughtExceptionHandler {
+class ExceptionHandler private constructor(application: Application?, dir: String): Thread.UncaughtExceptionHandler {
     private val mFormatter = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
     private val mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler()
     private var mContext: Application? = application
@@ -26,15 +26,15 @@ class ExceptionHandler private constructor(application: Application, dir: String
     }
 
     init {
-        val strategy = CrashReport.UserStrategy(application)
+        /*val strategy = CrashReport.UserStrategy(application)
         strategy.apply {
-            appPackageName = application.packageName
+            appPackageName = application?.packageName
             appVersion = application.packageManager.getPackageInfo(application.packageName, 0).versionName
             appChannel = appPackageName
             appReportDelay = 5000
             setCrashHandleCallback(CrashCallback())
         }
-        CrashReport.initCrashReport(application, "9ae676a08f", true, strategy)
+        CrashReport.initCrashReport(application, "9ae676a08f", true, strategy)*/
 //        Thread.setDefaultUncaughtExceptionHandler(this)
     }
 
@@ -96,7 +96,7 @@ class ExceptionHandler private constructor(application: Application, dir: String
 
     @Synchronized
     fun saveLog2File(log: String) {
-        Observable.just(log)
+        /*Observable.just(log)
                 .observeOn(Schedulers.io())
                 .subscribe {
                     val time = mFormatter.format(Date())
@@ -115,7 +115,7 @@ class ExceptionHandler private constructor(application: Application, dir: String
                         }
 
                     }
-                }
+                }*/
     }
 
     override fun uncaughtException(t: Thread, e: Throwable) {
@@ -130,7 +130,7 @@ class ExceptionHandler private constructor(application: Application, dir: String
                 return mInstance!!
             }
             if (mInstance == null) {
-                mInstance = ExceptionHandler(application!!, dir)
+                mInstance = ExceptionHandler(application, dir)
             }
             return mInstance!!
         }
