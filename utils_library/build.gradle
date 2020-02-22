@@ -54,6 +54,6 @@ dependencies {
     api deps.bugly.runtime
     api deps.bugly.ndk
 
-    api 'org.greenrobot:eventbus:3.1.1'
-    api 'com.yanzhenjie:permission:2.0.0-rc12'
+    api deps.eventbus
+    api deps.permission
 }

@@ -242,7 +242,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      * @see startLooper
      * @see stopRecord
      */
-    fun stopLooper(finish: ()-> Unit = {}) {
+    fun stopLooper() {
+//    fun stopLooper(finish: ()-> Unit = {}) {
         if (!mRecordCore.isLooping()) {
             mRecordStateCallback?.onLoopStop(IRecordLoopCallback.STOP_CODE_LOOP_NOT_EXIST)
             return
