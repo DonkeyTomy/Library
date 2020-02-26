@@ -2,6 +2,7 @@ package com.tomy.lib.ui.manager
 
 import android.content.Context
 import android.graphics.PixelFormat
+import android.graphics.Point
 import android.os.Build
 import android.view.Gravity
 import android.view.View
@@ -30,6 +31,8 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
 
     private var mDismissListener: OnDismissListener? = null
 
+    private var mDisplayWidth = 0
+
     init {
         initWindowManager()
     }
@@ -39,6 +42,9 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
         if (PermissionChecker.checkSystemAlertDialog(mContext)) {
             initParameters()
         }
+        val point = Point()
+        mWindowManager.defaultDisplay.getSize(point)
+        mDisplayWidth   = point.x
     }
 
     private fun initParameters() {
@@ -75,11 +81,12 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     }
 
     fun showAt(x: Int, y: Int, width: Int, height: Int) {
+        Timber.w("showAt. (${x}x$y). [${width}x$height]")
         mParameter?.apply {
             this.x = x
             this.y = y
 //            flags = flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
-            updateView(width, height)
+            updateView(mDisplayWidth, height)
         }
     }
 
@@ -92,10 +99,10 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
      * */
     fun dismissWindow() {
         mParameter?.apply {
-            x = -800
+            x = -mDisplayWidth
             alpha = 1f
             flags = flags.or(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
-            updateView(480, mHeight)
+            updateView(mDisplayWidth, mHeight)
             mDismissListener?.onWindowDismiss()
         }
 
