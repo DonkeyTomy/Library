@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
+import android.support.v4.app.FragmentActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +18,7 @@ import timber.log.Timber
  */
 abstract class BaseSupportFragment: Fragment() {
 
-    var mContext: AppCompatActivity? = null
+    var mContext: FragmentActivity? = null
     var mUnBinder: Unbinder? = null
 
     private var mRootView: View? = null
@@ -29,7 +29,7 @@ abstract class BaseSupportFragment: Fragment() {
 
     override fun onAttach(context: Activity?) {
         super.onAttach(context)
-        mContext = context as AppCompatActivity
+        mContext = context as FragmentActivity
         initMember()
     }
 
@@ -73,6 +73,7 @@ abstract class BaseSupportFragment: Fragment() {
         mUnBinder?.unbind()
         mUnBinder = null
         (mRootView!!.parent as ViewGroup).removeView(mRootView!!)
+        Timber.e("onDestroyView")
     }
 
     override fun onDestroy() {

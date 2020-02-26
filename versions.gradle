@@ -20,13 +20,21 @@
 * Shared file between builds so that they can all use the same dependencies and
 * maven repositories.
 **/
+import java.text.SimpleDateFormat
+SimpleDateFormat format = new SimpleDateFormat("yy.MMddHHmm")
+String date = format.format(new Date())
+def time = date
+def deps = [:]
+deps.time = time
 ext.deps = [:]
+
 def versions = [:]
 versions.library = "1.0.2"
-versions.kotlin = "1.3.40"
+versions.kotlin = "1.3.50"
+versions.kotlin_coroutines = "1.3.2"
 versions.paging = "1.0.1"
-versions.work = "1.0.0-alpha06"
-versions.navigation = "1.0.0-alpha05"
+versions.work = '1.0.1'
+versions.navigation = '1.0.0'
 versions.arch_core = "1.1.1"
 versions.room = "1.1.1"
 versions.lifecycle = "1.1.1"
@@ -38,13 +46,17 @@ versions.butterknife = "8.8.1"
 versions.constraint_layout = "2.0.0-alpha3"
 versions.multidex = "1.0.3"
 versions.glide = "4.7.1"
+versions.gpuimage = "1.4.1"
 versions.timber = "4.7.0"
 versions.android_gradle_plugin = '3.5.2'
 //versions.android_gradle_plugin = '3.3.1'
 // versions.android_gradle_plugin = '3.2.1'
 versions.rxjava2 = "2.1.10"
 versions.rx_android = "2.0.2"
+versions.eventbus = "3.1.1"
+versions.permission = "2.0.0-rc12"
 versions.ijkplayer = "0.8.8"
+versions.anko = "0.8.2"
 
 versions.junit = "4.12"
 versions.espresso = "3.0.2"
@@ -59,7 +71,6 @@ versions.atsl_runner = "1.0.1"
 versions.atsl_rules = "1.0.1"
 versions.hamcrest = "1.3"
 
-def deps = [:]
 
 def build_versions = [:]
 build_versions.min_sdk = 21
@@ -82,6 +93,8 @@ kotlin.extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$versions.ko
 kotlin.stdlib = "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin"
 kotlin.reflect = "org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin"
 kotlin.stdlib_jdk = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin"
+kotlin.coroutines_core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.kotlin_coroutines"
+kotlin.coroutines_android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.kotlin_coroutines"
 kotlin.test = "org.jetbrains.kotlin:kotlin-test-junit:$versions.kotlin"
 kotlin.allopen = "org.jetbrains.kotlin:kotlin-allopen:$versions.kotlin"
 deps.kotlin = kotlin
@@ -106,8 +119,18 @@ deps.support = support
 
 def butterknife = [:]
 butterknife.runtime = "com.jakewharton:butterknife:$versions.butterknife"
+butterknife.plugin = "com.jakewharton:butterknife-gradle-plugin:$versions.butterknife"
 butterknife.compiler = "com.jakewharton:butterknife-compiler:$versions.butterknife"
 deps.butterknife = butterknife
+
+def anko = [:]
+anko.sdk = "org.jetbrains.anko:anko-sdk23:$versions.anko"
+anko.sdk_listeners = "org.jetbrains.anko:anko-sdk23-listeners:$versions.anko"
+anko.support = "org.jetbrains.anko:anko-support-v4:$versions.anko"
+anko.app_compat = "org.jetbrains.anko:anko-appcompat-v7:$versions.anko"
+anko.design = "org.jetbrains.anko:anko-design:$versions.anko"
+anko.design_listners = "org.jetbrains.anko:anko-design-listeners:$versions.anko"
+deps.anko = anko
 
 def room = [:]
 room.runtime = "android.arch.persistence.room:runtime:$versions.room"
@@ -166,12 +189,16 @@ glide.runtime = "com.github.bumptech.glide:glide:$versions.glide"
 glide.compiler = "com.github.bumptech.glide:compiler:$versions.glide"
 deps.glide = glide
 
+deps.gpuimage = "jp.co.cyberagent.android.gpuimage:gpuimage-library:$versions.gpuimage"
+
 deps.dexmaker = "com.linkedin.dexmaker:dexmaker-mockito:$versions.dexmaker"
 
 deps.timber = "com.jakewharton.timber:timber:$versions.timber"
 deps.rxjava2 = "io.reactivex.rxjava2:rxjava:$versions.rxjava2"
 deps.rx_android = "io.reactivex.rxjava2:rxandroid:$versions.rx_android"
 deps.junit = "junit:junit:$versions.junit"
+deps.eventbus = "org.greenrobot:eventbus:$versions.eventbus"
+deps.permission = "com.yanzhenjie:permission:$versions.permission"
 
 deps.mock_web_server = "com.squareup.okhttp3:mockwebserver:$versions.mockwebserver"
 deps.hamcrest = "org.hamcrest:hamcrest-all:$versions.hamcrest"

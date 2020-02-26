@@ -1,5 +1,6 @@
 package com.zzx.utils.file
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
@@ -126,7 +127,7 @@ object FileUtil {
     }
 
     fun getDirFreeSpace(dir: String): Long {
-        return getDirFreeSpace(dir)
+        return getDirFreeSpace(File(dir))
     }
 
     fun getDirFreeSpaceByMB(dir: File): Long {
@@ -229,6 +230,7 @@ object FileUtil {
         return false
     }
 
+    @SuppressLint("DiscouragedPrivateApi")
     fun getExternalStoragePath(context: Context): String {
         try {
             val list = getVolumePaths(context)

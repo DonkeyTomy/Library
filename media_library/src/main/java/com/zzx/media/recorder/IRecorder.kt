@@ -89,7 +89,7 @@ interface IRecorder {
      * */
     fun stopRecord()
 
-    fun isRecordStartingOrStopping(): Boolean
+//    fun isRecordStartingOrStopping(): Boolean
 
     fun pauseRecord()
 
@@ -140,11 +140,15 @@ interface IRecorder {
 
         fun onRecorderPrepared()
 
+        fun onRecordStarting()
+
         fun onRecordStart()
+
+        fun onRecordStopping()
 
         fun onRecordStop(stopCode: Int = -1)
 
-        fun onRecorderConfigureFailed()
+//        fun onRecorderConfigureFailed()
 
         fun onRecordError(errorCode: Int)
 
@@ -157,7 +161,18 @@ interface IRecorder {
         companion object {
             const val RECORD_STOP_EXTERNAL_STORAGE_NOT_MOUNTED  = -1
             const val RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH   = -2
+            /**
+             * 调用停止录像但是未执行录像
+             */
+            const val RECORD_STOP_NOT_RECORDING                 = -3
+            /**
+             * 录像停止时发生异常错误
+             */
+            const val RECORD_STOP_STOP_UNKNOWN_ERROR            = -4
+
+
             const val RECORD_ERROR_TOO_SHORT = -1007
+            const val RECORD_ERROR_CONFIGURE_FAILED = -3
         }
 
     }

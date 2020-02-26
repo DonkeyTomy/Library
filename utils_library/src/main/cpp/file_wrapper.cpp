@@ -13,16 +13,16 @@ JNIEXPORT jboolean JNICALL open(JNIEnv* env, jobject obj, jstring path) {
         LOG_W(TAG, "open(). filePath = %s. Failed", filePath);
         return JNI_FALSE;
     }
-    LOG_W(TAG, "open(). filePath = %s. Success", filePath);
+//    LOG_W(TAG, "open(). filePath = %s. Success", filePath);
     return JNI_TRUE;
 }
 
 JNIEXPORT jboolean JNICALL write(JNIEnv* env, jobject obj, jstring msg) {
     jboolean isCopy;
     const char *tmp = env->GetStringUTFChars(msg, &isCopy);
-    int len = static_cast<int>(strlen(tmp));
+//    int len = static_cast<int>(strlen(tmp));
     int result = mFileWrapper->write(tmp);
-    LOG_W(TAG, "write(). msg = %s, result = %d. len = %d.", tmp, result, len);
+//    LOG_W(TAG, "write(). msg = %s, result = %d. len = %d.", tmp, result, len);
     env->ReleaseStringUTFChars(msg, tmp);
     if (result == -1) {
         return JNI_FALSE;
@@ -58,7 +58,7 @@ jint registerMethod(JNIEnv *env) {
         LOG_E(TAG, "cannot find class");
         return JNI_ERR;
     }
-    LOG_E(TAG, "find class");
+//    LOG_E(TAG, "find class");
     if (env->RegisterNatives(clz, convertNativeMethod,
                              sizeof(convertNativeMethod) / sizeof(convertNativeMethod[0])) !=
         JNI_OK) {
