@@ -31,10 +31,12 @@ abstract class BaseSupportFragment: Fragment() {
         super.onAttach(context)
         mContext = context as FragmentActivity
         initMember()
+        Timber.e("onAttach $this")
     }
 
     override fun onDetach() {
         super.onDetach()
+        Timber.e("onDetach $this")
         releaseMember()
         mContext = null
     }
@@ -43,7 +45,7 @@ abstract class BaseSupportFragment: Fragment() {
         if (mRootView == null) {
             mRootView = inflater.inflate(getLayoutId(), container, false)
         }
-        Timber.e("onCreateView")
+        Timber.e("onCreateView $this")
         createView(mRootView!!)
         return mRootView!!
     }
@@ -53,31 +55,35 @@ abstract class BaseSupportFragment: Fragment() {
         if (isBindView()) {
             mUnBinder = ButterKnife.bind(this, view)
         }
+        Timber.e("onViewCreated $this")
         initView(view)
     }
 
     override fun onResume() {
         super.onResume()
         resumeView()
+        Timber.e("onResume $this")
     }
 
     override fun onPause() {
         super.onPause()
         pauseView()
+        Timber.e("onPause $this")
     }
 
 
     override fun onDestroyView() {
-        super.onDestroyView()
         destroyView()
         mUnBinder?.unbind()
         mUnBinder = null
         (mRootView!!.parent as ViewGroup).removeView(mRootView!!)
         Timber.e("onDestroyView")
+        super.onDestroyView()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        Timber.e("onDestroy")
         mRootView = null
     }
     /**

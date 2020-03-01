@@ -687,6 +687,17 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
         }
 
+        enum class Status {
+            LOOP_START,
+            RECORD_START,
+            RECORD_STOP,
+            LOOP_STOP,
+            LOOP_ERROR_STOP,
+            RECORD_ERROR_STOP,
+            CAPTURE_RESULT,
+            CAPTURE_FINISH
+        }
+
     }
 
 }

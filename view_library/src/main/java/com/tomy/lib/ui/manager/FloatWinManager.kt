@@ -27,7 +27,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     private var mMax = false
 
     private var mWidth  = 0
-    private var mHeight = 0
+    private var mHeight = 270
 
     private var mDismissListener: OnDismissListener? = null
 
@@ -74,14 +74,15 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
         Timber.w("showFloatWindow()")
         mParameter?.apply {
             x = 0
+            y = 0
             alpha = 1f
-//            flags = flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
-            updateView(mWidth, mHeight)
+            flags = flags.and(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv())
+            updateView(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         }
     }
 
     fun showAt(x: Int, y: Int, width: Int, height: Int) {
-        Timber.w("showAt. (${x}x$y). [${width}x$height]")
+//        Timber.w("showAt. (${x}x$y). [${width}x$height]")
         mParameter?.apply {
             this.x = x
             this.y = y
@@ -121,12 +122,12 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     }
 
     private fun updateView(width: Int, height: Int) {
-        Timber.w("updateView. width x height = [$width x $height]")
+//        Timber.w("updateView. width x height = [$width x $height]")
         setResolutionRation(width, height)
         /*Observable.just(Unit)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {*/
-                    Timber.w("updateView. mShowed = ${mShowed.get()}")
+//                    Timber.w("updateView. mShowed = ${mShowed.get()}")
                     if (!mShowed.get()) {
                         mWindowManager.addView(mRootView, mParameter)
                         mShowed.set(true)

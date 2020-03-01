@@ -130,7 +130,7 @@ class CameraCore<camera> {
     }
 
     fun isBusy(): Boolean {
-        return mStatus == Status.RECORDING || mStatus == Status.RECORDING_CAPTURING || mStatus == Status.CAPTURING
+        return mStatus == Status.RECORDING || mStatus == Status.RECORDING_CAPTURING || mStatus == Status.CAPTURING || mStatus == Status.CLOSING
     }
 
     fun isRecording(): Boolean {
@@ -157,10 +157,10 @@ class CameraCore<camera> {
         CLOSING
     }
 
-    companion object {
+    /*companion object {
         const val STATUS_RELEASE    = 0x1
         const val STATUS_OPENING    = 0x2
         const val STATUS_CLOSING    = 0x4
         const val STATUS_CAPTURING  = 0x8
-    }
+    }*/
 }
