@@ -1,6 +1,8 @@
 package com.zzx.media.camera.v1.manager
 
+import android.annotation.SuppressLint
 import android.graphics.Rect
+import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.hardware.Camera.Parameters
 import android.os.Handler
@@ -29,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**@author Tomy
  * Created by Tomy on 2018/4/5.
  */
+@SuppressLint("PrivateApi")
 class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private var mCamera: Camera? = null
@@ -53,6 +56,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     private var mCameraFacing = Camera.CameraInfo.CAMERA_FACING_BACK
 
     private var mPreviewSurface: SurfaceHolder? = null
+
+    private var mPreviewTexture: SurfaceTexture? = null
 
 
     private var mPictureDataCallback: ICameraManager.PictureDataCallback? = null
@@ -250,8 +255,15 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * */
     override fun setPreviewSurface(surface: SurfaceHolder) {
         Timber.i("startPreviewSurface(). mCamera = $mCamera")
+        mPreviewTexture = null
         mPreviewSurface = surface
         mCamera?.setPreviewDisplay(mPreviewSurface)
+    }
+
+    override fun setPreviewSurfaceTexture(surfaceTexture: SurfaceTexture) {
+        mPreviewSurface = null
+        mPreviewTexture = surfaceTexture
+        mCamera?.setPreviewTexture(mPreviewTexture)
     }
 
     /**
@@ -299,15 +311,26 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
     }
 
+    override fun startPreview(surfaceTexture: SurfaceTexture) {
+        synchronized(this) {
+            Timber.i("startPreview.mStatus = ${mCameraCore.getStatus()}")
+            if (mCameraCore.canPreview()) {
+                setPreviewSurfaceTexture(surfaceTexture)
+                startPreview()
+                startAutoFocus()
+            }
+        }
+    }
+
     override fun stopPreview() {
         try {
             if (mCameraCore.isPreview()) {
-//                mPreviewed.set(false)
                 mPreviewDataCallback?.apply {
                     mCamera?.setPreviewCallback(null)
                 }
                 mCamera?.stopPreview()
                 mCamera?.setPreviewDisplay(null)
+                mCamera?.setPreviewTexture(null)
                 mCameraCore.setStatus(Status.OPENED)
                 mStateCallback?.onCameraPreviewStop()
             }
@@ -318,7 +341,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun restartPreview() {
         stopPreview()
-        startPreview(mPreviewSurface!!)
+        mPreviewSurface?.apply {
+            startPreview(this)
+        }
+        mPreviewTexture?.apply {
+            startPreview(this)
+        }
     }
 
     /**

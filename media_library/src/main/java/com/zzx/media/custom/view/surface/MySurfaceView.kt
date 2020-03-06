@@ -65,10 +65,7 @@ class MySurfaceView(context: Context, attributeSet: AttributeSet): SurfaceView(c
     }
 
     override fun surfaceCreated(holder: SurfaceHolder?) {
-        Observable.timer(200, TimeUnit.MILLISECONDS)
-                .subscribe {
-                    mSurfaceStateCallback?.onSurfaceCreate(holder)
-                }
+        mSurfaceStateCallback?.onSurfaceCreate(holder)
     }
 
     override fun initParams() {

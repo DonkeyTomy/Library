@@ -402,6 +402,10 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         mPreviewSurfaceTexture = surface
     }
 
+    override fun setPreviewSurfaceTexture(surfaceTexture: SurfaceTexture) {
+        setPreviewSurface(surfaceTexture)
+    }
+
     private fun initSurface() {
         Timber.e("width x height = [${mDimension!!.width}x${mDimension!!.height}]")
         mPreviewSurfaceTexture!!.setDefaultBufferSize(mDimension!!.width, mDimension!!.height)

@@ -40,6 +40,8 @@ interface ICameraManager<in surface, camera> {
      * */
     fun setPreviewSurface(surface: surface)
 
+    fun setPreviewSurfaceTexture(surfaceTexture: SurfaceTexture)
+
     /**
      * 此方法调用之前必须先调用[setPreviewSurface],自行决定决定何时启动预览.
      * */
@@ -52,6 +54,8 @@ interface ICameraManager<in surface, camera> {
      * 设置完预览界面后即可启动预览.
      * */
     fun startPreview(surface: surface)
+
+    fun startPreview(surfaceTexture: SurfaceTexture)
 
     fun stopPreview()
 
