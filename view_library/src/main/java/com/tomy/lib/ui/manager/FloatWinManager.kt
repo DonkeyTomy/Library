@@ -27,7 +27,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     private var mMax = false
 
     private var mWidth  = 0
-    private var mHeight = 270
+    private var mHeight = 0
 
     private var mDismissListener: OnDismissListener? = null
 
@@ -42,9 +42,9 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
         if (PermissionChecker.checkSystemAlertDialog(mContext)) {
             initParameters()
         }
-        val point = Point()
+        /*val point = Point()
         mWindowManager.defaultDisplay.getSize(point)
-        mDisplayWidth   = point.x
+        mDisplayWidth   = point.x*/
     }
 
     private fun initParameters() {

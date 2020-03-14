@@ -9,9 +9,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.custom.view.camera.ISurfaceView
-import io.reactivex.Observable
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy

@@ -26,15 +26,15 @@ class ExceptionHandler private constructor(application: Application?, dir: Strin
     }
 
     init {
-        /*val strategy = CrashReport.UserStrategy(application)
+        val strategy = CrashReport.UserStrategy(application)
         strategy.apply {
             appPackageName = application?.packageName
-            appVersion = application.packageManager.getPackageInfo(application.packageName, 0).versionName
+            appVersion = application?.packageManager?.getPackageInfo(application.packageName, 0)?.versionName
             appChannel = appPackageName
             appReportDelay = 5000
             setCrashHandleCallback(CrashCallback())
         }
-        CrashReport.initCrashReport(application, "9ae676a08f", true, strategy)*/
+        CrashReport.initCrashReport(application, "9ae676a08f", true, strategy)
 //        Thread.setDefaultUncaughtExceptionHandler(this)
     }
 
@@ -45,9 +45,6 @@ class ExceptionHandler private constructor(application: Application?, dir: Strin
             return super.onCrashHandleStart(crashType, errorType, errorMessage, errorStack)
         }
 
-        override fun onCrashHandleStart2GetExtraDatas(p0: Int, p1: String?, p2: String?, p3: String?): ByteArray {
-            return super.onCrashHandleStart2GetExtraDatas(p0, p1, p2, p3)
-        }
     }
 
     fun release() {
