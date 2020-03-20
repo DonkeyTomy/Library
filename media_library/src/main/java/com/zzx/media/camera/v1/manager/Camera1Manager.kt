@@ -1,6 +1,7 @@
 package com.zzx.media.camera.v1.manager
 
 import android.annotation.SuppressLint
+import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
@@ -26,6 +27,7 @@ import com.zzx.media.recorder.IRecorder
 import com.zzx.utils.ExceptionHandler
 import com.zzx.utils.rxjava.singleThread
 import timber.log.Timber
+import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy
@@ -37,7 +39,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     private var mCamera: Camera? = null
 
 
-    private var mParameters: Camera.Parameters? = null
+    private var mParameters: Parameters? = null
 
     private var mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK
 
@@ -77,6 +79,19 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private val mCameraCore = CameraCore<Camera>()
 
+    private var mPreWidth   = 0
+    private var mWidth      = 0
+
+    private var mPreHeight  = 0
+    private var mHeight     = 0
+
+    private var mPrePreviewFormat = 0
+    private var mPreviewFormat = 0
+
+    private var mAllocateBufferSize = 0
+
+    private var mAllocateBuffer: ByteArray? = null
+
 //    private val mCameraOpening = AtomicBoolean(false)
 
     private val mMtkSetContinuousSpeedMethod by lazy {
@@ -96,6 +111,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun openFrontCamera() {
         try {
             if (!mCameraCore.canOpen()) {
+                Timber.e("${Const.TAG}openExternalCamera() Failed")
                 mStateCallback?.onCameraOpenFailed(mCameraCore.getStatus().ordinal)
                 return
             }
@@ -128,6 +144,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun openBackCamera() {
         try {
             if (!mCameraCore.canOpen()) {
+                Timber.e("${Const.TAG}openBackCamera() Failed")
                 mStateCallback?.onCameraOpenFailed(mCameraCore.getStatus().ordinal)
                 return
             }
@@ -196,6 +213,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                             }
                         }
                     }
+                    whiteBalance = Parameters.WHITE_BALANCE_AUTO
+                    setParameter()
                 }
                 setErrorCallback {
                     error, _ ->
@@ -232,6 +251,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun openExternalCamera() {
         Timber.w("${Const.TAG}openExternalCamera(): mCamera = $mCamera")
         if (!mCameraCore.canOpen()) {
+            Timber.e("${Const.TAG}openExternalCamera() Failed")
             mStateCallback?.onCameraOpenFailed(mCameraCore.getStatus().ordinal)
             return
         }
@@ -266,18 +286,34 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mCamera?.setPreviewTexture(mPreviewTexture)
     }
 
+    private fun setPreviewCallback() {
+        if (mWidth != mPreWidth || mHeight != mPreHeight || mPreviewFormat != mPrePreviewFormat) {
+            mAllocateBuffer = null
+            mAllocateBufferSize = (mWidth * mHeight * ImageFormat.getBitsPerPixel(mPreviewFormat)) / 8
+            mAllocateBuffer = ByteBuffer.allocateDirect(mAllocateBufferSize).array()
+            mPreWidth   = mWidth
+            mPreHeight  = mHeight
+            mPrePreviewFormat   = mPreviewFormat
+        }
+        mCamera?.addCallbackBuffer(mAllocateBuffer)
+        mCamera?.setPreviewCallbackWithBuffer { data, _ ->
+            data?.apply {
+                mCamera?.addCallbackBuffer(data)
+            }
+            mPreviewDataCallback?.onPreviewDataCallback(data, mPreviewFormat)
+        }
+    }
+
     /**
      * 此方法调用之前必须先调用[setPreviewSurface],自行决定决定何时启动预览.
      * */
     override fun startPreview() {
-        Timber.i("startPreview(). mCamera = $mCamera")
+        Timber.i("startPreview(). mCamera = $mCamera\nwidth x height = [${mWidth}x$mHeight]")
         if (mCameraCore.canPreview()) {
             try {
-                mPreviewDataCallback?.apply {
-                    mCamera?.setPreviewCallback { data, _ ->
-                        this.onPreviewDataCallback(data)
-                    }
-                }
+//                mPreviewDataCallback?.apply {
+                setPreviewCallback()
+//                }
                 mCamera!!.apply {
                     startPreview()
                     mStateCallback?.onCameraPreviewSuccess()
@@ -325,9 +361,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun stopPreview() {
         try {
             if (mCameraCore.isPreview()) {
-                mPreviewDataCallback?.apply {
-                    mCamera?.setPreviewCallback(null)
-                }
+//                mPreviewDataCallback?.apply {
+                    mCamera?.setPreviewCallbackWithBuffer(null)
+//                }
                 mCamera?.stopPreview()
                 mCamera?.setPreviewDisplay(null)
                 mCamera?.setPreviewTexture(null)
@@ -356,10 +392,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     /**
+     * @see startPreview
      * @see stopRecord
      */
     override fun startRecord() {
         mCameraCore.setStatus(Status.RECORDING)
+        setPreviewCallback()
 //        mIsRecording.set(true)
     }
 
@@ -439,8 +477,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         try {
             mParameters?.apply {
                 this.focusMode = focusMode
-                mCamera?.parameters = this
             }
+            setParameter()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -528,9 +566,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun setPreviewParams(width: Int, height: Int, format: Int) {
         mParameters?.apply {
+            mWidth  = width
+            mHeight = height
+            mPreviewFormat  = format
             previewFormat = format
             setPreviewSize(width, height)
-            mCamera?.parameters = this
+            setParameter()
         }
     }
 

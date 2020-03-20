@@ -10,7 +10,7 @@ import com.zzx.media.custom.view.opengl.egl.OffscreenEGLSurface
 import com.zzx.media.custom.view.opengl.egl.Texture2DProgram
 import com.zzx.media.custom.view.opengl.egl.WindowEGLSurface
 import com.zzx.media.custom.view.opengl.egl14.EGL14Core
-import com.zzx.media.values.Tag
+import com.zzx.media.values.TAG
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.*
@@ -58,6 +58,7 @@ class SharedRender : SurfaceTexture.OnFrameAvailableListener {
     }
 
     fun setOnFrameRenderListener(listener: OnFrameRenderListener?) {
+        Timber.tag(TAG.SURFACE_ENCODER).i("setOnFrameRenderListener -- $listener")
         mFrameRenderListener = listener
     }
 
@@ -66,6 +67,11 @@ class SharedRender : SurfaceTexture.OnFrameAvailableListener {
     fun startRender() {
         mSurfaceTexture.setOnFrameAvailableListener(this)
         GLES20.glViewport(0, 0, mPreviewWidth, mPreviewHeight)
+    }
+
+    fun setRenderSize(width: Int, height: Int) {
+        mPreviewWidth   = width
+        mPreviewHeight  = height
     }
 
     fun stopRender() {
@@ -96,12 +102,12 @@ class SharedRender : SurfaceTexture.OnFrameAvailableListener {
      */
     fun isRenderBusy(): Boolean {
         val registerCount = getRegisterSurfaceCount()
-        Timber.tag(Tag.RENDER).w("isRenderBusy.registerCount = $registerCount")
+        Timber.tag(TAG.RENDER).w("isRenderBusy.registerCount = $registerCount")
         return registerCount > 0
     }
 
     fun unregisterPreviewSurface(surface: Any) {
-        Timber.tag(Tag.RENDER).w("unregisterPreviewSurface")
+        Timber.tag(TAG.RENDER).w("unregisterPreviewSurface")
         val hasCode = System.identityHashCode(surface)
         mSurfaceMap[hasCode]?.apply {
             release()
@@ -115,17 +121,22 @@ class SharedRender : SurfaceTexture.OnFrameAvailableListener {
 
     fun renderFrame() {
 //        Timber.i("renderFrame()")
-        mSurfaceTexture.updateTexImage()
-        mSurfaceTexture.getTransformMatrix(mTmpMatrix)
-        mSurfaceMap.forEach { (id: Int, surface: WindowEGLSurface<EGLContext, EGLSurface, EGLConfig>) ->
-            surface.makeCurrent()
-            mFullFrameRect.drawFrame(mTextureID, mTmpMatrix)
-            mFrameRenderListener?.apply {
-                if (mRefreshSet.contains(id)) {
-                    onFrameSoon(id)
+        try {
+            mSurfaceTexture.updateTexImage()
+            mSurfaceTexture.getTransformMatrix(mTmpMatrix)
+            mSurfaceMap.forEach { (id: Int, surface: WindowEGLSurface<EGLContext, EGLSurface, EGLConfig>) ->
+                surface.makeCurrent()
+                mFullFrameRect.drawFrame(mTextureID, mTmpMatrix)
+                mFrameRenderListener?.apply {
+                    Timber.tag(TAG.RENDER).i("renderFrame")
+                    if (mRefreshSet.contains(id)) {
+                        onFrameSoon(id)
+                    }
                 }
+                surface.swapBuffers()
             }
-            surface.swapBuffers()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -145,6 +156,7 @@ class SharedRender : SurfaceTexture.OnFrameAvailableListener {
 
         const val PREVIEW_WIDTH     = 480
         const val PREVIEW_HEIGHT    = 270
+//        const val PREVIEW_HEIGHT    = 360
 
     class MainHandler(sharedRender: SharedRender): Handler() {
         private val mWeakContext = WeakReference<SharedRender>(sharedRender)

@@ -599,13 +599,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         override fun onRecorderPrepared() {
             mRecordStateCallback?.onRecorderPrepared()
             if (mCameraManager is Camera1Manager) {
-                mCameraManager?.startRecord()
                 mRecorder.startRecord()
             }
         }
 
         override fun onRecordStart() {
 //            if (!mAutoDelete) {
+            mCameraManager?.startRecord()
             mRecordStarting.set(false)
             mRecordStateCallback?.onRecordStart()
             if (mLoopNeedStop.get()) {
@@ -635,11 +635,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             mRecordStopping.set(false)
             mLoopNeedStop.set(false)
             stopLooper()
+            mCameraManager?.stopRecord()
             mRecordStateCallback?.onRecordError(errorCode)
         }
 
         override fun onRecordStop(stopCode: Int) {
             mRecordStopping.set(false)
+            mCameraManager?.stopRecord()
             mRecordStateCallback?.onRecordStop(stopCode)
         }
 

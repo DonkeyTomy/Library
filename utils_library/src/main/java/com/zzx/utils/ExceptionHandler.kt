@@ -39,10 +39,10 @@ class ExceptionHandler private constructor(application: Application?, dir: Strin
     }
 
     inner class CrashCallback: CrashReport.CrashHandleCallback() {
-        override fun onCrashHandleStart(crashType: Int, errorType: String?, errorMessage: String?, errorStack: String): MutableMap<String, String> {
+        override fun onCrashHandleStart(crashType: Int, errorType: String?, errorMessage: String?, errorStack: String): MutableMap<String, String>? {
             Timber.i("stack = $errorStack")
             saveLog2File(errorStack)
-            return super.onCrashHandleStart(crashType, errorType, errorMessage, errorStack)
+            return null
         }
 
     }

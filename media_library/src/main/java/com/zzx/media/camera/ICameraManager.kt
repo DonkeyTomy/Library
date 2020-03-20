@@ -247,7 +247,7 @@ interface ICameraManager<in surface, camera> {
     }
 
     interface PreviewDataCallback {
-        fun onPreviewDataCallback(buffer: ByteArray)
+        fun onPreviewDataCallback(buffer: ByteArray, previewFormat: Int)
     }
 
     interface RecordPreviewReady {
