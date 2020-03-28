@@ -93,7 +93,7 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        Timber.e("instantiateItem.position = $position")
+//        Timber.e("instantiateItem.position = $position")
         val gridView = mInflater.inflate(R.layout.grid_view, container, false) as GridView
         gridView.apply {
             selector = ColorDrawable(android.R.color.transparent)
@@ -125,7 +125,7 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
     }
 
     override fun getCount(): Int {
-        Timber.e("getCount = ${mNameList.size}")
+//        Timber.e("getCount = ${mNameList.size}")
         /*if (mRefreshData) {
             notifyDataSetChanged()
             mRefreshData = false
@@ -170,7 +170,7 @@ class ApkViewPagerAdapter(private val mContext: Context) : PagerAdapter(), Adapt
         }
 
         override fun getCount(): Int {
-            Timber.e("mInfoList.size = ${mInfoList?.size}")
+//            Timber.e("mInfoList.size = ${mInfoList?.size}")
             return mInfoList?.size ?: mInfoArray?.size ?: 0
         }
 

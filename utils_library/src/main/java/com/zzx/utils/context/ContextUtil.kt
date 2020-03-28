@@ -19,7 +19,7 @@ object ContextUtil {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)
-            false
+            true
         } catch (e: Exception) {
             e.printStackTrace()
             false

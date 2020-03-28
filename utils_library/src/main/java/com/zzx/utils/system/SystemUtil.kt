@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -21,9 +22,7 @@ import android.widget.Toast
 import java.io.*
 import java.lang.reflect.Method
 import java.text.SimpleDateFormat
-import java.util.Locale
-
-import android.content.Context.ACTIVITY_SERVICE
+import java.util.*
 
 /**@author Tomy
  * Created by Tomy on 13-12-26.
@@ -45,25 +44,25 @@ class SystemUtil {
 
     companion object {
 
-        val MOBILE = "MOBILE"
-        val CLASS_SYSTEM_PROPERTIES = "android.os.SystemProperties"
-        val METHOD_GET = "get"
-        val METHOD_SET = "set"
-        private val TIME_FORMAT = "yyyyMMkk_ddmmss"
+        const val MOBILE = "MOBILE"
+        const val CLASS_SYSTEM_PROPERTIES = "android.os.SystemProperties"
+        const val METHOD_GET = "get"
+        const val METHOD_SET = "set"
+        private const val TIME_FORMAT = "yyyyMMkk_ddmmss"
         /**
          * 配置是否打开本地Log记录.
          * 只有在唤醒后打开(包括上电及后台调用拍照录像功能),休眠前需要关闭.
          */
         var DEBUG = true
-        val VERSION_CODE = "zzx.software.version"
-        val MODEL_CODE = "zzx.product.model"
+        const val VERSION_CODE = "zzx.software.version"
+        const val MODEL_CODE = "zzx.product.model"
 
         /**
          * Flag parameter for [.uninstallPackage] to indicate that you want the
          * package deleted for all users.
          *
          */
-        val DELETE_ALL_USERS = 0x00000002
+        const val DELETE_ALL_USERS = 0x00000002
 
         fun uninstallPackage(context: Context, pkgName: String) {
             val mManager = context.packageManager
@@ -82,9 +81,9 @@ class SystemUtil {
 
         }
 
-        val NETWORK_MODE = "preferred_network_mode"
-        private val NETWORK_MODE_GSM_ONLY = 1 // GSM only
-        private val NETWORK_MODE_WCDMA_PREF = 0 //GSM/WCDMA (WCDMA preferred)
+        const val NETWORK_MODE = "preferred_network_mode"
+        private const val NETWORK_MODE_GSM_ONLY = 1 // GSM only
+        private const val NETWORK_MODE_WCDMA_PREF = 0 //GSM/WCDMA (WCDMA preferred)
 
         /**
          * 设置网络模式
@@ -98,9 +97,9 @@ class SystemUtil {
         context.sendBroadcast(intent);*/
         }
 
-        private val EVENT_SET_NETWORK_MODE_DONE = 102
-        private val CHANGE_NETWORK_MODE = "com.zzx.phone.CHANGE_NETWORK_MODE"
-        private val NEW_NETWORK_MODE = "com.zzx.phone.NEW_NETWORK_MODE"
+        private const val EVENT_SET_NETWORK_MODE_DONE = 102
+        private const val CHANGE_NETWORK_MODE = "com.zzx.phone.CHANGE_NETWORK_MODE"
+        private const val NEW_NETWORK_MODE = "com.zzx.phone.NEW_NETWORK_MODE"
 
         fun setAirPlaneMode(context: Context, enabled: Boolean) {
             try {
@@ -152,6 +151,7 @@ class SystemUtil {
             return value
         }
 
+        @SuppressLint("PrivateApi")
         fun setSystemProperties(key: String, `val`: String) {
             try {
                 @SuppressLint("PrivateApi")
@@ -240,11 +240,11 @@ class SystemUtil {
             return imei ?: ""
         }
 
-        private val CLASS_TELEPHONY = "com.mediatek.telephony.TelephonyManagerEx"
-        private val CLASS_SIM = "com.mediatek.telephony.SimInfoManager"
-        private val METHOD_GET_TELEPHONY = "getDefault"
-        private val METHOD_SET_ROAM = "setDataRoamingEnabled"
-        private val METHOD_SET_ROAM_SIM = "setDataRoaming"
+        private const val CLASS_TELEPHONY = "com.mediatek.telephony.TelephonyManagerEx"
+        private const val CLASS_SIM = "com.mediatek.telephony.SimInfoManager"
+        private const val METHOD_GET_TELEPHONY = "getDefault"
+        private const val METHOD_SET_ROAM = "setDataRoamingEnabled"
+        private const val METHOD_SET_ROAM_SIM = "setDataRoaming"
 
         /*public static void setDataRoamingEnabled(Context context, boolean enabled) {
         try {
@@ -362,8 +362,8 @@ class SystemUtil {
             return networkInfo!!.type
         }
 
-        val CLASS_SMS_MANAGER = "com.android.internal.telephony.SmsApplication"
-        val METHOD_SET_DEFAULT = "setDefaultApplication"
+        const val CLASS_SMS_MANAGER = "com.android.internal.telephony.SmsApplication"
+        const val METHOD_SET_DEFAULT = "setDefaultApplication"
         /**设置默认短信收发应用.
          * @param pkgName 要设置的默认短信的包名.
          */
@@ -420,10 +420,10 @@ class SystemUtil {
                 val blockSize = statFs.blockSize.toLong()//文件系统中每个块的大小,单位是byte
                 val blockCount = statFs.blockCount.toLong()//块的个数
                 val availableSize = statFs.availableBlocks.toLong()//只包含应用可用的块的个数
-                if (!free) {
-                    size = blockSize * blockCount
+                size = if (!free) {
+                    blockSize * blockCount
                 } else {
-                    size = blockSize * availableSize
+                    blockSize * availableSize
                 }
                 return size.toFloat() / 1024.0f / 1024.0f
             } catch (e: Exception) {

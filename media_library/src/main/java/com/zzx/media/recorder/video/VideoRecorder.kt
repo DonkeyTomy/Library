@@ -16,7 +16,6 @@ import com.zzx.utils.rxjava.FlowableUtil
 import io.reactivex.functions.Consumer
 import timber.log.Timber
 import java.io.File
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**@author Tomy
  * Created by Tomy on 2018/6/8.
