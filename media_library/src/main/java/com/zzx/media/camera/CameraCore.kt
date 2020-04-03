@@ -154,13 +154,16 @@ class CameraCore<camera> {
         CAPTURING,
         RECORDING,
         RECORDING_CAPTURING,
-        CLOSING
+        CLOSING,
+        CAPTURE_RESULT,
+        CAPTURE_FINISH,
+        ERROR
     }
 
-    /*companion object {
-        const val STATUS_RELEASE    = 0x1
-        const val STATUS_OPENING    = 0x2
+    companion object {
+        const val ERROR_EXTRA_CODE_NOT_MOUNT    = -100
+        const val ERROR_EXTRA_CODE_NOT_ENOUGH   = -101
         const val STATUS_CLOSING    = 0x4
         const val STATUS_CAPTURING  = 0x8
-    }*/
+    }
 }

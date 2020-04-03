@@ -695,9 +695,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             RECORD_STOP,
             LOOP_STOP,
             LOOP_ERROR_STOP,
-            RECORD_ERROR_STOP,
-            CAPTURE_RESULT,
-            CAPTURE_FINISH
+            RECORD_ERROR_STOP
         }
 
     }

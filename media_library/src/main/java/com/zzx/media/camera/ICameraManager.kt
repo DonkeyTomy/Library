@@ -148,11 +148,11 @@ interface ICameraManager<in surface, camera> {
 
     fun getSensorOrientation(): Int
 
-    fun takePicture(callback: PictureDataCallback? = null)
+    fun takePicture(callback: PictureCallback? = null)
 
-    fun takePictureBurst(count: Int, callback: PictureDataCallback? = null)
+    fun takePictureBurst(count: Int, callback: PictureCallback? = null)
 
-    fun startContinuousShot(count: Int, callback: PictureDataCallback? = null)
+    fun startContinuousShot(count: Int, callback: PictureCallback? = null)
 
     fun cancelContinuousShot()
 
@@ -161,7 +161,7 @@ interface ICameraManager<in surface, camera> {
      */
     fun setContinuousShotSpeed(speed: Int)
 
-    fun setPictureCallback(callback: PictureDataCallback?)
+    fun setPictureCallback(callback: PictureCallback?)
 
     fun setRecordPreviewCallback(callback: RecordPreviewReady?)
 
@@ -239,11 +239,22 @@ interface ICameraManager<in surface, camera> {
         fun onCameraPreviewStop()
     }
 
-    interface PictureDataCallback {
+    interface PictureCallback {
 
-        fun onCaptureFinished(buffer: ByteArray)
+        fun onCaptureStart()
+
+        fun onCaptureError(errorCode: Int)
+
+        fun onCaptureResult(buffer: ByteArray)
 
         fun onCaptureDone()
+
+        companion object {
+            const val ERROR_CODE_NOT_SUPPORT_VIDEO_CAPTURE = -101
+            const val ERROR_CODE_CAPTURING          = -102
+            const val ERROR_CODE_START_STOP_RECORD  = -103
+        }
+
     }
 
     interface PreviewDataCallback {

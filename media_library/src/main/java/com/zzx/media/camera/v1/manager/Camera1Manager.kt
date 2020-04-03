@@ -62,7 +62,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     private var mPreviewTexture: SurfaceTexture? = null
 
 
-    private var mPictureDataCallback: ICameraManager.PictureDataCallback? = null
+    private var mPictureCallback: ICameraManager.PictureCallback? = null
 
     private var mRecordPreviewReady: ICameraManager.RecordPreviewReady? = null
 
@@ -636,17 +636,17 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             SENSOR_BACK_CAMERA
     }
 
-    override fun takePicture(callback: ICameraManager.PictureDataCallback?) {
+    override fun takePicture(callback: ICameraManager.PictureCallback?) {
         setPictureCallback(callback)
         takePicture()
     }
 
-    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureDataCallback?) {
-        mPictureDataCallback = callback
+    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureCallback?) {
+        mPictureCallback = callback
         takePictureBurst(count)
     }
 
-    override fun startContinuousShot(count: Int, callback: ICameraManager.PictureDataCallback?) {
+    override fun startContinuousShot(count: Int, callback: ICameraManager.PictureCallback?) {
         takePictureBurst(count, callback)
     }
 
@@ -669,8 +669,8 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
     }
 
-    override fun setPictureCallback(callback: ICameraManager.PictureDataCallback?) {
-        mPictureDataCallback = callback
+    override fun setPictureCallback(callback: ICameraManager.PictureCallback?) {
+        mPictureCallback = callback
     }
 
     override fun setRecordPreviewCallback(callback: ICameraManager.RecordPreviewReady?) {
@@ -757,13 +757,22 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     private fun startTakePicture() = singleThread {
         mPictureCount = 0
+        if (mCameraCore.isCapturing()) {
+            mContinuousShotCount = 0
+            mPictureCallback?.onCaptureError(ICameraManager.PictureCallback.ERROR_CODE_CAPTURING)
+            return@singleThread
+        }
         if (mCameraCore.isRecording()) {
             val vssSupported = mParameters?.isVideoSnapshotSupported ?: false
             Timber.e("startTakePicture Camera is Recording; isVssSupported = $vssSupported")
             if (!vssSupported) {
+                mPictureCallback?.onCaptureError(ICameraManager.PictureCallback.ERROR_CODE_NOT_SUPPORT_VIDEO_CAPTURE)
                 return@singleThread
+            } else {
+                mContinuousShotCount = 0
             }
         }
+        mPictureCallback?.onCaptureStart()
         if (mContinuousShotCount > 1) {
             setPictureContinuousMode(mContinuousShotCount)
         } else {
@@ -773,10 +782,14 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mCameraCore.setStatus(if (mCameraCore.isRecording()) Status.RECORDING_CAPTURING else Status.CAPTURING)
         try {
             Timber.e("takePicture start")
-            mCamera!!.takePicture(null, null, mPictureCallback)
+            mCamera!!.takePicture(null, null, mPictureDataCallback)
         } catch (e: Exception) {
-            mCameraCore.setStatus(Status.PREVIEW)
-            mPictureDataCallback?.onCaptureDone()
+            if (!mCameraCore.isRecording()) {
+                mCameraCore.setStatus(Status.PREVIEW)
+            } else {
+                mCameraCore.setStatus(Status.RECORDING)
+            }
+            mPictureCallback?.onCaptureDone()
         }
         /*if (mCamera == null) {
             mPictureDataCallback?.onCaptureDone()
@@ -787,9 +800,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     }
 
-    private val mPictureCallback =
+    private val mPictureDataCallback =
         Camera.PictureCallback { data, _ ->
-            mPictureDataCallback?.onCaptureFinished(data)
+            mPictureCallback?.onCaptureResult(data)
             Timber.e("mPictureCount = $mPictureCount; mBurstMode = $mBurstMode; mContinuousShotCount = $mContinuousShotCount; mIsRecording = ${mCameraCore.isRecording()}")
             if (mBurstMode && !mCameraCore.isRecording()) {
                 if (++mPictureCount >= mContinuousShotCount) {
@@ -800,7 +813,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     } else {
                         mCameraCore.setStatus(Status.RECORDING)
                     }
-                    mPictureDataCallback?.onCaptureDone()
+                    mPictureCallback?.onCaptureDone()
                     mContinuousShotCount = 0
 
                 }
@@ -812,8 +825,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                 } else {
                     mCameraCore.setStatus(Status.RECORDING)
                 }
-                mPictureDataCallback?.onCaptureDone()
-
+                mPictureCallback?.onCaptureDone()
             }
         }
 //    }

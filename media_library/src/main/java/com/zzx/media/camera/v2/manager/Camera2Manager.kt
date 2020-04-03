@@ -77,7 +77,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
 
     private var mCameraStateCallback: ICameraManager.CameraStateCallback<CameraDevice>? = null
 
-    private var mPictureCallback: ICameraManager.PictureDataCallback? = null
+    private var mPictureCallback: ICameraManager.PictureCallback? = null
 
     private var mRecordPreviewReady: ICameraManager.RecordPreviewReady? = null
 
@@ -189,7 +189,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * @see takePictureBurst
      * @see setupCaptureReader
      * */
-    override fun takePicture(callback: ICameraManager.PictureDataCallback?) {
+    override fun takePicture(callback: ICameraManager.PictureCallback?) {
         Timber.e("sensorOrientation = ${getSensorOrientation()}")
         mPictureCallback = callback
         takePicture()
@@ -200,12 +200,12 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * @see takePictureBurst
      * @see setupCaptureReader
      * */
-    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureDataCallback?) {
+    override fun takePictureBurst(count: Int, callback: ICameraManager.PictureCallback?) {
         mPictureCallback = callback
         takePictureBurst(count)
     }
 
-    override fun startContinuousShot(count: Int, callback: ICameraManager.PictureDataCallback?) {
+    override fun startContinuousShot(count: Int, callback: ICameraManager.PictureCallback?) {
         takePictureBurst(count, callback)
     }
 
@@ -216,7 +216,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
 
     }
 
-    override fun setPictureCallback(callback: ICameraManager.PictureDataCallback?) {
+    override fun setPictureCallback(callback: ICameraManager.PictureCallback?) {
         mPictureCallback = callback
     }
 
@@ -324,7 +324,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
 //            mPictureCallback?.onCaptureFinished(ImageUtils.NV21toJPEG(ImageUtils.YUV420toNV21(image), 800, 600, 100))
                 val array = ByteArray(image.planes[0].buffer.remaining())
                 image.planes[0].buffer.get(array)
-                mPictureCallback?.onCaptureFinished(array)
+                mPictureCallback?.onCaptureResult(array)
                 Timber.e("image = ${image.width}x${image.height}")
                 image.close()
             }, mHandler)
