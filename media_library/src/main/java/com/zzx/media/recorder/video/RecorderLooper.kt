@@ -235,6 +235,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun isRecordStartingOrStopping(): Boolean {
+        Timber.e("mRecordStarting: ${mRecordStarting.get()}. mRecordStopping = ${mRecordStopping.get()}")
         return mRecordStarting.get() || mRecordStopping.get()
     }
 
@@ -244,7 +245,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      */
     fun stopLooper() {
 //    fun stopLooper(finish: ()-> Unit = {}) {
-        if (!mRecordCore.isLooping()) {
+        if (mRecordCore.isIDLE()) {
             mRecordStateCallback?.onLoopStop(IRecordLoopCallback.STOP_CODE_LOOP_NOT_EXIST)
             return
         }
@@ -316,7 +317,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         if (needStopRecord) {
             stopRecord()
         }
-        mRecordStateCallback?.onLoopStop()
+        if (!mAutoDelete) {
+            mRecordStateCallback?.onLoopStop()
+        }
     }
 
     fun recordSection() {
@@ -401,7 +404,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
                     if (it) {
                         mRecordCore.startLoop()
-                        mRecordStateCallback?.onLoopStart()
+                        if (!mAutoDelete) {
+                            mRecordStateCallback?.onLoopStart()
+                        }
                         checkStorageSpace()
                         startRecord()
                         Observable.interval(mRecordDuration.toLong(), mRecordDuration.toLong(), TimeUnit.SECONDS)
@@ -474,6 +479,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             .observeOn(mRecordScheduler)
             .subscribe {
                 stopRecord()
+                mRecordStateCallback?.onLoopStop()
                 function()
             }
     }
@@ -621,16 +627,19 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }*/
 
         override fun onRecordStarting() {
+            Timber.e("onRecordStarting()")
             mRecordStarting.set(true)
             mRecordStateCallback?.onRecordStarting()
         }
 
         override fun onRecordStopping() {
+            Timber.e("onRecordStopping()")
             mRecordStopping.set(true)
             mRecordStateCallback?.onRecordStopping()
         }
 
         override fun onRecordError(errorCode: Int) {
+            Timber.e("onRecordError()")
             mRecordStarting.set(false)
             mRecordStopping.set(false)
             mLoopNeedStop.set(false)
@@ -640,6 +649,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
 
         override fun onRecordStop(stopCode: Int) {
+            Timber.e("onRecordStop()")
             mRecordStopping.set(false)
             mCameraManager?.stopRecord()
             mRecordStateCallback?.onRecordStop(stopCode)
@@ -647,6 +657,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
         override fun onRecorderFinished(file: File?) {
             mRecordStopping.set(false)
+            Timber.e("onRecorderFinished()")
             if (mAutoDelete) {
                 mAutoDeleteFileCount++
                 Timber.e("File: ${file?.absolutePath}. mAutoDeleteFileCount = $mAutoDeleteFileCount")

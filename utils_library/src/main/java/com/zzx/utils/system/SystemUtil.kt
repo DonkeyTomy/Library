@@ -15,6 +15,7 @@ import android.os.Environment
 import android.os.Message
 import android.os.StatFs
 import android.provider.Settings
+import android.provider.Telephony
 import android.support.v4.app.ActivityCompat
 import android.telephony.TelephonyManager
 import android.text.TextUtils
@@ -137,10 +138,10 @@ class SystemUtil {
             return null
         }
 
+        @SuppressLint("PrivateApi")
         fun getSystemProperties(field: String): String {
             var value = ""
             try {
-                @SuppressLint("PrivateApi")
                 val classType = Class.forName(CLASS_SYSTEM_PROPERTIES)
                 val getMethod = classType.getDeclaredMethod(METHOD_GET, String::class.java)
                 value = getMethod.invoke(classType, field) as String
@@ -367,17 +368,19 @@ class SystemUtil {
         /**设置默认短信收发应用.
          * @param pkgName 要设置的默认短信的包名.
          */
+        @SuppressLint("PrivateApi")
         fun setDefaultSms(context: Context, pkgName: String) {
-            /*try {
-            Class<?> smsClass = Class.forName(CLASS_SMS_MANAGER);
-            Method method = smsClass.getMethod(METHOD_SET_DEFAULT, String.class, Context.class);
-            method.invoke(null, pkgName, context);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
-            /*Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
-        intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
-        startActivity(intent);*/
+            try {
+                val classType = Class.forName(CLASS_SMS_MANAGER)
+                val setMethod = classType.getDeclaredMethod(METHOD_SET_DEFAULT, String::class.java, Context::class.java)
+                setMethod.invoke(classType, pkgName, context)
+                /*Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT).apply {
+                    putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, pkgName)
+                    context.startActivity(this)
+                }*/
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         fun setTimeOut(context: Context, sec: Int) {

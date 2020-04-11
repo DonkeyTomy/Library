@@ -90,7 +90,7 @@ class CameraCore<camera> {
     }
 
     fun isPreview(): Boolean {
-        return mStatus == Status.PREVIEW
+        return mStatus == Status.PREVIEW || isRecording()
     }
 
     fun canPreview(): Boolean {

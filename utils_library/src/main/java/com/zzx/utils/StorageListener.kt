@@ -83,7 +83,7 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
             val totalSpace = FileUtil.getDirTotalSpaceByMB(this@apply)
             val availableSpace = FileUtil.getDirFreeSpaceByMB(this@apply)
             val percent = availableSpace * 100 / totalSpace
-            Timber.e("availableSpace / totalSpace = $availableSpace / $totalSpace; percent = $percent")
+            Timber.d("availableSpace / totalSpace = $availableSpace / $totalSpace; percent = $percent")
             mCallback?.onAvailablePercentChanged(percent.toInt())
 
         }

@@ -71,6 +71,10 @@ abstract class BaseSupportFragment: Fragment() {
         Timber.e("onPause $this")
     }
 
+    override fun onStop() {
+        super.onStop()
+        Timber.e("onStop $this")
+    }
 
     override fun onDestroyView() {
         destroyView()

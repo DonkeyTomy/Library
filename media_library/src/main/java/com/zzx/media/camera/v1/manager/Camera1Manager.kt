@@ -108,12 +108,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
 
-    override fun openFrontCamera() {
+    override fun openFrontCamera() = singleThread {
         try {
             if (!mCameraCore.canOpen()) {
                 Timber.e("${Const.TAG}openExternalCamera() Failed")
                 mStateCallback?.onCameraOpenFailed(mCameraCore.getStatus().ordinal)
-                return
+                return@singleThread
             }
             mCameraCore.setStatus(Status.OPENING)
             mStateCallback?.onCameraOpening()
@@ -130,7 +130,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     }
                     mCameraFacing = info.facing
                     openSpecialCamera(i)
-                    return
+                    return@singleThread
                 }
             }
         } catch (e: Exception) {
@@ -141,12 +141,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
     }
 
-    override fun openBackCamera() {
+    override fun openBackCamera() = singleThread {
         try {
             if (!mCameraCore.canOpen()) {
                 Timber.e("${Const.TAG}openBackCamera() Failed")
                 mStateCallback?.onCameraOpenFailed(mCameraCore.getStatus().ordinal)
-                return
+                return@singleThread
             }
             mCameraCore.setStatus(Status.OPENING)
             mStateCallback?.onCameraOpening()
@@ -158,7 +158,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     Timber.e("${Const.TAG}openBackCamera()")
                     mCameraFacing = info.facing
                     openSpecialCamera(i)
-                    return
+                    return@singleThread
                 }
             }
         } catch (e: Exception) {
@@ -248,12 +248,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
     }
 
-    override fun openExternalCamera() {
+    override fun openExternalCamera() = singleThread {
         Timber.w("${Const.TAG}openExternalCamera(): mCamera = $mCamera")
         if (!mCameraCore.canOpen()) {
             Timber.e("${Const.TAG}openExternalCamera() Failed")
             mStateCallback?.onCameraOpenFailed(mCameraCore.getStatus().ordinal)
-            return
+            return@singleThread
         }
 //        mCameraOpening.set(true)
         mCameraCore.setStatus(Status.OPENING)
@@ -298,9 +298,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         mCamera?.addCallbackBuffer(mAllocateBuffer)
         mCamera?.setPreviewCallbackWithBuffer { data, _ ->
             data?.apply {
-                mCamera?.addCallbackBuffer(data)
+                mCamera?.addCallbackBuffer(mAllocateBuffer)
+                Timber.v("onPreviewCallback.data.size ===== ${data.size}")
+                mPreviewDataCallback?.onPreviewDataCallback(data, mPreviewFormat)
             }
-            mPreviewDataCallback?.onPreviewDataCallback(data, mPreviewFormat)
         }
     }
 
@@ -312,6 +313,13 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         if (mCameraCore.canPreview()) {
             try {
 //                mPreviewDataCallback?.apply {
+                if (mWidth != mPreWidth || mHeight != mPreHeight || mPreviewFormat != mPrePreviewFormat) {
+                    mParameters?.apply {
+                        previewFormat = mPreviewFormat
+                        setPreviewSize(mWidth, mHeight)
+                        setParameter()
+                    }
+                }
                 setPreviewCallback()
 //                }
                 mCamera!!.apply {
@@ -365,8 +373,12 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                     mCamera?.setPreviewCallbackWithBuffer(null)
 //                }
                 mCamera?.stopPreview()
-                mCamera?.setPreviewDisplay(null)
-                mCamera?.setPreviewTexture(null)
+                /*mPreviewSurface?.apply {
+                    mCamera?.setPreviewDisplay(null)
+                }
+                mPreviewTexture?.apply {
+                    mCamera?.setPreviewTexture(null)
+                }*/
                 mCameraCore.setStatus(Status.OPENED)
                 mStateCallback?.onCameraPreviewStop()
             }
@@ -565,14 +577,9 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun setPreviewParams(width: Int, height: Int, format: Int) {
-        mParameters?.apply {
-            mWidth  = width
-            mHeight = height
-            mPreviewFormat  = format
-            previewFormat = format
-            setPreviewSize(width, height)
-            setParameter()
-        }
+        mWidth  = width
+        mHeight = height
+        mPreviewFormat  = format
     }
 
     override fun getSupportCaptureSizeList(): Array<Size> {
@@ -830,10 +837,6 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
 //    }
 
-    private val callback = Camera.PictureCallback {
-        _, _ ->
-        Timber.e("mPictureCount = $mPictureCount")
-    }
 
     /**
      * @param rotation Int 预览界面的旋转角度

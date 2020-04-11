@@ -144,6 +144,7 @@ class FileNameUtils {
         const val TYPE_VIDEO_PRE    = "0_"
         const val TYPE_PIC_PRE      = "1_"
         const val TYPE_AUDIO_PRE    = "2_"
+        const val TYPE_PIC_CAP      = "Screen_"
     }
 
 }
