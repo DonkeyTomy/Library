@@ -224,7 +224,7 @@ interface ICameraManager<in surface, camera> {
 
         fun onCameraOpening()
 
-        fun onCameraOpenSuccess(camera: C)
+        fun onCameraOpenSuccess(camera: C, id: Int)
 
         fun onCameraOpenFailed(errorCode: Int)
 

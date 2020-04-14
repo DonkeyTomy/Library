@@ -650,7 +650,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
      * */
     override fun onOpened(camera: CameraDevice?) {
         mCamera = camera
-        mCameraStateCallback?.onCameraOpenSuccess(camera!!)
+        mCameraStateCallback?.onCameraOpenSuccess(camera!!, 0)
     }
 
     override fun onDisconnected(camera: CameraDevice?) {

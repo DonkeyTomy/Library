@@ -192,6 +192,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         } else {
             cameraId
         }
+        mIsVideoAutoFocusSupported = false
+        mIsPictureAutoFocusSupported = false
+        mIsManualFocusSupported = false
+        mBurstMode = false
         Timber.i("${Const.TAG}cameraId = $cameraId; getCameraCount = ${getCameraCount()}")
         var openSuccess: Boolean
         try {
@@ -244,7 +248,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         }
         if (openSuccess) {
             mCameraCore.setStatus(Status.OPENED)
-            mStateCallback?.onCameraOpenSuccess(mCamera!!)
+            mStateCallback?.onCameraOpenSuccess(mCamera!!, mCameraId)
         }
     }
 
@@ -460,7 +464,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun focusOnPoint(x: Int, y: Int, screenWidth: Int, screenHeight: Int, horWidth: Int, verHeight: Int, focusCallback: ICameraManager.AutoFocusCallback?) {
-        if (screenWidth == 0 || screenHeight == 0) {
+        if (!isManualFocusSupported() || (screenWidth == 0 || screenHeight == 0)) {
             return
         }
         val pointX = x * 2000 / screenWidth - 1000
@@ -496,6 +500,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun isManualFocusSupported(): Boolean {
+        Timber.i("isManualFocusSupported = $mIsManualFocusSupported")
         return mIsManualFocusSupported
     }
 
@@ -521,6 +526,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 
     override fun closeCamera() {
         synchronized(this) {
+            mIsVideoAutoFocusSupported = false
+            mIsPictureAutoFocusSupported = false
+            mIsManualFocusSupported = false
+            mBurstMode = false
             mCameraCore.setStatus(Status.CLOSING)
             mStateCallback?.onCameraClosing()
             stopPreview()
@@ -530,10 +539,6 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
             mParameters = null
             mCameraCore.setStatus(Status.RELEASE)
             Timber.i("closeCamera. mCamera = $mCamera")
-            mIsVideoAutoFocusSupported = false
-            mIsPictureAutoFocusSupported = false
-            mIsManualFocusSupported = false
-            mBurstMode = false
             mStateCallback?.onCameraClosed()
         }
     }
