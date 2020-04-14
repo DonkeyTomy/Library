@@ -695,8 +695,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
         companion object {
             const val STOP_CODE_NORMAL          = 0
-            const val STOP_CODE_LOOP_EXIST      = 0x01
-            const val STOP_CODE_LOOP_NOT_EXIST  = 0x02
+            const val STOP_CODE_LOOP_EXIST      = 0xF1
+            const val STOP_CODE_LOOP_NOT_EXIST  = 0xF2
 
         }
 

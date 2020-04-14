@@ -159,20 +159,20 @@ interface IRecorder {
         fun onRecordResume()
 
         companion object {
-            const val RECORD_STOP_EXTERNAL_STORAGE_NOT_MOUNTED  = -1
-            const val RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH   = -2
+            const val RECORD_STOP_EXTERNAL_STORAGE_NOT_MOUNTED  = -101
+            const val RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH   = -102
             /**
              * 调用停止录像但是未执行录像
              */
-            const val RECORD_STOP_NOT_RECORDING                 = -3
+            const val RECORD_STOP_NOT_RECORDING                 = -103
             /**
              * 录像停止时发生异常错误
              */
-            const val RECORD_STOP_STOP_UNKNOWN_ERROR            = -4
+            const val RECORD_STOP_STOP_UNKNOWN_ERROR            = -104
 
 
             const val RECORD_ERROR_TOO_SHORT = -1007
-            const val RECORD_ERROR_CONFIGURE_FAILED = -3
+            const val RECORD_ERROR_CONFIGURE_FAILED = -105
         }
 
     }

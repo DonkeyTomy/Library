@@ -28,6 +28,14 @@ object MediaInfoUtil {
     }
 
     @Synchronized
+    fun getVideoDuration(videoPath: String): Long {
+        return MediaMetadataRetriever().run {
+            setDataSource(videoPath)
+            extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+        }
+    }
+
+    @Synchronized
     fun getImageRation(imagePath: String): Size {
         val options = BitmapFactory.Options()
         /**此变量设置为true,则表示在生成Bitmap时只根据原图来填充options属性,

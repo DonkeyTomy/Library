@@ -313,12 +313,10 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         if (mCameraCore.canPreview()) {
             try {
 //                mPreviewDataCallback?.apply {
-                if (mWidth != mPreWidth || mHeight != mPreHeight || mPreviewFormat != mPrePreviewFormat) {
-                    mParameters?.apply {
-                        previewFormat = mPreviewFormat
-                        setPreviewSize(mWidth, mHeight)
-                        setParameter()
-                    }
+                mParameters?.apply {
+                    previewFormat = mPreviewFormat
+                    setPreviewSize(mWidth, mHeight)
+                    setParameter()
                 }
                 setPreviewCallback()
 //                }

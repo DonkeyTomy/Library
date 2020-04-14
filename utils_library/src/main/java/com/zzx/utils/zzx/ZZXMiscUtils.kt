@@ -317,6 +317,13 @@ object ZZXMiscUtils {
         write(USB_POWER_PATH, if (open) OPEN else CLOSE)
     }
 
+    /**
+     * @see isLedEnabled
+     * @param status String [LED_BLUE]/[LED_GREEN]/[LED_RED]/[LED_YELLOW]/[LED_DOWN]
+     * @param breath Boolean
+     * @param context Context?
+     * @param oneShot Boolean
+     */
     fun toggleLed(status: String, breath: Boolean = false, context: Context? = null, oneShot: Boolean = false) {
         if (breath || oneShot) {
             if (!isLedEnabled(context!!)) {

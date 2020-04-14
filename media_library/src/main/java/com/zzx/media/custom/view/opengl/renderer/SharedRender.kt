@@ -134,6 +134,22 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
         }
     }
 
+    fun unregisterPreviewSurface(id: Int) {
+        synchronized(mSurfaceMap) {
+            Timber.tag(TAG.RENDER).w("unregisterPreviewSurface")
+            mSurfaceMap[id]?.apply {
+                release()
+            }
+            mRefreshSet.remove(id)
+            if (mRefreshSet.isEmpty()) {
+                mFrameRenderListener = null
+            }
+            mSurfaceMap.remove(id)
+        }
+    }
+
+    private var releaseId = 0
+
     fun renderFrame() {
 //        Timber.i("renderFrame()")
         try {
@@ -143,10 +159,11 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
             mSurfaceTexture.getTransformMatrix(mTmpMatrix)
             synchronized(mSurfaceMap) {
                 mSurfaceMap.forEach { (id: Int, surface: WindowEGLSurface<EGLContext, EGLSurface, EGLConfig>) ->
+                    releaseId = id
                     surface.makeCurrent()
                     mFullFrameRect.drawFrame(mTextureID, mTmpMatrix)
                     mFrameRenderListener?.apply {
-                        Timber.tag(TAG.RENDER).i("renderFrame")
+                        Timber.tag(TAG.RENDER).v("renderFrame")
                         if (mRefreshSet.contains(id)) {
                             onFrameSoon(id)
                         }
@@ -156,6 +173,12 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            e.message?.apply {
+                if (contains("eglMake") && contains("failed")) {
+                    Timber.tag(TAG.RENDER).e("releaseId.id = $releaseId")
+                    unregisterPreviewSurface(releaseId)
+                }
+            }
         }
     }
 
