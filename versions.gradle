@@ -29,7 +29,7 @@ deps.time = time
 ext.deps = [:]
 
 def versions = [:]
-versions.library = "1.0.2"
+versions.library = "1.1.0"
 versions.kotlin = "1.3.50"
 versions.kotlin_coroutines = "1.3.2"
 versions.paging = "1.0.1"
