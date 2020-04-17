@@ -55,8 +55,10 @@ dependencies {
     implementation deps.rx_android
     implementation deps.kotlin.coroutines_core
     implementation deps.kotlin.coroutines_android
-//    implementation project(path: ':Library:utils_library')
-    implementation project(':utils_library')
+    //本地库使用
+    implementation project(path: ':Library:utils_library')
+    //提交JitPack库时使用
+//    implementation project(':utils_library')
 //    api deps.ijkplayer.java
 //    api deps.ijkplayer.armv7a
 //    api deps.ijkplayer.arm64

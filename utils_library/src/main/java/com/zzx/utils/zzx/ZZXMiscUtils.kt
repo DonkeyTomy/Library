@@ -2,8 +2,6 @@ package com.zzx.utils.zzx
 
 import android.content.Context
 import android.provider.Settings
-import com.zzx.utils.file.JniFile
-import timber.log.Timber
 import java.io.*
 import java.util.concurrent.Executors
 
@@ -40,7 +38,7 @@ object ZZXMiscUtils {
 
     const val IR_RED_PATH = MISC + "ir_led_stats"
 
-    const val LAZER_PATH = MISC + "lazer_stats"
+    const val LASER_PATH = MISC + "lazer_stats"
 
     const val RGB_LED = MISC + "rgb_led_stats"
 
@@ -83,7 +81,7 @@ object ZZXMiscUtils {
     const val OPEN = "1"
     const val CLOSE = "0"
 
-    private val FIXED_EXECUTOR = Executors.newFixedThreadPool(3)
+    private val FIXED_EXECUTOR = Executors.newFixedThreadPool(2)
     private val obj = Object()
 
     /**判断屏幕之前是否黑屏
@@ -240,7 +238,8 @@ object ZZXMiscUtils {
         FIXED_EXECUTOR.execute {
             try {
                 synchronized(obj) {
-                    JniFile().writeOnce(path, cmd)
+//                    JniFile().writeOnce(path, cmd)
+                    File(path).writeText(cmd)
                 }
 //                Timber.e("write: path = $path; cmd = $cmd.")
             } catch (e: Exception) {
@@ -256,7 +255,7 @@ object ZZXMiscUtils {
 
     @Synchronized
     fun setLaserState(open: Boolean) {
-        write(LAZER_PATH, if (open) OPEN else CLOSE)
+        write(LASER_PATH, if (open) OPEN else CLOSE)
     }
 
     @Synchronized

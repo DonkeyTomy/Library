@@ -51,7 +51,9 @@ dependencies {
     implementation deps.rx_android
     //Paged
     implementation deps.paging.runtime
-//    implementation project(path: ':Library:utils_library')
-    implementation project(':utils_library')
+    //本地库使用
+    implementation project(path: ':Library:utils_library')
+    //提交JitPack库时使用
+//    implementation project(':utils_library')
 }
 

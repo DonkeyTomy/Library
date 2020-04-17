@@ -25,8 +25,7 @@ object TTSToast {
                 if (status != TextToSpeech.SUCCESS) {
                     return@OnInitListener
                 }
-
-                val result = mTTS!!.setLanguage(Locale.CHINA)
+                val result = mTTS!!.setLanguage(context.resources.configuration.locales[0])
                 if (result != TextToSpeech.LANG_NOT_SUPPORTED && result != TextToSpeech.LANG_MISSING_DATA) {
                     mTTS!!.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                         override fun onStart(utteranceId: String) {
