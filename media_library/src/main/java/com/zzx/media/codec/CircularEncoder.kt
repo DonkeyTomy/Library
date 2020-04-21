@@ -26,10 +26,12 @@ import android.os.Message
 import android.util.Log
 import android.view.Surface
 import com.zzx.media.codec.CircularEncoder.EncoderThread.EncoderHandler
+import com.zzx.utils.rxjava.FlowableUtil
+import io.reactivex.functions.Consumer
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.nio.ByteBuffer
 
 /**
  * Encodes video in a fixed-size circular buffer.
@@ -82,6 +84,8 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
         fun bufferStatus(totalTimeMsec: Long)
 
         fun onEncodeReady(array: ByteArray?)
+
+        fun onEncoderInit()
     }
 
     /**
@@ -104,6 +108,11 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
             mEncoder!!.release()
             mEncoder = null
         }
+    }
+
+    fun stopRecord() {
+        val handler: Handler? = mEncoderThread.handler
+        handler!!.sendMessage(handler.obtainMessage(EncoderHandler.MSG_STOP))
     }
 
     /**
@@ -141,7 +150,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
     fun saveVideo(outputFile: File?) {
         val handler: Handler? = mEncoderThread.handler
         handler!!.sendMessageDelayed(handler.obtainMessage(
-                EncoderHandler.MSG_SAVE_VIDEO, outputFile), 5 * 1000.toLong())
+                EncoderHandler.MSG_SAVE_VIDEO, outputFile), 3000.toLong())
     }
 
     /**
@@ -213,6 +222,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
                     } catch (ie: InterruptedException) { /* not expected */
                     }
                 }
+                mCallback?.onEncoderInit()
             }
         }// Confirm ready state.
 
@@ -365,7 +375,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
          */
         fun frameAvailableSoon() {
             if (VERBOSE) Log.d(TAG, "frameAvailableSoon")
-            drainEncoderToByteArray()
+            drainEncoder()
             mFrameNum++
             /*if ((mFrameNum % 10) == 0) {        // TODO: should base off frame rate or clock?
                 mCallback.bufferStatus(mEncBuffer.computeTimeSpanUsec());
@@ -428,7 +438,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
                 }
             }
             if (VERBOSE) {
-                Log.d(TAG, "muxer stopped, result=$result")
+                Log.e(TAG, "muxer stopped, result=$result")
             }
             mCallback?.fileSaveComplete(result)
         }
@@ -485,7 +495,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
     }
 
     companion object {
-        private const val TAG = "CircularEncoder"
+        const val TAG = "CircularEncoder"
         private const val VERBOSE = true
         private const val MIME_TYPE = "video/avc" // H.264 Advanced Video Coding
         private const val IFRAME_INTERVAL = 1 // sync frame every second
@@ -527,7 +537,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
         if (VERBOSE) Log.d(TAG, "format: $format")
         // Create a MediaCodec encoder, and configure it with our format.  Get a Surface
         // we can use for input and wrap it with a class that handles the EGL work.
-            mEncoder = MediaCodec.createEncoderByType(MIME_TYPE).apply {
+        mEncoder = MediaCodec.createEncoderByType(MIME_TYPE).apply {
             configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             inputSurface = createInputSurface()
             start()

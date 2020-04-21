@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.Message
+import android.util.Size
 import com.zzx.media.custom.view.opengl.egl.FullFrameRect
 import com.zzx.media.custom.view.opengl.egl.OffscreenEGLSurface
 import com.zzx.media.custom.view.opengl.egl.Texture2DProgram
@@ -46,6 +47,10 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
         ConcurrentHashMap<Int, WindowEGLSurface<EGLContext, EGLSurface, EGLConfig>>()
     }
 
+    private val mSizeMap by lazy {
+        ConcurrentHashMap<Int, Size>()
+    }
+
     private val mRefreshSet by lazy {
         TreeSet<Int>()
     }
@@ -80,18 +85,26 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
         GLES20.glViewport(0, 0, mPreviewWidth, mPreviewHeight)
     }
 
-    fun setRenderSize(width: Int, height: Int) {
+    /*fun setRenderSize(width: Int, height: Int) {
         mPreviewWidth   = width
         mPreviewHeight  = height
-    }
+    }*/
 
     fun stopRender() {
         mSurfaceTexture.setOnFrameAvailableListener(null)
     }
 
-    fun registerPreviewSurface(surface: Any, needCallback: Boolean = false) {
+    /**
+     * @see unregisterPreviewSurface
+     * @param surface Any
+     * @param needCallback Boolean
+     * @param width Int
+     * @param height Int
+     */
+    fun registerPreviewSurface(surface: Any, width: Int, height: Int, needCallback: Boolean = false) {
         synchronized(mSurfaceMap) {
             val hashCode = System.identityHashCode(surface)
+            mSizeMap[hashCode] = Size(width, height)
             if (mSurfaceMap.containsKey(hashCode)) {
                 return
             }
@@ -120,23 +133,13 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
     }
 
     fun unregisterPreviewSurface(surface: Any) {
-        synchronized(mSurfaceMap) {
-            Timber.tag(TAG.RENDER).w("unregisterPreviewSurface")
-            val hasCode = System.identityHashCode(surface)
-            mSurfaceMap[hasCode]?.apply {
-                release()
-            }
-            mRefreshSet.remove(hasCode)
-            if (mRefreshSet.isEmpty()) {
-                mFrameRenderListener = null
-            }
-            mSurfaceMap.remove(hasCode)
-        }
+        unregisterPreviewSurface(System.identityHashCode(surface))
     }
 
     fun unregisterPreviewSurface(id: Int) {
         synchronized(mSurfaceMap) {
             Timber.tag(TAG.RENDER).w("unregisterPreviewSurface")
+            mSizeMap.remove(id)
             mSurfaceMap[id]?.apply {
                 release()
             }
@@ -161,6 +164,9 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
                 mSurfaceMap.forEach { (id: Int, surface: WindowEGLSurface<EGLContext, EGLSurface, EGLConfig>) ->
                     releaseId = id
                     surface.makeCurrent()
+                    mSizeMap[id]?.apply {
+                        GLES20.glViewport(0, 0, width, height)
+                    }
                     mFullFrameRect.drawFrame(mTextureID, mTmpMatrix)
                     mFrameRenderListener?.apply {
                         Timber.tag(TAG.RENDER).v("renderFrame")

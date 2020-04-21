@@ -21,6 +21,8 @@ import android.util.Log;
 
 import java.nio.ByteBuffer;
 
+import timber.log.Timber;
+
 /**
  * Holds encoded video data in a circular buffer.
  * <p>
@@ -32,7 +34,7 @@ import java.nio.ByteBuffer;
 public class CircularEncoderBuffer {
     private static final String TAG = "CircularEncoderBuffer";
     private static final boolean EXTRA_DEBUG = true;
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
 
     // Raw data (e.g. AVC NAL units) held here.
     //
