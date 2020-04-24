@@ -1,23 +1,30 @@
 package com.zzx.media.codec
 
+import android.media.AudioFormat
 import android.media.MediaCodec
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import timber.log.Timber
 import java.nio.ByteBuffer
+import kotlin.math.min
 
 /**@author Tomy
  * Created by Tomy on 2017/11/6.
  */
-class AACCodec: ICodec {
+class AACCodec(private var mMuxerWrapper: MuxerWrapper? = null): ICodec {
 
     private var mCodec: MediaCodec? = null
 
-    private lateinit var mInputBuffer: ByteBuffer
-    private lateinit var mOutBuffer: ByteBuffer
+    private var mInputBuffer: ByteBuffer? = null
+    private var mOutBuffer: ByteBuffer? = null
 
     private var mCallback: ICodec.OutCallback? = null
 
     private val mBufferInfo = MediaCodec.BufferInfo()
+
+    fun setMuxerWrapper(wrapper: MuxerWrapper?) {
+        mMuxerWrapper = wrapper
+    }
 
     fun W(msg: String) {
         Timber.w("========= $msg ==========")
@@ -27,18 +34,21 @@ class AACCodec: ICodec {
         Timber.e("========= $msg ==========")
     }
 
-    override fun initCodec(codecName: String, encoder: Boolean, sampleRate: Int, channelCount: Int, bytePerBit: Int, bitRate: Int): Boolean {
+    override fun initCodec(codecName: String, encoder: Boolean, sampleRate: Int, channelCount: Int, bitPerByte: Int, bitRate: Int): Boolean {
         mCodec = if (encoder) {
             MediaCodec.createEncoderByType(codecName)
         } else {
             MediaCodec.createDecoderByType(codecName)
         }
-        val format = MediaFormat.createAudioFormat(codecName, sampleRate, channelCount)
-        format.setInteger(MediaFormat.KEY_BIT_RATE, sampleRate * channelCount * 8)
+        val audioFormat = MediaFormat.createAudioFormat(codecName, sampleRate, channelCount)
+        audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, sampleRate * channelCount * bitPerByte)
+        // optional stuff
+        audioFormat.setInteger(MediaFormat.KEY_CHANNEL_MASK, AudioFormat.CHANNEL_IN_MONO)
+        audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC)
 //        format.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectHE)
-        mCodec?.configure(format, null, null, if (encoder) MediaCodec.CONFIGURE_FLAG_ENCODE else 0)
+        mCodec?.configure(audioFormat, null, null, if (encoder) MediaCodec.CONFIGURE_FLAG_ENCODE else 0)
         mCodec?.start()
-        return false
+        return true
     }
 
     fun setCallback(callback: ICodec.OutCallback) {
@@ -65,13 +75,16 @@ class AACCodec: ICodec {
                 E("dequeueInputBuffer failed")
                 return
             }
+            var tmpSize = 0
 
             mInputBuffer = mCodec!!.getInputBuffer(bufferIndex)
-            mInputBuffer.clear()
+            mInputBuffer?.apply {
+                clear()
+                tmpSize = min(remaining(), inputData.size)
+                W("tmpSize = $tmpSize, index = $index")
+                put(inputData, index, tmpSize)
+            }
 
-            val tmpSize = Math.min(mInputBuffer.remaining(), inputData.size)
-            W("tmpSize = $tmpSize, index = $index")
-            mInputBuffer.put(inputData, index, tmpSize)
             index += tmpSize
 
             mCodec!!.queueInputBuffer(bufferIndex, 0, tmpSize, 0, 0)
@@ -83,11 +96,14 @@ class AACCodec: ICodec {
             while (outIndex >= 0) {
                 W("outIndex = $outIndex")
                 mOutBuffer = mCodec!!.getOutputBuffer(outIndex)
-                mOutBuffer.position(mBufferInfo.offset)
-                mOutBuffer.limit(mBufferInfo.offset + mBufferInfo.size)
                 val outData = ByteArray(mBufferInfo.size)
-                mOutBuffer.get(outData)
-                mCallback?.onOut(outData)
+                mOutBuffer?.apply {
+                    position(mBufferInfo.offset)
+                    limit(mBufferInfo.offset + mBufferInfo.size)
+                    get(outData)
+                    mCallback?.onOut(outData)
+                }
+
                 mCodec!!.releaseOutputBuffer(outIndex, false)
                 outIndex = mCodec!!.dequeueOutputBuffer(mBufferInfo, 50)
             }

@@ -25,13 +25,10 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.Surface
-import com.zzx.media.codec.CircularEncoder.EncoderThread.EncoderHandler
-import com.zzx.utils.rxjava.FlowableUtil
-import io.reactivex.functions.Consumer
-import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
 
 /**
  * Encodes video in a fixed-size circular buffer.
@@ -61,8 +58,8 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
      */
     val inputSurface: Surface
     private var mEncoder: MediaCodec?
-    private val mHandler = Handler()
 
+    private var mMuxerWrapper: MuxerWrapper? = null
 
     /**
      * Callback function definitions.  CircularEncoder caller must provide one.
@@ -170,7 +167,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
      * should be fully started before the thread is created, and not shut down until this
      * thread has been joined.
      */
-    private class EncoderThread(private var mEncoder: MediaCodec?,
+    class EncoderThread(private var mEncoder: MediaCodec?,
                                 private val mEncBuffer: CircularEncoderBuffer,
                                 private var mCallback: Callback?,
                                 private var mWidth: Int = 0, private var mHeight: Int = 0) : Thread() {
@@ -185,6 +182,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
         @Volatile
         private var mRecording = false
 
+        private val mEnableNew = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
 
         /**
          * Thread entry point.
@@ -244,14 +242,19 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
          * Drains all pending output from the decoder, and adds it to the circular buffer.
          */
         fun drainEncoder() {
-            val TIMEOUT_USEC = 0 // no timeout -- check for buffers, bail if none
-            var encoderOutputBuffers = mEncoder!!.outputBuffers
+            val timeout = 0 // no timeout -- check for buffers, bail if none
+            var encoderOutputBuffers: Array<ByteBuffer>? = null
+            if (!mEnableNew) {
+                encoderOutputBuffers = mEncoder!!.outputBuffers
+            }
             while (true) {
-                val encoderStatus = mEncoder!!.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC.toLong())
+                val encoderStatus = mEncoder!!.dequeueOutputBuffer(mBufferInfo, timeout.toLong())
                 if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) { // no output available yet
                     break
                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) { // not expected for an encoder
-                    encoderOutputBuffers = mEncoder!!.outputBuffers
+                    if (!mEnableNew) {
+                        encoderOutputBuffers = mEncoder!!.outputBuffers
+                    }
                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                     // Should happen before receiving buffers, and should only happen once.
                     // The MediaFormat contains the csd-0 and csd-1 keys, which we'll need
@@ -265,10 +268,10 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
                             encoderStatus)
                     // let's ignore it
                 } else {
-                    val encodedData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    val encodedData = if (mEnableNew) {
                         mEncoder!!.getOutputBuffer(encoderStatus)
                     } else {
-                        encoderOutputBuffers[encoderStatus]
+                        encoderOutputBuffers!![encoderStatus]
                     }
 
                     if (mBufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
@@ -386,6 +389,10 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
             mRecording = false
         }
 
+        fun startRecord() {
+
+        }
+
         /**
          * Saves the encoder output to a .mp4 file.
          *
@@ -413,17 +420,18 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
             }
             val info = MediaCodec.BufferInfo()
             var muxer: MediaMuxer? = null
-            var result = -1
+            var result: Int
             try {
                 muxer = MediaMuxer(outputFile.path,
                         MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-                val videoTrack = muxer.addTrack(mEncodedFormat)
+                val videoTrack = muxer.addTrack(mEncodedFormat!!)
                 muxer.start()
                 do {
                     val buf = mEncBuffer.getChunk(index, info)
                     if (VERBOSE) {
                         Log.e(TAG, "SAVE " + index + " flags=0x" + Integer.toHexString(info.flags))
                     }
+
                     muxer.writeSampleData(videoTrack, buf, info)
                     index = mEncBuffer.getNextIndex(index)
                 } while (mRecording && index >= 0)
@@ -450,6 +458,16 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
             if (VERBOSE) Log.d(TAG, "shutdown")
             Looper.myLooper().quit()
         }
+
+
+
+    }
+
+    companion object {
+        const val TAG = "CircularEncoder"
+        private const val VERBOSE = true
+        private const val MIME_TYPE = "video/avc" // H.264 Advanced Video Coding
+        private const val SYNC_FRAME_INTERVAL = 1 // sync frame every second
 
         /**
          * Handler for EncoderThread.  Used for messages sent from the UI thread (or whatever
@@ -491,14 +509,6 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
             }
 
         }
-
-    }
-
-    companion object {
-        const val TAG = "CircularEncoder"
-        private const val VERBOSE = true
-        private const val MIME_TYPE = "video/avc" // H.264 Advanced Video Coding
-        private const val IFRAME_INTERVAL = 1 // sync frame every second
     }
 
     /**
@@ -520,9 +530,9 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
         //
         // Since we have to start muxing from a sync frame, we want to ensure that there's
         // room for at least one full GOP in the buffer, preferrably two.
-        if (desiredSpanSec < IFRAME_INTERVAL * 2) {
+        if (desiredSpanSec < SYNC_FRAME_INTERVAL * 2) {
             throw RuntimeException("Requested time span is too short: " + desiredSpanSec +
-                    " vs. " + IFRAME_INTERVAL * 2)
+                    " vs. " + SYNC_FRAME_INTERVAL * 2)
         }
         val encBuffer = CircularEncoderBuffer(bitRate, frameRate,
                 desiredSpanSec)
@@ -533,7 +543,7 @@ class CircularEncoder(width: Int, height: Int, bitRate: Int, frameRate: Int, des
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
         format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate)
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL)
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, SYNC_FRAME_INTERVAL)
         if (VERBOSE) Log.d(TAG, "format: $format")
         // Create a MediaCodec encoder, and configure it with our format.  Get a Surface
         // we can use for input and wrap it with a class that handles the EGL work.

@@ -101,9 +101,10 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
      * @param width Int
      * @param height Int
      */
-    fun registerPreviewSurface(surface: Any, width: Int, height: Int, needCallback: Boolean = false) {
+    fun registerPreviewSurface(surface: Any, width: Int, height: Int, needCallback: Boolean = false, surfaceNeedRelease: Boolean = false) {
         synchronized(mSurfaceMap) {
             val hashCode = System.identityHashCode(surface)
+            Timber.w("registerPreviewSurface.hashCode = $hashCode")
             mSizeMap[hashCode] = Size(width, height)
             if (mSurfaceMap.containsKey(hashCode)) {
                 return
@@ -112,7 +113,7 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
                 mRefreshSet.add(hashCode)
             }
             Timber.w("registerPreviewSurface.surface = $surface")
-            mSurfaceMap[hashCode] = WindowEGLSurface(mEGLCore, surface, false)
+            mSurfaceMap[hashCode] = WindowEGLSurface(mEGLCore, surface, surfaceNeedRelease)
         }
     }
 
@@ -138,7 +139,7 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
 
     fun unregisterPreviewSurface(id: Int) {
         synchronized(mSurfaceMap) {
-            Timber.tag(TAG.RENDER).w("unregisterPreviewSurface")
+            Timber.tag(TAG.RENDER).w("unregisterPreviewSurface.id = $id")
             mSizeMap.remove(id)
             mSurfaceMap[id]?.apply {
                 release()
@@ -180,10 +181,10 @@ class SharedRender(var context: Context, var sharedContext: EGLContext = EGL14.E
         } catch (e: Exception) {
             e.printStackTrace()
             e.message?.apply {
-                if (contains("eglMake") && contains("failed")) {
+//                if (contains("eglMake") && contains("failed")) {
                     Timber.tag(TAG.RENDER).e("releaseId.id = $releaseId")
                     unregisterPreviewSurface(releaseId)
-                }
+//                }
             }
         }
     }
