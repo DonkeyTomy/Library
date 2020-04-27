@@ -153,6 +153,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
 //            mCameraOpening.set(true)
             for (i in 0 until getCameraCount()) {
                 val info = Camera.CameraInfo()
+                Timber.d("${Const.TAG}getCameraInfo.id = $i")
                 Camera.getCameraInfo(i, info)
                 if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
                     Timber.e("${Const.TAG}openBackCamera()")

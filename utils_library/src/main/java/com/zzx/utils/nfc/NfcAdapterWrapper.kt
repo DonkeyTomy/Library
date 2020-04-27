@@ -1,16 +1,24 @@
 package com.zzx.utils.nfc
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.NfcManager
+import android.os.Build
+import android.support.annotation.RequiresApi
 
 /**@author Tomy
  * Created by Tomy on 2018/12/26.
  */
+@SuppressLint("PrivateApi")
 class NfcAdapterWrapper(context: Context) {
 
     private val mNfcAdapter by lazy {
-        context.getSystemService(NfcManager::class.java).defaultAdapter
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            context.getSystemService(NfcManager::class.java)?.defaultAdapter
+        } else {
+            (context.getSystemService(NfcManager::class.java.name) as NfcManager).defaultAdapter
+        }
     }
 
     private val mEnableMethod by lazy {
@@ -22,7 +30,7 @@ class NfcAdapterWrapper(context: Context) {
     }
 
     fun isEnabled(): Boolean {
-        return mNfcAdapter.isEnabled
+        return mNfcAdapter?.isEnabled ?: false
     }
 
     fun enable(): Boolean {
