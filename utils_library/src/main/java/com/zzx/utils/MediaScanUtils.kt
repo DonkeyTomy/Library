@@ -27,7 +27,7 @@ class MediaScanUtils(context: Context, private val mPath: String) : MediaScanner
         }
     }
 
-    override fun onScanCompleted(path: String, uri: Uri) {
+    override fun onScanCompleted(path: String, uri: Uri?) {
         try {
             mConnection.disconnect()
         } catch (e: Exception) {

@@ -392,7 +392,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         if (duration > 0) {
             setRecordDuration(duration)
         }
-        Timber.e("startLooper.duration = $duration, autoDelete = $autoDelete")
+        Timber.e("startLooper.duration = $duration, mRecordDuration = ${mRecordDuration}, autoDelete = $autoDelete")
         Observable.just(Unit)
                 .observeOn(mRecordScheduler)
                 .map {
@@ -638,14 +638,22 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             mRecordStateCallback?.onRecordStopping()
         }
 
+        private val mNotUsed = true
+
         override fun onRecordError(errorCode: Int) {
             Timber.e("onRecordError()")
             mRecordStarting.set(false)
             mRecordStopping.set(false)
             mLoopNeedStop.set(false)
-            stopLooper()
-            mCameraManager?.stopRecord()
-            mRecordStateCallback?.onRecordError(errorCode)
+            if (mNotUsed) {
+                mCameraManager?.stopRecord()
+                mRecordCore.stopRecord()
+                startLooper(autoDelete = mAutoDelete)
+            } else {
+                stopLooper()
+                mCameraManager?.stopRecord()
+                mRecordStateCallback?.onRecordError(errorCode)
+            }
         }
 
         override fun onRecordStop(stopCode: Int) {

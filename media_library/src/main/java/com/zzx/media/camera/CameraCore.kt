@@ -114,7 +114,7 @@ class CameraCore<camera> {
     }
 
     fun canClose(): Boolean {
-        return mStatus == Status.PREVIEW || mStatus == Status.OPENED
+        return mStatus == Status.PREVIEW || mStatus == Status.OPENED || mStatus == Status.RELEASE
     }
 
     fun isCapturing(): Boolean {

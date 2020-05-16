@@ -75,8 +75,13 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             Timber.e("$TAG_RECORDER onRecordError.what [$what] extraCode[$extra]")
             FlowableUtil.setBackgroundThread(Consumer {
                 mFile?.delete()
+                if (what == MediaRecorder.MEDIA_ERROR_SERVER_DIED) {
+                    release()
+                    init()
+                } else {
+                    reset()
+                }
                 mRecorderCallback?.onRecordError(extra)
-                reset()
 //                init()
             })
         }
@@ -308,7 +313,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         if (state == State.RECORDING || state == State.PAUSE) {
             setState(State.IDLE)
             try {
-                mMediaRecorder.resume()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    mMediaRecorder.resume()
+                }
                 mMediaRecorder.stop()
                 mRecorderCallback?.onRecorderFinished(mFile)
             } catch (e: Exception) {
@@ -328,7 +335,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     override fun pauseRecord() {
         Timber.e("$TAG_RECORDER pauseRecord. mState = [$mState]")
         if (getState() == State.RECORDING) {
-            mMediaRecorder.pause()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                mMediaRecorder.pause()
+            }
             setState(State.PAUSE)
             mRecorderCallback?.onRecordPause()
         }
@@ -337,7 +346,9 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     override fun resumeRecord() {
         Timber.e("$TAG_RECORDER resumeRecord. mState = [$mState]")
         if (getState() == State.PAUSE) {
-            mMediaRecorder.resume()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                mMediaRecorder.resume()
+            }
             setState(State.RECORDING)
             mRecorderCallback?.onRecordResume()
         }

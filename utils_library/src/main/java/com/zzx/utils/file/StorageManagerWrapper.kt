@@ -3,6 +3,7 @@
 package com.zzx.utils.file
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
@@ -10,18 +11,19 @@ import android.os.Build
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.support.annotation.RequiresApi
-import timber.log.Timber
 import com.zzx.utils.R
 import com.zzx.utils.TTSToast
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 
 /**@author Tomy
  * Created by Tomy on 2018/6/28.
  */
+@RequiresApi(Build.VERSION_CODES.N)
 @SuppressLint("PrivateApi")
 object StorageManagerWrapper {
 
@@ -185,31 +187,33 @@ object StorageManagerWrapper {
 
 
     fun formatStorage(context: Context) {
-        val messageDialog = ProgressDialog(context).apply {
-            setTitle("")
-            setMessage(context.getString(R.string.formatting))
-            setCanceledOnTouchOutside(false)
-            setCancelable(false)
-        }
+//        Looper.prepare()
+        context.sendBroadcast(Intent("StopRecord"))
+        var messageDialog: Dialog? = null
         Observable.just(context)
                 .observeOn(AndroidSchedulers.mainThread())
                 .map {
-                    messageDialog.show()
+                    messageDialog = ProgressDialog(context).apply {
+                        setTitle("")
+                        setMessage(context.getString(R.string.formatting))
+                        setCanceledOnTouchOutside(false)
+                        setCancelable(false)
+                    }
+                    messageDialog?.show()
                     TTSToast.showToast(R.string.formatting)
-                    context.sendBroadcast(Intent("StopRecord"))
                 }
-                .delay(500, TimeUnit.MILLISECONDS)
+                .delay(700, TimeUnit.MILLISECONDS)
                 .observeOn(Schedulers.io())
                 .map {
                     if (FileUtil.checkExternalStorageMounted(context)) {
-                        FileUtil.deleteFile("${FileUtil.getExternalStoragePath(context)}/DCIM")
+                        FileUtil.deleteFile(FileUtil.getExternalStoragePath(context))
                     }
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
-                    messageDialog.dismiss()
+                    messageDialog?.dismiss()
                 }
-
+//        Looper.loop()
         /*try {
             *//*StorageManagerWrapper.getExternalDiskId(context)?.let {
                 Intent().apply {
