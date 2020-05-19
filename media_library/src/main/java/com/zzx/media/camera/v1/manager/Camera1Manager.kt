@@ -11,6 +11,7 @@ import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
+import com.tencent.bugly.crashreport.CrashReport
 import com.zzx.media.bean.Const
 import com.zzx.media.camera.CameraCore
 import com.zzx.media.camera.CameraCore.Status
@@ -423,17 +424,22 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
         if (mBurstMode || !mCameraCore.isPreview()) {
             return
         }
-        Timber.e("startAutoFocus")
-        cancelAutoFocus()
-        focusCallback?.apply {
-            mFocusCallback = this
-        }
-        mCamera?.autoFocus { success, _ ->
-            Timber.e("autoFocus.success = $success")
+        try {
+            Timber.e("startAutoFocus")
+            cancelAutoFocus()
+            focusCallback?.apply {
+                mFocusCallback = this
+            }
+            mCamera?.autoFocus { success, _ ->
+                Timber.e("autoFocus.success = $success")
 //            cancelAutoFocus()
-            if (mIsPictureAutoFocusSupported)
-                setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
-            mFocusCallback?.onAutoFocusCallbackSuccess(success)
+                if (mIsPictureAutoFocusSupported)
+                    setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
+                mFocusCallback?.onAutoFocusCallbackSuccess(success)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            CrashReport.postCatchedException(e)
         }
     }
 
@@ -614,17 +620,23 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     override fun setCaptureParams(width: Int, height: Int, format: Int) {
-        mParameters?.apply {
-            if (mCameraCore.isRecording()) {
-                Timber.e("setCaptureParams Camera is Recording; isVssSupported = $isVideoSnapshotSupported")
-                if (!isVideoSnapshotSupported) {
-                    return
+        try {
+            mParameters?.apply {
+                if (mCameraCore.isRecording()) {
+                    Timber.e("setCaptureParams Camera is Recording; isVssSupported = $isVideoSnapshotSupported")
+                    if (!isVideoSnapshotSupported) {
+                        return
+                    }
                 }
+                pictureFormat = format
+                setPictureSize(width, height)
+                mCamera?.parameters = this
             }
-            pictureFormat = format
-            setPictureSize(width, height)
-            mCamera?.parameters = this
+        } catch (e: Exception) {
+            e.printStackTrace()
+            CrashReport.postCatchedException(e)
         }
+
     }
 
     override fun getSupportRecordSizeList(): Array<Size> {

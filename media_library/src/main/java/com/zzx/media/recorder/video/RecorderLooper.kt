@@ -27,7 +27,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**@author Tomy
  * Created by Tomy on 2018/6/11.
  */
-class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG flag: Int, private var mNeedLoopDelete: Boolean = false) {
+class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG flag: Int,
+                                      private var mNeedLoopDelete: Boolean = false,
+                                      private var mErrorAutoStart: Boolean = false) {
 
     var mRecorder: IRecorder = VideoRecorder(false)
 
@@ -107,6 +109,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
 
         }
+    }
+
+    /**
+     * @param autoStart Boolean 录制中发生错误是否需要自动重新录像而不发送错误信息
+     */
+    fun setErrorAutoStart(autoStart: Boolean) {
+        mErrorAutoStart = autoStart
     }
 
     fun setCamera(camera: camera) {
@@ -317,9 +326,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         if (needStopRecord) {
             stopRecord()
         }
-        if (!mAutoDelete) {
-            mRecordStateCallback?.onLoopStop()
-        }
+//        if (!mAutoDelete) {
+        mRecordStateCallback?.onLoopStop(if (mAutoDelete) IRecordLoopCallback.LOOP_AUTO_DELETE else IRecordLoopCallback.NORMAL)
+//        }
     }
 
     fun recordSection() {
@@ -404,9 +413,9 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
                     if (it) {
                         mRecordCore.startLoop()
-                        if (!mAutoDelete) {
-                            mRecordStateCallback?.onLoopStart()
-                        }
+//                        if (!mAutoDelete) {
+                        mRecordStateCallback?.onLoopStart(if (mAutoDelete) IRecordLoopCallback.LOOP_AUTO_DELETE else IRecordLoopCallback.NORMAL)
+//                        }
                         checkStorageSpace()
                         startRecord()
                         Observable.interval(mRecordDuration.toLong(), mRecordDuration.toLong(), TimeUnit.SECONDS)
@@ -638,18 +647,31 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             mRecordStateCallback?.onRecordStopping()
         }
 
-        private val mNotUsed = true
+        private var mErrorCount = 0
+
+        private var mPreErrorTime = 0L
 
         override fun onRecordError(errorCode: Int) {
             Timber.e("onRecordError()")
             mRecordStarting.set(false)
             mRecordStopping.set(false)
             mLoopNeedStop.set(false)
-            if (mNotUsed) {
+            if (errorCode == IRecorder.IRecordCallback.CAMERA_RELEASED) {
+                mCameraManager?.getCameraDevice()?.apply {
+                    setCamera(this)
+                }
+            }
+            val currentErrorTime = SystemClock.elapsedRealtime()
+            if ((currentErrorTime - mPreErrorTime) > 2000) {
+                mErrorCount = 0
+            }
+            mPreErrorTime = currentErrorTime
+            if (mErrorAutoStart && (++mErrorCount < 5)) {
                 mCameraManager?.stopRecord()
                 mRecordCore.stopRecord()
                 startLooper(autoDelete = mAutoDelete)
             } else {
+                mErrorCount = 0
                 stopLooper()
                 mCameraManager?.stopRecord()
                 mRecordStateCallback?.onRecordError(errorCode)
@@ -695,14 +717,15 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     interface IRecordLoopCallback: IRecorder.IRecordCallback {
 
-        fun onLoopStart()
+        fun onLoopStart(startCode: Int = NORMAL)
 
-        fun onLoopStop(stopCode: Int = STOP_CODE_NORMAL)
+        fun onLoopStop(stopCode: Int = NORMAL)
 
         fun onLoopError(errorCode: Int)
 
         companion object {
-            const val STOP_CODE_NORMAL          = 0
+            const val NORMAL          = 0
+            const val LOOP_AUTO_DELETE  = 0xF0
             const val STOP_CODE_LOOP_EXIST      = 0xF1
             const val STOP_CODE_LOOP_NOT_EXIST  = 0xF2
 

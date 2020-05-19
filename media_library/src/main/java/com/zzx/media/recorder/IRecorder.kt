@@ -168,11 +168,12 @@ interface IRecorder {
             /**
              * 录像停止时发生异常错误
              */
-            const val RECORD_STOP_STOP_UNKNOWN_ERROR            = -104
+            const val RECORD_STOP_UNKNOWN_ERROR            = -104
 
 
             const val RECORD_ERROR_TOO_SHORT = -1007
             const val RECORD_ERROR_CONFIGURE_FAILED = -105
+            const val CAMERA_RELEASED = -106
         }
 
     }

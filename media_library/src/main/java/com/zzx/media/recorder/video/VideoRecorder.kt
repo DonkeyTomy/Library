@@ -196,15 +196,23 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 //        mRecordStarting.set(true)
         try {
             Timber.e("$TAG_RECORDER prepare. mState = [$mState]")
-            when(mFlag) {
-                IRecorder.AUDIO ->
-                    mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-                IRecorder.VIDEO_MUTE ->
-                    mMediaRecorder.setVideoSource(getVideoSource())
-                IRecorder.VIDEO -> {
-                    mMediaRecorder.setVideoSource(getVideoSource())
-                    mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+            try {
+                when (mFlag) {
+                    IRecorder.AUDIO ->
+                        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+                    IRecorder.VIDEO_MUTE ->
+                        mMediaRecorder.setVideoSource(getVideoSource())
+                    IRecorder.VIDEO -> {
+                        mMediaRecorder.setVideoSource(getVideoSource())
+                        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+                    }
                 }
+            } catch (e: RuntimeException) {
+                setState(State.ERROR)
+                reset()
+                mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.CAMERA_RELEASED)
+                CrashReport.postCatchedException(e)
+                return
             }
 
             when(mFlag) {
@@ -253,8 +261,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             e.printStackTrace()
 //            unlockCamera()
             setState(State.ERROR)
-            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED)
             reset()
+            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED)
             CrashReport.postCatchedException(e)
             Timber.e("$TAG_RECORDER onRecorderConfigureFailed")
         }
@@ -320,7 +328,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                 mRecorderCallback?.onRecorderFinished(mFile)
             } catch (e: Exception) {
                 e.printStackTrace()
-                mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_STOP_UNKNOWN_ERROR)
+                mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_UNKNOWN_ERROR)
             }
         } else {
             mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_NOT_RECORDING)

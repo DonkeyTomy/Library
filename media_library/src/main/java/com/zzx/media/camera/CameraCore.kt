@@ -1,6 +1,7 @@
 package com.zzx.media.camera
 
 import android.hardware.Camera
+import timber.log.Timber
 
 /**@author Tomy
  * Created by Tomy on 2019/11/26.
@@ -11,6 +12,8 @@ class CameraCore<camera> {
     private var mCamera: camera? = null
 
     private var mStatus = Status.RELEASE
+
+    private var mLoopStatus = 0
 
     private var mParameter: Camera.Parameters? = null
 
@@ -114,7 +117,7 @@ class CameraCore<camera> {
     }
 
     fun canClose(): Boolean {
-        return mStatus == Status.PREVIEW || mStatus == Status.OPENED || mStatus == Status.RELEASE
+        return !isLoopRecord() && (mStatus == Status.PREVIEW || mStatus == Status.OPENED || mStatus == Status.RELEASE)
     }
 
     fun isCapturing(): Boolean {
@@ -126,15 +129,58 @@ class CameraCore<camera> {
     }
 
     fun isIDLE(): Boolean {
-        return mStatus != Status.RECORDING && mStatus != Status.RECORDING_CAPTURING && mStatus != Status.CAPTURING
+        return isLoopRecord() && (mStatus != Status.RECORDING && mStatus != Status.RECORDING_CAPTURING && mStatus != Status.CAPTURING)
     }
 
     fun isBusy(): Boolean {
         return mStatus == Status.RECORDING || mStatus == Status.RECORDING_CAPTURING || mStatus == Status.CAPTURING || mStatus == Status.CLOSING
     }
 
+    fun isUserBusy(): Boolean {
+        return isNormalLoop() || mStatus == Status.RECORDING_CAPTURING || mStatus == Status.CAPTURING || mStatus == Status.CLOSING
+    }
+
     fun isRecording(): Boolean {
         return mStatus == Status.RECORDING || mStatus == Status.RECORDING_CAPTURING
+    }
+
+    fun setLoopRecord(start: Boolean, autoDelete: Boolean = false) {
+        Timber.d("setLoopRecord  start[$start]; autoDelete[$autoDelete]")
+        mLoopStatus = if (start) {
+            if (autoDelete) {
+                LOOP_RECORD.or(LOOP_AUTO_DEL)
+            } else {
+                LOOP_RECORD
+            }
+        } else {
+            0
+        }
+    }
+
+    fun getLoopStatus(): Int  {
+        Timber.d("mLoopStatus = $mLoopStatus")
+        return mLoopStatus
+    }
+
+    /**
+     * @return 是否正常循环录像
+     */
+    fun isNormalLoop(): Boolean {
+        return getLoopStatus() == LOOP_RECORD
+    }
+
+    /**
+     * @return 是否处于预录自动删除模式
+     */
+    fun isAutoDelLoop(): Boolean {
+        return getLoopStatus() == LOOP_RECORD.or(LOOP_AUTO_DEL)
+    }
+
+    /**
+     * @return 是否处于循环录像模式.包括预录与正常循环
+     */
+    fun isLoopRecord(): Boolean {
+        return getLoopStatus().and(LOOP_RECORD) == LOOP_RECORD
     }
 
     fun isRecordingCapturing(): Boolean {
@@ -165,5 +211,8 @@ class CameraCore<camera> {
         const val ERROR_EXTRA_CODE_NOT_ENOUGH   = -101
         const val STATUS_CLOSING    = 0x4
         const val STATUS_CAPTURING  = 0x8
+
+        const val LOOP_RECORD   = 0x10
+        const val LOOP_AUTO_DEL = 0x20
     }
 }
