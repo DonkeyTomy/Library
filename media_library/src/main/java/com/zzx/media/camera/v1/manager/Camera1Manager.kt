@@ -412,6 +412,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      * @see stopRecord
      */
     override fun startRecord() {
+        Timber.i("startRecord()")
         mCameraCore.setStatus(Status.RECORDING)
         setPreviewCallback()
 //        mIsRecording.set(true)
@@ -524,10 +525,14 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     }
 
     /**
+     * @see startRecord
      * 停止录像
      * */
     override fun stopRecord() {
-        mCameraCore.setStatus(Status.OPENED)
+        Timber.i("stopRecord().status = ${mCameraCore.getStatus()}")
+        if (mCameraCore.isRecording()) {
+            mCameraCore.setStatus(Status.OPENED)
+        }
 //        mIsRecording.set(false)
     }
 

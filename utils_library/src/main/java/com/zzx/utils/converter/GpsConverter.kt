@@ -1,5 +1,6 @@
 package com.zzx.utils.converter
 
+import timber.log.Timber
 import kotlin.math.min
 
 /**@author Tomy
@@ -9,12 +10,12 @@ object GpsConverter {
     fun convertToDegree(gpsData: Double): Double {
         try {
             val temp = gpsData.toString()
-            val temp1 = temp.split("\\.").toTypedArray()
+            val temp1 = temp.split(".").toTypedArray()
             val limit = temp1[0]
             val fraction = ("0." + temp1[1]).toDouble()
             val fractionDes = fraction * 60
             val temp2 = fractionDes.toString()
-            val temp3 = temp2.split("\\.").toTypedArray()
+            val temp3 = temp2.split(".").toTypedArray()
             /*val secTmp = temp3[1].substring(0, min(temp3[1].length, 5)).toDouble()
             val sec = secTmp * 60*/
             var min = temp3[0]
@@ -31,12 +32,16 @@ object GpsConverter {
 
     fun getGpsString(temp: String): String {
         try {
-            val temp1 = temp.split("\\.").toTypedArray()
+            val temp1 = temp.split(".").toTypedArray()
+            if (temp1.size < 2) {
+                Timber.w("format [$temp] failed.size = ${temp1.size}")
+                return "0"
+            }
             val limit = temp1[0] //获得度数
             val fraction = ("0." + temp1[1]).toDouble() //将分加个"0."转换为double
             val fractionDes = fraction * 60 //分*60
             val temp2 = fractionDes.toString() //转换为字符串
-            val temp3 = temp2.split("\\.").toTypedArray() //分出分秒,temp3[0]即分数
+            val temp3 = temp2.split(".").toTypedArray() //分出分秒,temp3[0]即分数
             val secTmp = temp3[1].substring(0, min(temp3[1].length, 4)).toDouble() //秒数取4位
             var sec = (secTmp * 60).toString() //秒数*60
             if (sec.contains(".")) //若*60后变成了*.*E7等,则去除.

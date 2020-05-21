@@ -30,7 +30,7 @@ interface IRecorder {
     /**
      * Camera1时录制视频使用
      * */
-    fun setCamera(camera: Camera)
+    fun setCamera(camera: Camera?)
 
     /**
      * @see setOutputFile[File]
@@ -150,7 +150,7 @@ interface IRecorder {
 
 //        fun onRecorderConfigureFailed()
 
-        fun onRecordError(errorCode: Int)
+        fun onRecordError(errorCode: Int, errorType: Int = -1)
 
         fun onRecorderFinished(file: File?)
 
@@ -168,12 +168,14 @@ interface IRecorder {
             /**
              * 录像停止时发生异常错误
              */
-            const val RECORD_STOP_UNKNOWN_ERROR            = -104
+            const val RECORD_STOP_ERROR            = -104
 
 
             const val RECORD_ERROR_TOO_SHORT = -1007
             const val RECORD_ERROR_CONFIGURE_FAILED = -105
             const val CAMERA_RELEASED = -106
+            const val CAMERA_IS_NULL = -107
+            const val RECORDER_NOT_IDLE = -108
         }
 
     }

@@ -4,6 +4,7 @@ import android.hardware.Camera
 import android.media.CamcorderProfile
 import android.media.MediaRecorder
 import android.os.Build
+import android.os.SystemClock
 import android.util.SparseIntArray
 import android.view.Surface
 import com.tencent.bugly.crashreport.CrashReport
@@ -16,6 +17,7 @@ import com.zzx.utils.rxjava.FlowableUtil
 import io.reactivex.functions.Consumer
 import timber.log.Timber
 import java.io.File
+import kotlin.math.abs
 
 /**@author Tomy
  * Created by Tomy on 2018/6/8.
@@ -45,12 +47,16 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
 
 //    private val mRecordStopping = AtomicBoolean(false)
 
+    private var mRecordErrorCode = IRecorder.IRecordCallback.RECORD_STOP_ERROR
+
+    private var mRecordErrorType = 0
+
 
     override fun setFlag(@IRecorder.FLAG flag: Int) {
         mFlag = flag
     }
 
-    override fun setCamera(camera: Camera) {
+    override fun setCamera(camera: Camera?) {
         mCamera = camera
     }
 
@@ -62,26 +68,40 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
         init()
     }
 
+    private var mOnErrorTime = 0L
+    private var mStopErrorTime = 0L
+
     /**
      * 初始化至[State.IDLE]
      * @see prepare
      * */
     override fun init() {
         mMediaRecorder = MediaRecorder().apply {
-            reset()
             setState(State.IDLE)
         }
         mMediaRecorder.setOnErrorListener { _, what, extra ->
             Timber.e("$TAG_RECORDER onRecordError.what [$what] extraCode[$extra]")
+            mRecordErrorCode = what
+            mRecordErrorType = extra
             FlowableUtil.setBackgroundThread(Consumer {
                 mFile?.delete()
-                if (what == MediaRecorder.MEDIA_ERROR_SERVER_DIED) {
+                setState(State.ERROR)
+                if (what == MediaRecorder.MEDIA_ERROR_SERVER_DIED || what == MediaRecorder.MEDIA_RECORDER_ERROR_UNKNOWN) {
+                    if (SystemClock.elapsedRealtime() - mOnErrorTime < 400) {
+                        return@Consumer
+                    }
                     release()
                     init()
+                    mOnErrorTime = SystemClock.elapsedRealtime()
+                    val errorTime = abs(mOnErrorTime - mStopErrorTime)
+                    if (errorTime > 500) {
+                        mRecorderCallback?.onRecordError(what, extra)
+                    }
                 } else {
                     reset()
                 }
-                mRecorderCallback?.onRecordError(extra)
+                Timber.w("onErrorEnd().errorCode = $mRecordErrorCode, extraType = $mRecordErrorType")
+//                mRecorderCallback?.onRecordError(what, extra)
 //                init()
             })
         }
@@ -161,7 +181,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun setOutputFile(fullFile: File) {
         mFile = fullFile
-        Timber.e("$TAG_RECORDER mkdirs ${mFile!!.parent} success ? ${FileUtil.checkDirExist(mFile!!.parentFile, true)}")
+        Timber.i("$TAG_RECORDER mkdirs ${mFile!!.parent} success ? ${FileUtil.checkDirExist(mFile!!.parentFile, true)}")
     }
 
     /**
@@ -192,10 +212,19 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * @see init
      * */
     override fun prepare() {
+        if (mCamera == null) {
+            setState(State.IDLE)
+            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.CAMERA_IS_NULL)
+            return
+        }
+        if (mState != State.IDLE) {
+            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORDER_NOT_IDLE, mState.ordinal)
+            return
+        }
         mRecorderCallback?.onRecordStarting()
 //        mRecordStarting.set(true)
         try {
-            Timber.e("$TAG_RECORDER prepare. mState = [$mState]")
+            Timber.i("$TAG_RECORDER prepare. mState = [$mState]")
             try {
                 when (mFlag) {
                     IRecorder.AUDIO ->
@@ -207,11 +236,25 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
                     }
                 }
-            } catch (e: RuntimeException) {
-                setState(State.ERROR)
-                reset()
-                mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.CAMERA_RELEASED)
-                CrashReport.postCatchedException(e)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e.message?.apply {
+                    setState(State.ERROR)
+                    reset()
+                    try {
+                        mCamera?.reconnect()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        CrashReport.postCatchedException(e)
+                    }
+                    if (contains("Camera", true) && contains("release", true)) {
+                        mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.CAMERA_RELEASED)
+                        mCamera = null
+                    } else {
+                        mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED)
+                    }
+                    CrashReport.postCatchedException(e)
+                }
                 return
             }
 
@@ -251,20 +294,25 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mMediaRecorder.setOutputFile(mFile)
             }
-            Timber.e("mFlag = $mFlag [1: Video. 2: Audio. 3:MuteVideo]")
-            Timber.e("mFile = ${mFile!!.absolutePath}.")
+            Timber.d("mFlag = $mFlag [1: Video. 2: Audio. 3:MuteVideo]")
+            Timber.d("mFile = ${mFile!!.absolutePath}.")
             mMediaRecorder.prepare()
             setState(State.PREPARED)
             mRecorderCallback?.onRecorderPrepared()
-            Timber.e("$TAG_RECORDER onRecorderPrepared")
+            Timber.i("$TAG_RECORDER onRecorderPrepared")
         } catch (e: Exception) {
+            Timber.e("$TAG_RECORDER onRecorderConfigureFailed")
             e.printStackTrace()
 //            unlockCamera()
             setState(State.ERROR)
             reset()
+            try {
+                mCamera?.reconnect()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED)
             CrashReport.postCatchedException(e)
-            Timber.e("$TAG_RECORDER onRecorderConfigureFailed")
         }
     }
 
@@ -298,7 +346,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_EXTERNAL_STORAGE_NOT_ENOUGH)
             return
         }
-        Timber.e("$TAG_RECORDER startRecord. mState = [$mState]")
+        Timber.i("$TAG_RECORDER startRecord. mState = [$mState]")
         if (getState() == State.PREPARED) {
             mMediaRecorder.start()
             setState(State.RECORDING)
@@ -314,7 +362,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * 停止录像.
      * */
     override fun stopRecord() {
-        Timber.e("$TAG_RECORDER stopRecord. mState = [$mState]")
+        Timber.i("$TAG_RECORDER stopRecord. mState = [$mState]")
 //        mRecordStopping.set(true)
         mRecorderCallback?.onRecordStopping()
         val state = getState()
@@ -328,7 +376,20 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                 mRecorderCallback?.onRecorderFinished(mFile)
             } catch (e: Exception) {
                 e.printStackTrace()
-                mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_UNKNOWN_ERROR)
+//                mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_ERROR)
+                mStopErrorTime = SystemClock.elapsedRealtime()
+                val errorTime = abs(mOnErrorTime - mStopErrorTime)
+                Timber.w("errorTime = $errorTime; errorCode = $mRecordErrorCode, extraType = $mRecordErrorType")
+                if (errorTime > 500) {
+                    if (mRecordErrorType == IRecorder.IRecordCallback.RECORD_ERROR_TOO_SHORT) {
+                        mRecorderCallback?.onRecordError(mRecordErrorType, mRecordErrorCode)
+                    } else {
+                        mRecorderCallback?.onRecordError(mRecordErrorCode, mRecordErrorType)
+                    }
+                }
+
+                mRecordErrorCode = IRecorder.IRecordCallback.RECORD_STOP_ERROR
+                mRecordErrorType = 0
             }
         } else {
             mRecorderCallback?.onRecordStop(IRecorder.IRecordCallback.RECORD_STOP_NOT_RECORDING)
@@ -341,7 +402,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     }*/
 
     override fun pauseRecord() {
-        Timber.e("$TAG_RECORDER pauseRecord. mState = [$mState]")
+        Timber.i("$TAG_RECORDER pauseRecord. mState = [$mState]")
         if (getState() == State.RECORDING) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 mMediaRecorder.pause()
@@ -352,7 +413,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
     }
 
     override fun resumeRecord() {
-        Timber.e("$TAG_RECORDER resumeRecord. mState = [$mState]")
+        Timber.i("$TAG_RECORDER resumeRecord. mState = [$mState]")
         if (getState() == State.PAUSE) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 mMediaRecorder.resume()
@@ -367,7 +428,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * 若在录像会先停止录像.
      * */
     override fun reset() {
-        Timber.e("$TAG_RECORDER reset. mState = [$mState]")
+        Timber.i("$TAG_RECORDER reset. mState = [$mState]")
         if (getState() != State.IDLE && getState() != State.RELEASE) {
             stopRecord()
             mMediaRecorder.reset()
@@ -381,7 +442,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * 释放[IRecorder]到[State.RELEASE]状态.必须重新[init].
      * */
     override fun release() {
-        Timber.e("$TAG_RECORDER release. mState = [$mState]")
+        Timber.i("$TAG_RECORDER release. mState = [$mState]")
         if (getState() != State.RELEASE) {
             stopRecord()
             mMediaRecorder.release()
@@ -406,7 +467,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun setState(state: State) {
         mState = state
-        Timber.e("$TAG_RECORDER setState. mState = [$mState]")
+        Timber.i("$TAG_RECORDER setState. mState = [$mState]")
     }
 
     override fun getSurface(): Surface {

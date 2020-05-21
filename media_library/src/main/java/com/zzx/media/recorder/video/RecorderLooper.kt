@@ -3,6 +3,7 @@ package com.zzx.media.recorder.video
 import android.content.Context
 import android.hardware.Camera
 import android.media.CamcorderProfile
+import android.media.MediaRecorder
 import android.os.SystemClock
 import android.provider.MediaStore
 import android.view.Surface
@@ -118,8 +119,15 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         mErrorAutoStart = autoStart
     }
 
-    fun setCamera(camera: camera) {
-        mRecorder.setCamera(camera as Camera)
+    fun setCamera(camera: camera?) {
+        mRecorder.setCamera(if (camera == null) null else camera as Camera)
+    }
+
+    fun startPreview() {
+        Timber.d("startPreview.isLooping = ${mRecordCore.isLooping()}")
+        if (mRecordCore.isLooping()) {
+            startLooper(autoDelete = mAutoDelete)
+        }
     }
 
     fun setQuality(quality: Int, highQuality: Boolean = true) {
@@ -171,7 +179,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      */
     fun startRecord():Boolean {
         mStartTime = SystemClock.elapsedRealtime()
-        Timber.e("startRecord. mRecording = ${mRecordCore.isRecording()}; mDirPath = $mDirPath")
+        Timber.i("startRecord. mRecording = ${mRecordCore.isRecording()}; mDirPath = $mDirPath")
         if (mRecordCore.isRecording()) {
             return true
         }
@@ -202,17 +210,17 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
      * @see stopLooper
      */
     fun stopRecord() {
-        Timber.e("stopRecord")
+        Timber.i("stopRecord.mRecording = ${mRecordCore.isRecording()}")
         if (mRecordCore.isRecording()) {
 //            mRecording.set(false)
             mDelayRecord.set(false)
             mRecordDelayDisposable?.dispose()
+            mRecordCore.stopRecord()
             mRecorder.reset()
-            mCameraManager?.apply {
+            /*mCameraManager?.apply {
                 stopRecord()
                 startPreview()
-            }
-            mRecordCore.stopRecord()
+            }*/
         }
 //        FileNameUtils.tmpFile2Video(mOutputFile)
     }
@@ -244,7 +252,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun isRecordStartingOrStopping(): Boolean {
-        Timber.e("mRecordStarting: ${mRecordStarting.get()}. mRecordStopping = ${mRecordStopping.get()}")
+        Timber.i("mRecordStarting: ${mRecordStarting.get()}. mRecordStopping = ${mRecordStopping.get()}")
         return mRecordStarting.get() || mRecordStopping.get()
     }
 
@@ -258,6 +266,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             mRecordStateCallback?.onLoopStop(IRecordLoopCallback.STOP_CODE_LOOP_NOT_EXIST)
             return
         }
+        val timer = isRecordStartingOrStopping()
+        Timber.w("stopLooper.recording = ${mRecordCore.isLooping()}. isRecordStartingOrStopping = $timer")
         when {
             mRecordStopping.get() -> {
                 performStopLoop(false)
@@ -269,8 +279,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                 performStopLoop(true)
             }
         }
-        val timer = isRecordStartingOrStopping()
-        Timber.e("stopLooper.recording = ${mRecordCore.isLooping()}. isRecordStartingOrStopping = $timer")
+
         /*Observable.just(timer)
                 .observeOn(mRecordScheduler)
                 .subscribe {
@@ -401,13 +410,16 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         if (duration > 0) {
             setRecordDuration(duration)
         }
-        Timber.e("startLooper.duration = $duration, mRecordDuration = ${mRecordDuration}, autoDelete = $autoDelete")
+        Timber.w("startLooper.duration = $duration, mRecordDuration = ${mRecordDuration}, autoDelete = $autoDelete")
         Observable.just(Unit)
                 .observeOn(mRecordScheduler)
                 .map {
                     checkNeedDelete(true)
                 }
                 .observeOn(mRecordScheduler)
+                .doOnDispose {
+                    Timber.i("startLooper. doOnDispose")
+                }
                 .subscribe {
 //                    mLooping.set(it)
 
@@ -417,11 +429,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                         mRecordStateCallback?.onLoopStart(if (mAutoDelete) IRecordLoopCallback.LOOP_AUTO_DELETE else IRecordLoopCallback.NORMAL)
 //                        }
                         checkStorageSpace()
+                        Timber.i("startLooper. startRecord")
                         startRecord()
                         Observable.interval(mRecordDuration.toLong(), mRecordDuration.toLong(), TimeUnit.SECONDS)
                                 .observeOn(mRecordScheduler)
                                 .subscribe(
                                         {
+                                            Timber.w("startLooper. stopRecord")
                                             stopRecord()
                                             if (mRecordLoopDisposable?.isDisposed == false) {
                                                 startRecord()
@@ -609,6 +623,13 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         return true
     }
 
+    private fun restartPreview() {
+        mCameraManager?.apply {
+            stopRecord()
+            startPreview()
+        }
+    }
+
     inner class RecordStateCallback: IRecorder.IRecordCallback {
 
         override fun onRecorderPrepared() {
@@ -651,14 +672,32 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
         private var mPreErrorTime = 0L
 
-        override fun onRecordError(errorCode: Int) {
-            Timber.e("onRecordError()")
+        override fun onRecordError(errorCode: Int, errorType: Int) {
+            Timber.e("onRecordError().errorCode = $errorCode, errorType = $errorType")
+            if (errorCode == IRecorder.IRecordCallback.RECORDER_NOT_IDLE) {
+                Timber.e("onRecordError().Recorder not idle, currentState = $errorType")
+                return
+            }
             mRecordStarting.set(false)
             mRecordStopping.set(false)
             mLoopNeedStop.set(false)
-            if (errorCode == IRecorder.IRecordCallback.CAMERA_RELEASED) {
-                mCameraManager?.getCameraDevice()?.apply {
-                    setCamera(this)
+            when (errorCode) {
+                IRecorder.IRecordCallback.CAMERA_RELEASED, IRecorder.IRecordCallback.CAMERA_IS_NULL -> {
+                    mRecordCore.stopRecord()
+                    return
+                }
+                /*MediaRecorder.MEDIA_ERROR_SERVER_DIED, MediaRecorder.MEDIA_RECORDER_ERROR_UNKNOWN, IRecorder.IRecordCallback.RECORD_STOP_ERROR   -> {
+                    restartPreview()
+                }*/
+                IRecorder.IRecordCallback.RECORD_ERROR_TOO_SHORT -> {
+                    restartPreview()
+                    mErrorCount = 0
+                    stopLooper()
+                    mRecordStateCallback?.onRecordError(errorCode, errorType)
+                    return
+                }
+                else -> {
+                    restartPreview()
                 }
             }
             val currentErrorTime = SystemClock.elapsedRealtime()
@@ -667,14 +706,17 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             }
             mPreErrorTime = currentErrorTime
             if (mErrorAutoStart && (++mErrorCount < 5)) {
-                mCameraManager?.stopRecord()
+//                mCameraManager?.stopRecord()
                 mRecordCore.stopRecord()
-                startLooper(autoDelete = mAutoDelete)
+                Timber.i("onRecordError().isLooping = ${mRecordCore.isLooping()}")
+                if (mRecordCore.isLooping()) {
+                    startLooper(autoDelete = mAutoDelete)
+                }
             } else {
                 mErrorCount = 0
                 stopLooper()
                 mCameraManager?.stopRecord()
-                mRecordStateCallback?.onRecordError(errorCode)
+                mRecordStateCallback?.onRecordError(errorCode, errorType)
             }
         }
 
@@ -686,6 +728,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         }
 
         override fun onRecorderFinished(file: File?) {
+            restartPreview()
             mRecordStopping.set(false)
             Timber.e("onRecorderFinished()")
             if (mAutoDelete) {
