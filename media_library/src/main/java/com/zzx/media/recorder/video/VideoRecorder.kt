@@ -212,7 +212,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * @see init
      * */
     override fun prepare() {
-        if (mCamera == null) {
+        if (mFlag != IRecorder.AUDIO && mCamera == null) {
             setState(State.IDLE)
             mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.CAMERA_IS_NULL)
             return

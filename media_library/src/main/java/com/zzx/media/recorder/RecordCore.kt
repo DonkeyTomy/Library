@@ -31,10 +31,22 @@ class RecordCore {
         mStatus.set(mStatus.get().and(RECORDING.inv()))
     }
 
+    /**
+     * @param needRestart 是否需要重启继续录像
+     */
+    fun setNeedRestartLoop(needRestart: Boolean) {
+        mStatus.set(mStatus.get().and(if (needRestart) RESTART_LOOPING else RESTART_LOOPING.inv()))
+    }
+
+    fun isNeedRestartLoop(): Boolean {
+        return mStatus.get().and(RESTART_LOOPING) == RESTART_LOOPING
+    }
+
     companion object {
         const val IDLE = 0x0
         const val LOOPING   = 0x01
         const val RECORDING = 0x02
+        const val RESTART_LOOPING = 0x04
     }
 
 }

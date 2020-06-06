@@ -15,6 +15,8 @@ class CameraCore<camera> {
 
     private var mLoopStatus = 0
 
+    private var mRecordStatus = 0
+
     private var mParameter: Camera.Parameters? = null
 
     private var mCameraID = 0
@@ -157,6 +159,20 @@ class CameraCore<camera> {
         }
     }
 
+    fun setRecordImp(imp: Boolean) {
+        mRecordStatus = if (imp) {
+            mRecordStatus.or(RECORD_IMP)
+        } else {
+            mRecordStatus.and(RECORD_IMP.inv())
+        }
+    }
+
+    fun getRecordStatue() = mRecordStatus
+
+    fun getRecordImp() = mRecordStatus.and(RECORD_IMP)
+
+    fun isRecordImp() = getRecordImp() == RECORD_IMP
+
     fun getLoopStatus(): Int  {
         Timber.d("mLoopStatus = $mLoopStatus")
         return mLoopStatus
@@ -214,5 +230,6 @@ class CameraCore<camera> {
 
         const val LOOP_RECORD   = 0x10
         const val LOOP_AUTO_DEL = 0x20
+        const val RECORD_IMP    = 0x40
     }
 }

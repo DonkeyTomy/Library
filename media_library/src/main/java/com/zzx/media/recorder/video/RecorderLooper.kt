@@ -125,7 +125,8 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
 
     fun startPreview() {
         Timber.d("startPreview.isLooping = ${mRecordCore.isLooping()}")
-        if (mRecordCore.isLooping()) {
+        if (mRecordCore.isLooping() && mRecordCore.isNeedRestartLoop()) {
+            mRecordCore.setNeedRestartLoop(false)
             startLooper(autoDelete = mAutoDelete)
         }
     }
@@ -349,12 +350,12 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
     }
 
     fun cancelLooperTimer() {
-        if (mRecordCore.isLooping()) {
+//        if (mRecordCore.isLooping()) {
             mRecordLoopDisposable?.dispose()
             mRecordLoopDisposable = null
 //            mLooping.set(false)
             mRecordCore.stopLoop()
-        }
+//        }
     }
 
     /**
@@ -683,6 +684,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             mLoopNeedStop.set(false)
             when (errorCode) {
                 IRecorder.IRecordCallback.CAMERA_RELEASED, IRecorder.IRecordCallback.CAMERA_IS_NULL -> {
+                    mRecordCore.setNeedRestartLoop(true)
                     mRecordCore.stopRecord()
                     return
                 }
@@ -700,6 +702,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                     restartPreview()
                 }
             }
+            mRecordCore.setNeedRestartLoop(false)
             val currentErrorTime = SystemClock.elapsedRealtime()
             if ((currentErrorTime - mPreErrorTime) > 2000) {
                 mErrorCount = 0
@@ -730,10 +733,10 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
         override fun onRecorderFinished(file: File?) {
             restartPreview()
             mRecordStopping.set(false)
-            Timber.e("onRecorderFinished()")
+            Timber.e("onRecorderFinished().mAutoDelete = $mAutoDelete")
             if (mAutoDelete) {
                 mAutoDeleteFileCount++
-                Timber.e("File: ${file?.absolutePath}. mAutoDeleteFileCount = $mAutoDeleteFileCount")
+                Timber.e("File: ${file?.absolutePath}. mAutoDeleteFileCount = $mAutoDeleteFileCount. mAutoDeletePreFile = ${mAutoDeleteFilePre?.name}")
                 if (mAutoDeleteFileCount > 1) {
                     mAutoDeleteFilePre?.apply {
                         delete()
