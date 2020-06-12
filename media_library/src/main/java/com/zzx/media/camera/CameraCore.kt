@@ -222,6 +222,117 @@ class CameraCore<camera> {
         ERROR
     }
 
+    class CameraState {
+        @Volatile
+        private var mNewState = CAMERA_RELEASED
+
+        private fun isBitSet(bit: Int): Boolean {
+            return mNewState.and(bit) == bit
+        }
+
+        private fun isBitUnset(bit: Int): Boolean {
+            return mNewState.and(bit) == 0
+        }
+
+        private fun setBit(bit: Int) {
+            mNewState = mNewState.or(bit)
+        }
+
+        private fun setState(state: Int) {
+            mNewState = state
+        }
+
+        private fun unsetBit(bit: Int) {
+            mNewState = mNewState.and(bit.inv())
+        }
+
+        fun getStatus() = mNewState
+
+        fun isClosing()
+                = isBitSet(CAMERA_CLOSING)
+
+        fun startClose() {
+            setState(CAMERA_CLOSING)
+        }
+
+        fun canClose()
+                = isBitUnset(CAMERA_CAPTURE.or(CAMERA_RECORD))
+
+        fun closeCamera() {
+            mNewState = CAMERA_RELEASED
+        }
+
+        fun startOpen() {
+            setState(CAMERA_OPENING)
+        }
+
+        fun isOpening()
+                = isBitSet(CAMERA_OPENING)
+
+        fun openCamera() {
+            setBit(CAMERA_OPENED)
+        }
+
+        fun isCameraOpened(): Boolean {
+            return isBitSet(CAMERA_OPENED)
+        }
+
+        fun startPreview() {
+            setBit(CAMERA_PREVIEWED)
+        }
+
+        fun stopPreview() {
+            unsetBit(CAMERA_PREVIEWED)
+        }
+
+        fun isPreview(): Boolean {
+            return isCameraOpened() && isBitSet(CAMERA_PREVIEWED)
+        }
+
+        fun startRecord() {
+            setBit(CAMERA_RECORD)
+        }
+
+        fun stopRecord() {
+            unsetBit(CAMERA_RECORD)
+        }
+
+        fun isRecording(): Boolean {
+            return isCameraOpened() && isBitSet(CAMERA_RECORD)
+        }
+
+        fun startCapture() {
+            setBit(CAMERA_CAPTURE)
+        }
+
+        fun stopCapture() {
+            unsetBit(CAMERA_CAPTURE)
+        }
+
+        fun isCapturing() = isCameraOpened() && isBitSet(CAMERA_CAPTURE)
+
+        fun canRecord(): Boolean {
+            return isPreview() && !isRecording()
+        }
+
+
+        fun canCapture()
+                = isCameraOpened() && mNewState.and(CAMERA_CAPTURE) == 0
+
+        fun canOpen()
+                = !isCameraOpened()
+
+        fun canStartPreview()
+                = isCameraOpened() && mNewState.and(CAMERA_PREVIEWED) == 0
+
+        fun canStopPreview()
+                = isPreview() && isBitUnset(CAMERA_CAPTURE.or(CAMERA_RECORD))
+
+        fun isBusy()
+                = isCameraOpened() && !isBitUnset(CAMERA_CAPTURE.or(CAMERA_RECORD))
+
+    }
+
     companion object {
         const val ERROR_EXTRA_CODE_NOT_MOUNT    = -100
         const val ERROR_EXTRA_CODE_NOT_ENOUGH   = -101
@@ -231,5 +342,13 @@ class CameraCore<camera> {
         const val LOOP_RECORD   = 0x10
         const val LOOP_AUTO_DEL = 0x20
         const val RECORD_IMP    = 0x40
+
+        const val CAMERA_RELEASED   = 0
+        const val CAMERA_OPENED     = 0x01
+        const val CAMERA_OPENING    = CAMERA_OPENED shl 1
+        const val CAMERA_CLOSING    = CAMERA_OPENED shl 2
+        const val CAMERA_PREVIEWED  = CAMERA_OPENED shl 3
+        const val CAMERA_CAPTURE    = CAMERA_OPENED shl 4
+        const val CAMERA_RECORD     = CAMERA_OPENED shl 5
     }
 }
