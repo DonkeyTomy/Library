@@ -337,6 +337,17 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             stopRecord()
         }
 //        if (!mAutoDelete) {
+        try {
+            if (mAutoDelete) {
+                mAutoDeleteFilePre?.apply {
+                    delete()
+                    MediaInfoUtil.deleteDatabase(mContext, absolutePath, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                }
+                mAutoDeleteFilePre = null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         mRecordStateCallback?.onLoopStop(if (mAutoDelete) IRecordLoopCallback.LOOP_AUTO_DELETE else IRecordLoopCallback.NORMAL)
 //        }
     }
