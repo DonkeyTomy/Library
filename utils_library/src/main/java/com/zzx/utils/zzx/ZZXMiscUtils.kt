@@ -81,7 +81,7 @@ object ZZXMiscUtils {
     const val OPEN = "1"
     const val CLOSE = "0"
 
-    private val FIXED_EXECUTOR = Executors.newFixedThreadPool(2)
+    private val FIXED_EXECUTOR = Executors.newFixedThreadPool(1)
     private val obj = Object()
 
     /**判断屏幕之前是否黑屏
@@ -248,33 +248,34 @@ object ZZXMiscUtils {
         }
     }
 
-    @Synchronized
     fun setFlashState(open: Boolean) {
+        write(FLASH_PATH, if (open) OPEN else CLOSE)
         write(FLASH_PATH, if (open) OPEN else CLOSE)
     }
 
-    @Synchronized
     fun setLaserState(open: Boolean) {
+        write(LASER_PATH, if (open) OPEN else CLOSE)
         write(LASER_PATH, if (open) OPEN else CLOSE)
     }
 
-    @Synchronized
     fun setIrRedState(open: Boolean) {
         if (open) {
             write(IR_CUT_PATH, OPEN)
+            write(IR_CUT_PATH, OPEN)
+            write(IR_RED_PATH, OPEN)
             write(IR_RED_PATH, OPEN)
         } else {
             write(IR_RED_PATH, CLOSE)
+            write(IR_RED_PATH, CLOSE)
+            write(IR_CUT_PATH, CLOSE)
             write(IR_CUT_PATH, CLOSE)
         }
     }
 
-    @Synchronized
     fun setPttSwitch(enabled: Boolean) {
         write(PTT_SWITCH, if (enabled) OPEN else CLOSE)
     }
 
-    @Synchronized
     fun setAutoInfrared(enabled: Boolean) {
         write(AUTO_INFRARED, if (enabled) OPEN else CLOSE)
     }
