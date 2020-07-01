@@ -17,6 +17,7 @@ import com.zzx.utils.rxjava.FlowableUtil
 import io.reactivex.functions.Consumer
 import timber.log.Timber
 import java.io.File
+import java.io.FileNotFoundException
 import kotlin.math.abs
 
 /**@author Tomy
@@ -164,7 +165,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * @param fullPath 完整的文件路径.
      * */
     override fun setOutputFilePath(fullPath: String) {
-        mFile = File(fullPath)
+        setOutputFile(File(fullPath))
     }
 
     /**
@@ -181,7 +182,11 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
      * */
     override fun setOutputFile(fullFile: File) {
         mFile = fullFile
-        Timber.i("$TAG_RECORDER mkdirs ${mFile!!.parent} success ? ${FileUtil.checkDirExist(mFile!!.parentFile, true)}")
+        val success = FileUtil.checkDirExist(mFile!!.parentFile, true)
+        if (!success) {
+//            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED, IRecorder.IRecordCallback.ERROR_CODE_FILE_WRITE_DENIED)
+        }
+        Timber.i("$TAG_RECORDER mkdirs ${mFile!!.parent} success ? $success")
     }
 
     /**
@@ -251,7 +256,7 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
                         mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.CAMERA_RELEASED)
                         mCamera = null
                     } else {
-                        mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED)
+                        mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED, IRecorder.IRecordCallback.ERROR_CODE_CAMERA_SET_FAILED)
                     }
                     CrashReport.postCatchedException(e)
                 }
@@ -311,7 +316,8 @@ class VideoRecorder(var isUseCamera2: Boolean = true): IRecorder {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED)
+            mRecorderCallback?.onRecordError(IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED,
+                    errorType = if (e is FileNotFoundException) IRecorder.IRecordCallback.ERROR_CODE_FILE_WRITE_DENIED else -1)
             CrashReport.postCatchedException(e)
         }
     }

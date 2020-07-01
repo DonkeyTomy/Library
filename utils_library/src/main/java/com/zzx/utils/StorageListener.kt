@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Environment
 import android.util.Log
 import com.zzx.utils.file.FileUtil
 import io.reactivex.Observable
@@ -30,6 +31,7 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
         val intentFilter = IntentFilter(Intent.ACTION_MEDIA_MOUNTED).apply {
             addAction(Intent.ACTION_MEDIA_UNMOUNTED)
             addAction(Intent.ACTION_MEDIA_BAD_REMOVAL)
+            addAction(Intent.ACTION_MEDIA_UNMOUNTABLE)
             addDataScheme("file")
         }
         mContext.registerReceiver(mReceiver, intentFilter)
@@ -58,6 +60,11 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
                 }
                 .subscribe {
                     if (it) {
+                        if (FileUtil.getExternalStorageState(mContext) == Environment.MEDIA_UNMOUNTABLE) {
+                            mCallback?.onExternalStorageChanged(true, false)
+                            mCallback?.onAvailablePercentChanged(-1)
+                            return@subscribe
+                        }
                         mExternalPath = FileUtil.getExternalStoragePath(mContext)
                         Observable.interval(1, 10, TimeUnit.SECONDS)
                                 .observeOn(Schedulers.computation())
@@ -101,7 +108,7 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
                 Intent.ACTION_MEDIA_BAD_REMOVAL -> {
                     mDisposable?.dispose()
                     mDisposable = null
-                    mCallback?.onExternalStorageChanged(false)
+                    mCallback?.onExternalStorageChanged(false, false)
                     mCallback?.onAvailablePercentChanged(-1)
                 }
                 Intent.ACTION_MEDIA_MOUNTED -> {
@@ -109,12 +116,19 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
                     storageAvailable()
                     Log.e(this@StorageListener.javaClass.simpleName, "${intent.action}. file = ${intent.data}")
                 }
+                Intent.ACTION_MEDIA_UNMOUNTABLE -> {
+                    mDisposable?.dispose()
+                    mDisposable = null
+                    mCallback?.onExternalStorageChanged(true, false)
+                    mCallback?.onAvailablePercentChanged(-1)
+                }
             }
         }
     }
 
     interface StorageCallback {
-        fun onExternalStorageChanged(mount: Boolean)
+
+        fun onExternalStorageChanged(exist: Boolean, mounted: Boolean = true)
 
         fun onAvailablePercentChanged(percent: Int)
     }

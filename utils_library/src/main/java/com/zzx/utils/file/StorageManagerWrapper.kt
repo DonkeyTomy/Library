@@ -3,19 +3,13 @@
 package com.zzx.utils.file
 
 import android.annotation.SuppressLint
-import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.support.annotation.RequiresApi
-import com.zzx.utils.R
-import com.zzx.utils.TTSToast
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -166,9 +160,9 @@ object StorageManagerWrapper {
         getExternalStorageVolume(context)?.apply {
             val id = mStorageVolumeGetIdMethod.invoke(this) as String
             Timber.e("storageVolumeId = $id")
-            val diskInfo = mFindVolumeByIdMethod.invoke(getStorageManager(context), id)
-            diskInfo?.apply {
-                val diskId = mVolumeGetDiskId.invoke(diskInfo) as String
+            val volumeInfo = mFindVolumeByIdMethod.invoke(getStorageManager(context), id)
+            volumeInfo?.apply {
+                val diskId = mVolumeGetDiskId.invoke(volumeInfo) as String
                 Timber.e("storage DiskId = $diskId")
                 return diskId
             }
@@ -177,8 +171,12 @@ object StorageManagerWrapper {
     }
 
     fun getExternalDiskUuid(context: Context): String? {
-        getExternalStorageVolume(context)?.apply {
-            return mStorageVolumeGetUUIDMethod.invoke(this) as String
+        try {
+            getExternalStorageVolume(context)?.apply {
+                return uuid
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         return null
     }
@@ -186,9 +184,9 @@ object StorageManagerWrapper {
 
 
 
-    fun formatStorage(context: Context) {
+    fun formatStorage(context: Context, preExecFun: () -> Int, delayInMill: Long = 500) {
 //        Looper.prepare()
-        context.sendBroadcast(Intent("StopRecord"))
+        /*context.sendBroadcast(Intent("StopRecord"))
         var messageDialog: Dialog? = null
         Observable.just(context)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -212,33 +210,41 @@ object StorageManagerWrapper {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     messageDialog?.dismiss()
-                }
+                }*/
 //        Looper.loop()
-        /*try {
-            *//*StorageManagerWrapper.getExternalDiskId(context)?.let {
-                Intent().apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    setClassName("com.android.settings", "com.android.settings.deviceinfo.StorageWizardFormatProgress")
-                    putExtra(StorageManagerWrapper.EXTRA_DISK_ID, it)
-                    putExtra(StorageManagerWrapper.EXTRA_FORMAT_PRIVATE, false)
-                    val uuid = StorageManagerWrapper.getExternalDiskUuid(context)
-                    Timber.e("uuid = $uuid")
-                    uuid?.let {
-                        putExtra(StorageManagerWrapper.EXTRA_FORGET_UUID, uuid)
+        try {
+            Observable.just(Unit)
+                    .map {
+                        preExecFun()
                     }
-                    context.startActivity(this)
-                }
-            }*//*
-            val intent = Intent(ACTION_FACTORY_RESET)
+                    .delay(delayInMill, TimeUnit.MILLISECONDS)
+                    .subscribe {
+                        getExternalDiskId(context)?.let {
+                            Intent().apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                setClassName("com.android.settings", "com.android.settings.deviceinfo.StorageWizardFormatProgress")
+                                putExtra(EXTRA_DISK_ID, it)
+                                putExtra(EXTRA_FORMAT_PRIVATE, false)
+                                val uuid = getExternalDiskUuid(context)
+                                Timber.e("uuid = $uuid")
+                                uuid?.let {
+                                    putExtra(EXTRA_FORGET_UUID, it)
+                                }
+                                context.startActivity(this)
+                            }
+                        }
+                    }
+
+            /*val intent = Intent(ACTION_FACTORY_RESET)
             intent.setPackage("android")
             intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
             intent.putExtra(EXTRA_REASON, "OnlyWipeStorage")
             intent.putExtra(EXTRA_WIPE_EXTERNAL_STORAGE, true)
             intent.putExtra(EXTRA_WIPE_ESIMS, true)
-            context.sendBroadcast(intent)
+            context.sendBroadcast(intent)*/
         } catch (e: Exception) {
             e.printStackTrace()
-        }*/
+        }
     }
 
 

@@ -726,7 +726,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
     override fun zoomUp(level: Int) {
         try {
             mParameters?.apply {
-                if (zoom == getZoomMax()) {
+                if (!isZoomSupported || zoom == getZoomMax()) {
                     return
                 }
                 val zoomLevel = zoom + level
@@ -755,7 +755,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
      */
     override fun zoomDown(level: Int) {
         mParameters?.apply {
-            if (zoom == 0) {
+            if (!isZoomSupported || zoom == 0) {
                 return
             }
             val zoomLevel = zoom - level

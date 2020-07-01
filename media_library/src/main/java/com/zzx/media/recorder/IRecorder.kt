@@ -176,6 +176,16 @@ interface IRecorder {
             const val CAMERA_RELEASED = -106
             const val CAMERA_IS_NULL = -107
             const val RECORDER_NOT_IDLE = -108
+
+            /**
+             * 无法写入文件,可能是TF卡损坏或者路径错误
+             */
+            const val ERROR_CODE_FILE_WRITE_DENIED  = 0x1111
+
+            /**
+             * 配置Camera出错,可能是相机已释放或者无法锁定
+             */
+            const val ERROR_CODE_CAMERA_SET_FAILED  = 0x1112
         }
 
     }

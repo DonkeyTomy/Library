@@ -14,6 +14,7 @@ import android.provider.MediaStore
 import android.provider.MediaStore.MediaColumns
 import android.support.annotation.RequiresApi
 import android.support.v4.content.FileProvider
+import android.text.TextUtils
 import timber.log.Timber
 import java.io.*
 import java.util.*
@@ -230,7 +231,21 @@ object FileUtil {
         return false
     }
 
-    @SuppressLint("DiscouragedPrivateApi")
+    /**
+     * @param context Context
+     * @return String
+     * @see [Environment.MEDIA_MOUNTED][Environment.MEDIA_BAD_REMOVAL][Environment.MEDIA_UNMOUNTED] [Environment.MEDIA_EJECTING] [Environment.MEDIA_UNMOUNTABLE]
+     */
+    fun getExternalStorageState(context: Context): String {
+        val list = getVolumePaths(context)
+        for (volume in list) {
+            if (volume.isRemovable)
+                return volume.state
+        }
+        return Environment.MEDIA_UNMOUNTED
+    }
+
+    @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
     fun getExternalStoragePath(context: Context): String {
         try {
             val list = getVolumePaths(context)
@@ -248,7 +263,7 @@ object FileUtil {
 
     fun getStoragePath(context: Context): String {
         var path = getExternalStoragePath(context)
-        if (path == "") {
+        if (TextUtils.isEmpty(path) || path == "null") {
             path = Environment.getExternalStorageDirectory().absolutePath
         }
         return path

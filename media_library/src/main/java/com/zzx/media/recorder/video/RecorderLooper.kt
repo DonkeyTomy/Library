@@ -709,6 +709,23 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                     mRecordStateCallback?.onRecordError(errorCode, errorType)
                     return
                 }
+                IRecorder.IRecordCallback.RECORD_ERROR_CONFIGURE_FAILED -> {
+                    when (errorType) {
+                        IRecorder.IRecordCallback.ERROR_CODE_CAMERA_SET_FAILED  -> {
+                            restartPreview()
+                        }
+                        IRecorder.IRecordCallback.ERROR_CODE_FILE_WRITE_DENIED  -> {
+                            restartPreview()
+                            mErrorCount = 0
+                            stopLooper()
+                            mCameraManager?.stopRecord()
+                            mRecordStateCallback?.onRecordError(errorCode, errorType)
+                        }
+                        else -> {
+                            restartPreview()
+                        }
+                    }
+                }
                 else -> {
                     restartPreview()
                 }
@@ -721,11 +738,16 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
             mPreErrorTime = currentErrorTime
             if (mErrorAutoStart && (++mErrorCount < 5)) {
 //                mCameraManager?.stopRecord()
-                mRecordCore.stopRecord()
-                Timber.i("onRecordError().isLooping = ${mRecordCore.isLooping()}")
-                if (mRecordCore.isLooping()) {
-                    startLooper(autoDelete = mAutoDelete)
-                }
+                Observable.timer(300, TimeUnit.MILLISECONDS)
+                        .observeOn(mRecordScheduler)
+                        .subscribe {
+                            mRecordCore.stopRecord()
+                            Timber.i("onRecordError().isLooping = ${mRecordCore.isLooping()}")
+                            if (mRecordCore.isLooping()) {
+                                startLooper(autoDelete = mAutoDelete)
+                            }
+                        }
+
             } else {
                 mErrorCount = 0
                 stopLooper()

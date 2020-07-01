@@ -1,4 +1,4 @@
-package com.zzx.utils.system;
+package com.zzx.utils.network;
 
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
