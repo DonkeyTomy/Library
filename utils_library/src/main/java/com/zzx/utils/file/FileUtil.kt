@@ -148,11 +148,11 @@ object FileUtil {
     }
 
     fun getDirTotalSpaceByMB(dir: File): Long {
-        return FileUtil.getDirTotalSpace(dir) / 1024 / 1024
+        return getDirTotalSpace(dir) / 1024 / 1024
     }
 
     fun getDirTotalSpaceByMB(dir: String): Long {
-        return FileUtil.getDirTotalSpace(dir) / 1024 / 1024
+        return getDirTotalSpace(dir) / 1024 / 1024
     }
 
     fun getDirTotalSpace(dir: File): Long {

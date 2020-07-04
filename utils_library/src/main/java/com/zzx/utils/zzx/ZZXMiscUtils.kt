@@ -2,6 +2,7 @@ package com.zzx.utils.zzx
 
 import android.content.Context
 import android.provider.Settings
+import timber.log.Timber
 import java.io.*
 import java.util.concurrent.Executors
 
@@ -81,7 +82,7 @@ object ZZXMiscUtils {
     const val OPEN = "1"
     const val CLOSE = "0"
 
-    private val FIXED_EXECUTOR = Executors.newFixedThreadPool(1)
+    private val FIXED_EXECUTOR = Executors.newFixedThreadPool(3)
     private val obj = Object()
 
     /**判断屏幕之前是否黑屏
@@ -237,11 +238,20 @@ object ZZXMiscUtils {
     fun write(path: String, cmd: String)  {
         FIXED_EXECUTOR.execute {
             try {
-                synchronized(obj) {
+//                synchronized(obj) {
 //                    JniFile().writeOnce(path, cmd)
-                    File(path).writeText(cmd)
-                }
-//                Timber.e("write: path = $path; cmd = $cmd.")
+                    Timber.d("write: path = $path; cmd = $cmd; length = ${cmd.length}")
+                    val file = File(path)
+                    file.writeText(cmd)
+
+                val regex = Regex("[\n\r]")
+                val temp = file.readText().replace(regex, "")
+                Timber.d("read: path = $path; temp = $temp;\n length = ${temp.length}")
+                if (temp != cmd) {
+                        Timber.w("write again: path = $path; cmd = $cmd")
+                        file.writeText(cmd)
+                    }
+//                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -250,24 +260,18 @@ object ZZXMiscUtils {
 
     fun setFlashState(open: Boolean) {
         write(FLASH_PATH, if (open) OPEN else CLOSE)
-        write(FLASH_PATH, if (open) OPEN else CLOSE)
     }
 
     fun setLaserState(open: Boolean) {
-        write(LASER_PATH, if (open) OPEN else CLOSE)
         write(LASER_PATH, if (open) OPEN else CLOSE)
     }
 
     fun setIrRedState(open: Boolean) {
         if (open) {
             write(IR_CUT_PATH, OPEN)
-            write(IR_CUT_PATH, OPEN)
-            write(IR_RED_PATH, OPEN)
             write(IR_RED_PATH, OPEN)
         } else {
             write(IR_RED_PATH, CLOSE)
-            write(IR_RED_PATH, CLOSE)
-            write(IR_CUT_PATH, CLOSE)
             write(IR_CUT_PATH, CLOSE)
         }
     }
