@@ -218,17 +218,16 @@ object FileUtil {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    fun getVolumePaths(context: Context): List<StorageVolume> {
+    fun getVolumeList(context: Context): List<StorageVolume> {
         return getStorageManager(context).storageVolumes
     }
 
     fun checkExternalStorageMounted(context: Context): Boolean {
-        val list = getVolumePaths(context)
-        for (volume in list) {
-            if (volume.isRemovable)
-                return true
-        }
-        return false
+        return getExternalStorageState(context) == Environment.MEDIA_MOUNTED
+    }
+
+    fun checkExternalStorageMountable(context: Context): Boolean {
+        return getExternalStorageState(context) == Environment.MEDIA_UNMOUNTED
     }
 
     /**
@@ -237,23 +236,26 @@ object FileUtil {
      * @see [Environment.MEDIA_MOUNTED][Environment.MEDIA_BAD_REMOVAL][Environment.MEDIA_UNMOUNTED] [Environment.MEDIA_EJECTING] [Environment.MEDIA_UNMOUNTABLE]
      */
     fun getExternalStorageState(context: Context): String {
-        val list = getVolumePaths(context)
-        for (volume in list) {
-            if (volume.isRemovable)
-                return volume.state
+        val state = getExternalStorageVolume(context)?.state ?: Environment.MEDIA_REMOVED
+        Timber.d("state = $state")
+        return state
+    }
+
+    fun getExternalStorageVolume(context: Context): StorageVolume? {
+        getVolumeList(context).forEach {
+            if (it.isRemovable) {
+                return it
+            }
         }
-        return Environment.MEDIA_UNMOUNTED
+        return null
     }
 
     @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
     fun getExternalStoragePath(context: Context): String {
         try {
-            val list = getVolumePaths(context)
             val getPathMethod = StorageVolume::class.java.getDeclaredMethod("getPath")
-            for (volume in list) {
-                if (volume.isRemovable) {
-                    return getPathMethod.invoke(volume) as String
-                }
+            getExternalStorageVolume(context)?.let {
+                return getPathMethod.invoke(it) as String
             }
         } catch (e: Exception) {
             e.printStackTrace()

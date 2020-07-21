@@ -1,12 +1,10 @@
 package com.zzx.utils
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Environment
-import android.util.Log
 import com.zzx.utils.file.FileUtil
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
@@ -99,7 +97,6 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
 
     inner class StorageBroadcast: BroadcastReceiver() {
 
-        @SuppressLint("LogNotTimber")
         override fun onReceive(context: Context?, intent: Intent?) {
             Timber.e("${CommonConst.TAG_RECORD_FLOW}action = ${intent!!.action}")
             when(intent.action) {
@@ -114,7 +111,7 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
                 Intent.ACTION_MEDIA_MOUNTED -> {
                     mCallback?.onExternalStorageChanged(true)
                     storageAvailable()
-                    Log.e(this@StorageListener.javaClass.simpleName, "${intent.action}. file = ${intent.data}")
+                    Timber.e( "${intent.action}. file = ${intent.data}")
                 }
                 Intent.ACTION_MEDIA_UNMOUNTABLE -> {
                     mDisposable?.dispose()

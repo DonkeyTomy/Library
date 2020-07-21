@@ -29,7 +29,7 @@ object SystemInfo {
 
     fun getSystemInfo(): String {
         return "${getDeviceModel()}-V${getVersionCode()}-${getBuildTime()}"
-//        return "${getDeviceModel()}-V${getVersionCode()}-20191109"
+//        return "${getDeviceModel()}-V${getVersionCode()}-20200624"
     }
 
     fun getDeviceModel(): String {

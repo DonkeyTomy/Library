@@ -34,5 +34,9 @@ open class MasterTwoTargetPreference: TwoTargetPreference {
         mListener?.onBindViewHolder(holder)
     }
 
+    override fun setWidgetEnabled(enabled: Boolean) {
+        mItemView.setBackgroundResource(if (enabled) R.drawable.bg_item_gray_line_click else R.drawable.bg_item_gray_line_pressed)
+        mItemView.isClickable = enabled
+    }
 
 }

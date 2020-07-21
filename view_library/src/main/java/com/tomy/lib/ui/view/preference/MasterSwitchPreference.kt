@@ -1,7 +1,6 @@
 package com.tomy.lib.ui.view.preference
 
 import android.content.Context
-import android.support.v7.preference.Preference
 import android.support.v7.preference.PreferenceViewHolder
 import android.util.AttributeSet
 import android.widget.Switch
@@ -41,7 +40,7 @@ open class MasterSwitchPreference: TwoTargetPreference {
 
         val widgetView = holder.findViewById(android.R.id.widget_frame)
         widgetView.setOnClickListener {
-            Timber.e("widgetView.Click().isEnabled = ${mSwitch?.isEnabled}")
+            Timber.e("${this.javaClass.simpleName} widgetView.Click().isEnabled = ${mSwitch?.isEnabled}")
             if (mSwitch?.isEnabled != true) {
                 return@setOnClickListener
             }
@@ -63,7 +62,7 @@ open class MasterSwitchPreference: TwoTargetPreference {
     }
 
     fun setChecked(checked: Boolean) {
-        Timber.e("setChecked.isChecked = $checked")
+        Timber.e("${this.javaClass.simpleName}  setChecked.isChecked = $checked; isChecked = ${mSwitch?.isChecked}")
         mChecked = checked
         mSwitch?.apply {
             if (isChecked != checked) {
@@ -72,8 +71,8 @@ open class MasterSwitchPreference: TwoTargetPreference {
         }
     }
 
-    fun setSwitchEnabled(enabled: Boolean) {
-        Timber.e("enabled = $enabled")
+    override fun setWidgetEnabled(enabled: Boolean) {
+        Timber.e("${this.javaClass.simpleName} enabled = $enabled")
         FlowableUtil.setMainThread(Consumer {
             mSwitch?.isEnabled = enabled
         })

@@ -18,6 +18,8 @@ open class TwoTargetPreference: Preference {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int): super(context, attrs, defStyleAttr, defStyleRes)
 
     protected var mListener: OnBindViewHolderListener? = null
+    
+    protected lateinit var mItemView: View
 
     init {
         layoutResource = getLayoutResourceId()
@@ -35,6 +37,7 @@ open class TwoTargetPreference: Preference {
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
+        mItemView = holder.itemView
         val widgetFrame = holder.findViewById(android.R.id.widget_frame)
         if (widgetFrame != null) {
             widgetFrame.visibility = if (shouldHideSecondTarget()) View.GONE else View.VISIBLE
@@ -53,4 +56,6 @@ open class TwoTargetPreference: Preference {
         fun onBindViewHolder(holder: PreferenceViewHolder)
     }
 
+
+    open fun setWidgetEnabled(enabled: Boolean) {}
 }

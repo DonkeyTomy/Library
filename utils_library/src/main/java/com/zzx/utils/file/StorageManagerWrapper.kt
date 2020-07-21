@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.support.annotation.RequiresApi
+import android.text.TextUtils
 import io.reactivex.Observable
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -83,8 +84,8 @@ object StorageManagerWrapper {
     /***************************************/
 
 
-    private fun getStorageManager(context: Context): android.os.storage.StorageManager {
-        return context.getSystemService(Context.STORAGE_SERVICE) as android.os.storage.StorageManager
+    private fun getStorageManager(context: Context): StorageManager {
+        return context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -97,22 +98,54 @@ object StorageManagerWrapper {
         return getVolumePathsMethod.invoke(getStorageManager(context)) as Array<String>
     }
 
-    fun checkExternalStorageMounted(context: Context): Boolean {
-        val list = getVolumeList(context)
-        for (volume in list) {
-            if (volume.isRemovable)
-                return true
+
+    fun mountStorage(context: Context) {
+        try {
+            if (FileUtil.checkExternalStorageMountable(context)) {
+                val getMountMethod = StorageManager::class.java.getDeclaredMethod("mount", String::class.java)
+                val id = getExternalStoragePathId(context)
+                Timber.d("start mount storageID: $id")
+                if (!TextUtils.isEmpty(id)) {
+                    getMountMethod.invoke(getStorageManager(context), id)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        return false
+    }
+
+    fun unmountStorage(context: Context) {
+        try {
+            if (FileUtil.checkExternalStorageMounted(context)) {
+                val getUnmountMethod = StorageManager::class.java.getDeclaredMethod("unmount", String::class.java)
+                val id = getExternalStoragePathId(context)
+                Timber.d("start unmount storageID: $id")
+                if (!TextUtils.isEmpty(id)) {
+                    getUnmountMethod.invoke(getStorageManager(context), id)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+
+    private fun getExternalStoragePathId(context: Context): String {
+        try {
+            val getPathMethod = StorageVolume::class.java.getDeclaredMethod("getId")
+            getExternalStorageVolume(context)?.let {
+                return getPathMethod.invoke(it) as String
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
     }
 
     fun getExternalStoragePath(context: Context): String {
         try {
-            val list = getVolumeList(context)
-            for (volume in list) {
-                if (volume.isRemovable) {
-                    return getVolumePath(volume)
-                }
+            getExternalStorageVolume(context)?.let {
+                return getVolumePath(it)
             }
         } catch (e: Exception) {
             e.printStackTrace()
