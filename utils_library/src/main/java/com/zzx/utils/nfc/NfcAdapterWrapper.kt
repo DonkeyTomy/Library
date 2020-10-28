@@ -5,7 +5,6 @@ import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.NfcManager
 import android.os.Build
-import android.support.annotation.RequiresApi
 
 /**@author Tomy
  * Created by Tomy on 2018/12/26.

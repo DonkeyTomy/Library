@@ -720,6 +720,7 @@ class RecorderLooper<surface, camera>(var mContext: Context, @IRecorder.FLAG fla
                             stopLooper()
                             mCameraManager?.stopRecord()
                             mRecordStateCallback?.onRecordError(errorCode, errorType)
+                            return
                         }
                         else -> {
                             restartPreview()

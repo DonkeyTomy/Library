@@ -1,6 +1,5 @@
 package com.zzx.utils.converter
 
-import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 import java.util.*
@@ -15,20 +14,56 @@ object HexCodeConverter {
      * @param src byte[] data
      * @return hex string
      */
-    fun bytesToHexString(src: ByteArray?): String? {
+    fun bytesToHexString(src: ByteArray?, len: Int = src?.size ?: 0): String? {
         val stringBuilder = StringBuilder("")
         if (src == null || src.isEmpty()) {
             return null
         }
-        for (aSrc in src) {
-            val v: Int = aSrc.and(0xFF.toByte()).toInt()
-            val hv = Integer.toHexString(v)
+        /*if (src.size == len) {
+            for (aSrc in src) {
+                val v: Int = aSrc.and(0xFF.toByte()).toInt()
+                val hv = Integer.toHexString(v)
+//            stringBuilder.append("0x")
+                if (hv.length < 2) {
+                    stringBuilder.append(0)
+                }
+                stringBuilder.append("${hv.toUpperCase(Locale.ROOT)} ")
+            }
+        }*/
+        for (i in 0 until len) {
+            val v: Int = src[i].and(0xFF.toByte()).toInt()
+            var hv = Integer.toHexString(v)
+//            stringBuilder.append("0x")
+//            Log.d("SerialPortTool", "hv = $hv")
             if (hv.length < 2) {
                 stringBuilder.append(0)
+            } else if (hv.length > 2) {
+                hv = hv.substring(hv.length - 2)
             }
-            stringBuilder.append(hv.toUpperCase(Locale.ROOT))
+            stringBuilder.append("${hv.toUpperCase(Locale.ROOT)} ")
         }
         return stringBuilder.toString()
+    }
+
+    fun byteToHexString(byte: Byte): String {
+        val stringBuilder = StringBuilder("")
+        val v: Int = byte.and(0xFF.toByte()).toInt()
+        var hv = Integer.toHexString(v)
+        if (hv.length < 2) {
+            stringBuilder.append(0)
+        } else if (hv.length > 2) {
+            hv = hv.substring(hv.length - 2)
+        }
+        stringBuilder.append("${hv.toUpperCase(Locale.ROOT)} ")
+        return stringBuilder.toString()
+    }
+
+    fun intToHexString(src: Int): String? {
+        val byteArray = ByteArray(Int.SIZE_BYTES)
+        for (index in byteArray.indices) {
+            byteArray[index] = src.shr(((Int.SIZE_BYTES - 1) - index) * 8).toByte()
+        }
+        return bytesToHexString(byteArray)
     }
 
     fun stringToHexString(src: String?): String {
@@ -151,7 +186,6 @@ object HexCodeConverter {
             val tmp = ma.group(1)
             val value = tmp.toInt()
             val dst = String(Character.toChars(value))
-            Timber.w("%s - %s -> %s\n", src, tmp, dst)
             unicodeStr = unicodeStr.replace(src, dst)
         }
         return unicodeStr
@@ -167,7 +201,6 @@ object HexCodeConverter {
             val tmp = ma.group(1)
             val value = tmp.toInt()
             val dst = String(Character.toChars(value))
-            Timber.w("%s - %s -> %s\n", src, tmp, dst)
             unicodeStr = unicodeStr.replace(src, dst)
         }
         return unicodeStr

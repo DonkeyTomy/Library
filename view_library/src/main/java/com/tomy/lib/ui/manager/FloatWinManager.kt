@@ -33,6 +33,8 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
 
     private var mDisplayWidth = 0
 
+    private var mDisplayHeight = 0
+
     init {
         initWindowManager()
     }
@@ -42,9 +44,10 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
         if (PermissionChecker.checkSystemAlertDialog(mContext)) {
             initParameters()
         }
-        /*val point = Point()
+        val point = Point()
         mWindowManager.defaultDisplay.getSize(point)
-        mDisplayWidth   = point.x*/
+        mDisplayWidth   = point.x
+        mDisplayHeight  = point.y
     }
 
     private fun initParameters() {
@@ -100,7 +103,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
      * */
     fun dismissWindow() {
         mParameter?.apply {
-            x = -mDisplayWidth
+            x = -mDisplayHeight
             alpha = 1f
             flags = flags.or(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
             updateView(mDisplayWidth, mHeight)
@@ -122,7 +125,7 @@ class FloatWinManager(private var mContext: Context, var mRootView: View, privat
     }
 
     private fun updateView(width: Int, height: Int) {
-//        Timber.w("updateView. width x height = [$width x $height]")
+        Timber.w("updateView. width x height = [$width x $height]")
         setResolutionRation(width, height)
         /*Observable.just(Unit)
                 .observeOn(AndroidSchedulers.mainThread())

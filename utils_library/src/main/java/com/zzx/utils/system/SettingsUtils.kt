@@ -1,6 +1,7 @@
 package com.zzx.utils.system
 
 import android.content.Context
+import android.content.Intent
 import android.provider.Settings
 import android.provider.Settings.*
 
@@ -90,6 +91,11 @@ object SettingsUtils {
 
     fun setAirplaneState(context: Context, enable: Boolean) {
         putGlobalValue(context, Global.AIRPLANE_MODE_ON, if (enable) 1 else 0)
+        Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED).apply {
+            flags = Intent.FLAG_RECEIVER_REPLACE_PENDING
+            putExtra("state", enable)
+            context.sendBroadcast(this)
+        }
     }
 
 

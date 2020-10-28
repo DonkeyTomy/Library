@@ -12,6 +12,8 @@ object SystemInfo {
     const val METHOD_GET = "get"
     const val METHOD_SET = "set"
     const val VERSION_CODE = "zzx.software.version"
+    const val VERSION_CODE_HARDWARE = "ro.build.version.hardware"
+    const val VERSION_CODE_SOFTWARE = "ro.build.version.software"
     const val MODEL_CODE = "zzx.product.model"
     const val BUILD_TIME = "ro.build.version.incremental"
 
@@ -50,8 +52,17 @@ object SystemInfo {
         return getSystemProperty(VERSION_CODE)
     }
 
+    fun getHardwareVersion(): String {
+        return getSystemProperty(VERSION_CODE_HARDWARE)
+    }
+
     fun getSystemProperty(key: String): String {
-        return mGetMethod.invoke(mClass, key) as String
+        val value = mGetMethod.invoke(mClass, key)
+        return if (value == null) {
+            ""
+        } else {
+            value as String
+        }
     }
 
 

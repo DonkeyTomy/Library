@@ -1,5 +1,6 @@
 package com.tomy.lib.ui.view.preference
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.preference.PreferenceManager
 import android.preference.PreferenceScreen
@@ -8,6 +9,7 @@ import android.widget.ListView
 /**@author Tomy
  * Created by Tomy on 2018/10/10.
  */
+@SuppressLint("PrivateApi")
 class TPreferenceManager(private var context: Context) {
 
     private val mPreferenceManagerCls = PreferenceManager::class.java
@@ -57,8 +59,7 @@ class TPreferenceManager(private var context: Context) {
      * @see inflatePreferenceScreen
      */
     fun bindPreferences(listView: ListView) {
-        val screen = getPreferenceScreen()
-        screen.bind(listView)
+        getPreferenceScreen().bind(listView)
     }
 
     fun removeAll() {

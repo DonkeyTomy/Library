@@ -31,12 +31,12 @@ abstract class BaseSupportFragment: Fragment() {
         super.onAttach(context)
         mContext = context as FragmentActivity
         initMember()
-        Timber.e("onAttach $this")
+        Timber.v("onAttach ${this.javaClass.simpleName}")
     }
 
     override fun onDetach() {
         super.onDetach()
-        Timber.e("onDetach $this")
+        Timber.v("onDetach ${this.javaClass.simpleName}")
         releaseMember()
         mContext = null
     }
@@ -45,7 +45,7 @@ abstract class BaseSupportFragment: Fragment() {
         if (mRootView == null) {
             mRootView = inflater.inflate(getLayoutId(), container, false)
         }
-        Timber.e("onCreateView $this")
+        Timber.v("onCreateView ${this.javaClass.simpleName}")
         createView(mRootView!!)
         return mRootView!!
     }
@@ -55,25 +55,25 @@ abstract class BaseSupportFragment: Fragment() {
         if (isBindView()) {
             mUnBinder = ButterKnife.bind(this, view)
         }
-        Timber.e("onViewCreated $this")
+        Timber.v("onViewCreated ${this.javaClass.simpleName}")
         initView(view)
     }
 
     override fun onResume() {
         super.onResume()
         resumeView()
-        Timber.e("onResume $this")
+        Timber.v("onResume ${this.javaClass.simpleName}")
     }
 
     override fun onPause() {
         super.onPause()
         pauseView()
-        Timber.e("onPause $this")
+        Timber.v("onPause ${this.javaClass.simpleName}")
     }
 
     override fun onStop() {
         super.onStop()
-        Timber.e("onStop $this")
+        Timber.v("onStop ${this.javaClass.simpleName}")
     }
 
     override fun onDestroyView() {
@@ -81,13 +81,13 @@ abstract class BaseSupportFragment: Fragment() {
         mUnBinder?.unbind()
         mUnBinder = null
         (mRootView!!.parent as ViewGroup).removeView(mRootView!!)
-        Timber.e("onDestroyView")
+        Timber.v("onDestroyView ${this.javaClass.simpleName}")
         super.onDestroyView()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Timber.e("onDestroy")
+        Timber.v("onDestroy ${this.javaClass.simpleName}")
         mRootView = null
     }
     /**

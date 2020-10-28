@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/transparent"
     android:layout_width="match_parent"
     android:layout_height="120dp">
     <RelativeLayout
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:background="@color/white_trans"
-        android:layout_centerHorizontal="true"
-        android:layout_width="280dp"
+        app:layout_constraintWidth_percent="0.6"
+        android:layout_width="0dp"
         android:layout_height="120dp">
         <TextView
             android:id="@+id/message"
@@ -55,4 +59,4 @@
     </RelativeLayout>
 
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

@@ -15,7 +15,6 @@ import android.os.Environment
 import android.os.Message
 import android.os.StatFs
 import android.provider.Settings
-import android.provider.Telephony
 import android.support.v4.app.ActivityCompat
 import android.telephony.TelephonyManager
 import android.text.TextUtils

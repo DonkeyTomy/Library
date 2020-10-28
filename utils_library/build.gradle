@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+//apply plugin: 'maven'
 
 android {
     compileSdkVersion build_versions.compile_sdk
@@ -57,3 +58,17 @@ dependencies {
     api deps.eventbus
     api deps.permission
 }
+
+/*uploadArchives{
+    repositories.mavenDeployer{
+        // 本地仓库路径D:\WorkSpace
+//        repository(url: uri('../repository'))
+        repository(url:"file://F://WorkSpace/myaar/repository/")
+        // 唯一标识
+        pom.groupId = "com.zzx.utils"
+        // 项目名称
+        pom.artifactId = "utils"
+        // 版本号
+        pom.version = "1.0.0"
+    }
+}*/

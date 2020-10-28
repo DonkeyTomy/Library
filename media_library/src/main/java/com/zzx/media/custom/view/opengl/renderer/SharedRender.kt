@@ -14,8 +14,6 @@ import com.zzx.media.custom.view.opengl.egl.Texture2DProgram
 import com.zzx.media.custom.view.opengl.egl.WindowEGLSurface
 import com.zzx.media.custom.view.opengl.egl14.EGL14Core
 import com.zzx.media.values.TAG
-import com.zzx.utils.rxjava.FlowableUtil
-import io.reactivex.functions.Consumer
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.*

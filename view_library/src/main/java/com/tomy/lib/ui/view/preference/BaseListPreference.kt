@@ -1,7 +1,10 @@
 package com.tomy.lib.ui.view.preference
 
 import android.app.Dialog
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.preference.ListPreference
 import android.util.AttributeSet
@@ -20,6 +23,10 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
     private var mXOffset: Int = 250
 
     private var mYOffset: Int = 0
+
+    private val mReceiver by lazy {
+        SystemDialogCloseReceiver()
+    }
 
 
     private val mInflater by lazy {
@@ -64,6 +71,19 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
 
     }
 
+    fun dismissDialog() {
+        mDialog?.apply {
+            if (isShowing) {
+                dismiss()
+            }
+        }
+    }
+
+    override fun onPrepareForRemoval() {
+        context.unregisterReceiver(mReceiver)
+        super.onPrepareForRemoval()
+    }
+
     override fun onCreateView(parent: ViewGroup?): View {
         return super.onCreateView(parent).apply {
             viewTreeObserver.addOnGlobalLayoutListener {
@@ -81,6 +101,7 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
     override fun onBindDialogView(view: View) {
         super.onBindDialogView(view)
         bindDialogLayout(view)
+        context.registerReceiver(mReceiver, IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
     }
 
     /**
@@ -98,5 +119,18 @@ abstract class BaseListPreference(context: Context, attrSet: AttributeSet): List
     override fun onCreateDialogView(): View {
         return mInflater.inflate(getDialogLayoutId(), null)
     }
+
+    inner class SystemDialogCloseReceiver: BroadcastReceiver() {
+        val SYSTEM_REASON     = "reason"
+        val SYSTEM_HOME_KEY   = "homekey"
+        override fun onReceive(context: Context, intent: Intent) {
+            Timber.e("[${intent.action}; key = $key]")
+            if (intent.getStringExtra(SYSTEM_REASON) == SYSTEM_HOME_KEY) {
+                dismissDialog()
+            }
+        }
+
+    }
+
 
 }

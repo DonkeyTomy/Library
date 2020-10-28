@@ -34,7 +34,7 @@ class UsbManagerWrapper(var mContext: Context) {
                 .observeOn(Schedulers.newThread())
                 .subscribe {
                     StorageManagerWrapper.unmountStorage(mContext)
-                    setCurrentModel(FUNCTION_MTP)
+                    setCurrentModel(FUNCTION_MASS)
                 }
 
     }

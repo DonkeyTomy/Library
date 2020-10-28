@@ -206,7 +206,7 @@ class Camera1Manager: ICameraManager<SurfaceHolder, Camera> {
                 mParameters = parameters
                 mParameters?.apply {
                     supportedFocusModes.forEach {
-                        Timber.i("focusMode = $it")
+                        Timber.d("focusMode = $it")
                         when (it) {
                             FOCUS_MODE_MANUAL   -> {
                                 mIsManualFocusSupported = true

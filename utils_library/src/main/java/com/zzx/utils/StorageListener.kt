@@ -54,30 +54,33 @@ class StorageListener(var mContext: Context, var needComputeAvailablePercent: Bo
         Observable.just(Unit)
                 .observeOn(Schedulers.newThread())
                 .map {
-                    return@map FileUtil.checkExternalStorageMounted(mContext)
+                    return@map FileUtil.getExternalStorageState(mContext)
                 }
                 .subscribe {
-                    if (it) {
-                        if (FileUtil.getExternalStorageState(mContext) == Environment.MEDIA_UNMOUNTABLE) {
+                    when (it) {
+                        Environment.MEDIA_UNMOUNTABLE  -> {
                             mCallback?.onExternalStorageChanged(true, false)
                             mCallback?.onAvailablePercentChanged(-1)
-                            return@subscribe
                         }
-                        mExternalPath = FileUtil.getExternalStoragePath(mContext)
-                        Observable.interval(1, 10, TimeUnit.SECONDS)
-                                .observeOn(Schedulers.computation())
-                                .subscribe(
-                                        {
-                                            computeAvailableSpace()
-                                        },
-                                        {},
-                                        {},
-                                        {
-                                            mDisposable = it
-                                        }
-                                )
-                    } else {
-                        mCallback?.onAvailablePercentChanged(-1)
+                        Environment.MEDIA_UNMOUNTED -> {
+                            mCallback?.onAvailablePercentChanged(-1)
+                        }
+                        Environment.MEDIA_MOUNTED   -> {
+                            mExternalPath = FileUtil.getExternalStoragePath(mContext)
+                            Observable.interval(1, 10, TimeUnit.SECONDS)
+                                    .observeOn(Schedulers.computation())
+                                    .subscribe(
+                                            {
+                                                computeAvailableSpace()
+                                            },
+                                            {},
+                                            {},
+                                            {
+                                                disposable ->
+                                                mDisposable = disposable
+                                            }
+                                    )
+                        }
                     }
                 }
 

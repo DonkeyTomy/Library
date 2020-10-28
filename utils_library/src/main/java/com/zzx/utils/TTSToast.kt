@@ -18,6 +18,7 @@ object TTSToast {
 
     private var mContext: Context? = null
 
+    @JvmStatic
     fun init(context: Context) {
         mContext = context
         if (mTTS == null) {
@@ -51,6 +52,7 @@ object TTSToast {
         mToast = Toast.makeText(context, "", Toast.LENGTH_SHORT)
     }
 
+    @JvmStatic
     fun release() {
         mTTS?.stop()
         mTTS?.shutdown()
@@ -59,6 +61,7 @@ object TTSToast {
         mToast = null
     }
 
+    @JvmStatic
     @JvmOverloads
     fun showToast(msg: String, needTTS: Boolean = false, show_time: Int = Toast.LENGTH_SHORT, show: Boolean = true) {
         if (show && show_time >= 0) {
@@ -79,6 +82,7 @@ object TTSToast {
         }
     }
 
+    @JvmStatic
     @JvmOverloads
     fun showToast(msgId: Int, needTTS: Boolean = false, show_time: Int = Toast.LENGTH_SHORT, show: Boolean = true) {
         showToast(mContext!!.getString(msgId), needTTS, show_time, show)
