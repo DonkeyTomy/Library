@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="bg_dial_width">10dp</dimen>
+    <dimen name="setting_main_tv_main">15dp</dimen>
+    <dimen name="height_switch">25dp</dimen>
+    <dimen name="radius_track">11dp</dimen>
+    <dimen name="setting_main_tv_main_size">20sp</dimen>
+    <dimen name="system_info_tv_size">18sp</dimen>
+    <dimen name="switch_min_width">55dp</dimen>
+
+    <dimen name="tool_bar_height">60dp</dimen>
+    <dimen name="tv_size_tab_item">20sp</dimen>
+    <dimen name="setting_dialog_tv_padding">10dp</dimen>
+    <dimen name="ic_focus_width">80dp</dimen>
+    <dimen name="ic_focus_width_small">60dp</dimen>
+</resources>

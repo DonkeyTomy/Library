@@ -1,0 +1,65 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion build_versions.compile_sdk
+
+    defaultConfig {
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+    }
+
+    sourceSets {
+        main {
+//            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation deps.androidx.appcompat
+    implementation deps.androidx.annotation
+    implementation deps.kotlin.stdlib
+    implementation deps.kotlin.reflect
+    implementation deps.timber
+    implementation deps.rxjava3
+    implementation deps.rx_android3
+    implementation deps.kotlin_x.coroutines_core
+    implementation deps.kotlin_x.coroutines_android
+    //本地库使用
+//     implementation project(path: ':LibraryX:utils_library')
+    //提交JitPack库时使用
+   implementation project(':utils_library')
+//    api deps.ijkplayer.java
+//    api deps.ijkplayer.armv7a
+//    api deps.ijkplayer.arm64
+}
+repositories {
+    mavenCentral()
+}

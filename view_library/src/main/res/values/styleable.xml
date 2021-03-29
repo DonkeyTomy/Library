@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomListPreference">
+        <attr name="icon_entries" format="reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="CustomSeekBar">
+        <attr name="seekBarItem" format="reference"/>
+        <attr name="seekBarSpace" format="integer"/>
+        <attr name="seekBarMax" format="integer"/>
+        <attr name="seekBarProgress" format="integer"/>
+    </declare-styleable>
+</resources>

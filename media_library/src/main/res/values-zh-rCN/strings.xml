@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="record_error">录像异常终止.异常代码:<xliff:g id="code">%1$d</xliff:g></string>
+    <string name="record_too_short">录制时间过短,删除录制文件.</string>
+</resources>

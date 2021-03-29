@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white_gray"
+    tools:ignore="MissingDefaultResource">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolBar"
+        android:background="@color/white_gray"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:contentInsetStart="0dp"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/tool_bar_height">
+        <com.tomy.lib.ui.view.layout.TabBarLayout
+            android:id="@+id/tabBarLayout"
+            app:tabBackground="@drawable/bg_tab_item_m9"
+            app:tabIndicatorHeight="0dp"
+            app:tabContentStart="0dp"
+            android:scrollIndicators="top"
+            app:tabPaddingStart="-1dp"
+            app:tabPaddingEnd="-1dp"
+            app:tabPaddingTop="-1dp"
+            app:tabPaddingBottom="-1dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </android.support.v7.widget.Toolbar>
+
+
+    <LinearLayout
+        android:id="@+id/widgetFrame"
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp">
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

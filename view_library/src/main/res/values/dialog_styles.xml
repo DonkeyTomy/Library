@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomDialogTheme" parent="android:Theme.Dialog">
+        <!--<item name="android:windowBackground">@drawable/pop_background_timer</item>背景
+        <item name="android:windowFrame">@null</item>边框
+        <item name="android:windowNoTitle">false</item>无标题
+
+        &lt;!&ndash;<item name="android:colorForeground">@android:color/darker_gray</item>
+        <item name="android:colorBackground">@android:color/holo_red_light</item>
+        <item name="android:colorBackgroundCacheHint">@android:color/holo_blue_bright</item>
+        <item name="android:panelColorBackground">@android:color/holo_green_dark</item>
+        <item name="android:windowIsFloating">true</item>是否浮现在Activity之上
+        <item name="android:windowIsTranslucent">true</item>半透明
+        <item name="android:backgroundDimEnabled">false</item>模糊
+        <item name="android:backgroundDimAmount">0.0</item>
+        <item name="android:windowContentOverlay">@null</item>-->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFrame">@null</item>
+        <!--<item name="android:background">@drawable/bg_camera_setting_dialog</item>-->
+        <item name="android:background">@android:color/transparent</item>
+        <!--<item name="android:windowBackground">@drawable/bg_camera_setting_dialog</item>-->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
+</resources>

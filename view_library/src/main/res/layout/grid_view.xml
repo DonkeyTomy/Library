@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_grid_view"
+    android:horizontalSpacing="1dp"
+    android:verticalSpacing="1dp"
+    android:drawSelectorOnTop="true"
+    android:cacheColorHint="@android:color/transparent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:ignore="MissingDefaultResource">
+</GridView>

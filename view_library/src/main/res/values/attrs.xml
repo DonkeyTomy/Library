@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="BaseListPreference" >
+        <attr name="entries" format="reference"/>
+        <attr name="entryValues" format="reference" />
+        <attr name="default_value" format="string" />
+    </declare-styleable>
+    <declare-styleable name="PagePointLayout">
+        <attr name="point_count" format="integer"/>
+    </declare-styleable>
+    <declare-styleable name="TabBarLayout">
+        <attr name="infos" format="reference"/>
+        <attr name="icons" format="reference"/>
+    </declare-styleable>
+</resources>

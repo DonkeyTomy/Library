@@ -1,0 +1,59 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion build_versions.compile_sdk
+
+    defaultConfig {
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    dataBinding {
+        enabled = true//启用DataBinding
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation deps.support.app_compat
+    implementation deps.support.annotations
+    implementation deps.support.constraint_layout
+    implementation deps.support.design
+    implementation deps.support.preference
+    testImplementation deps.junit
+    implementation deps.timber
+    implementation deps.rxjava2
+    implementation deps.rx_android
+    implementation deps.kotlin.stdlib
+    implementation deps.kotlin.reflect
+    implementation deps.kotlin.stdlib_jdk
+    androidTestImplementation deps.espresso.core
+    implementation deps.butterknife.runtime
+    kapt deps.butterknife.compiler
+    implementation deps.timber
+    implementation deps.rxjava2
+    implementation deps.rx_android
+    //Paged
+    implementation deps.paging.runtime
+    //本地库使用
+//    implementation project(path: ':Library:utils_library')
+    //提交JitPack库时使用
+    implementation project(':utils_library')
+}
+

@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">ViewLibrary</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sunday">Sunday</string>
+    <string name="uninstall_apk_sure">uninstall this app?</string>
+    <string name="switch_off_text">Off</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="negative">Negative</string>
+    <string name="positive">Confirm</string>
+    <string name="system_app">System app can not uninstall.</string>
+</resources>

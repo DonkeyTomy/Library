@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:time="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="time"
+            type="com.tomy.lib.ui.bean.Time"/>
+    </data>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:background="@android:color/transparent"
+        android:gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:src="@drawable/time_0"
+            android:id="@+id/iv_time_hour_left"
+            time:hourLeft="@{time.hourLeft}"
+            style="@style/TimeView" />
+        <ImageView
+            android:src="@drawable/time_0"
+            android:id="@+id/iv_time_hour_right"
+            time:hourRight="@{time.hourRight}"
+            style="@style/TimeView" />
+        <ImageView
+            android:id="@+id/animation_colon"
+            android:src="@drawable/time_colon_animation"
+            style="@style/TimeView"/>
+        <ImageView
+            android:id="@+id/iv_time_min_left"
+            android:src="@drawable/time_0"
+            time:minLeft="@{time.minLeft}"
+            style="@style/TimeView" />
+        <ImageView
+            android:id="@+id/iv_time_min_right"
+            android:src="@drawable/time_0"
+            time:minRight="@{time.minRight}"
+            style="@style/TimeView" />
+        <ImageView
+            android:id="@+id/animation_colon_1"
+            android:src="@drawable/time_colon_animation"
+            style="@style/TimeView"/>
+        <ImageView
+            android:id="@+id/iv_time_sec_left"
+            android:src="@drawable/time_0"
+            time:minLeft="@{time.secLeft}"
+            style="@style/TimeView" />
+        <ImageView
+            android:id="@+id/iv_time_sec_right"
+            android:src="@drawable/time_0"
+            time:minRight="@{time.secRight}"
+            style="@style/TimeView" />
+    </LinearLayout>
+</layout>

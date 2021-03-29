@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black_gray">#3e3e3e</color>
+    <color name="dark_gray">#2e2e2e</color>
+    <color name="blue">#f105addc</color>
+    <color name="blue_tran">#5d02aafd</color>
+    <color name="transDark">#000000</color>
+    <color name="gray">#929191</color>
+    <color name="white">#FFFFFF</color>
+    <!-- 乳白 -->
+    <color name="white_trans">#EBF0E9E9</color>
+    <color name="white_gray">#D5D2D2</color>
+    <color name="trans_gray">#FCCACACA</color>
+    <color name="little_gray">#EDECECEC</color>
+    <color name="system_info_tv">#525151</color>
+</resources>

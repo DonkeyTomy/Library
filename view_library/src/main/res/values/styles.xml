@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="BaseTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:windowBackground">@drawable/bg_start</item>
+    </style>
+    <!-- Base application theme. -->
+    <style name="AppThemeFullscreen" parent="BaseTheme">
+        <!-- Customize your theme here. -->
+        <!-- 隐藏标题栏 -->
+        <item name="windowNoTitle">true</item>
+        <!-- 隐藏状态栏 -->
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="AppThemeNoTitle" parent="BaseTheme">
+        <!-- Customize your theme here. -->
+        <!-- 隐藏标题栏 -->
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.5</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
+
+    <style name="MatchAll">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="WrapAll">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="ZeroWidth">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="ZeroAll">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+    </style>
+
+    <style name="MatchHeight" parent="MatchAll">
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+
+    <style name="MatchWidth" parent="MatchAll">
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="MainCenter" parent="WrapAll">
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_margin">3dp</item>
+    </style>
+
+    <style name="WrapAll.TvWhite">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="TimeView" parent="MainCenter">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+    <style name="ConHor">
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+    </style>
+    <style name="ConVer">
+        <item name="layout_constraintTop_toTopOf">parent</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+    </style>
+
+    <!-- 宽度Math -->
+    <style name="ConWidthMath" parent="ConHor">
+        <item name="android:layout_width">0dp</item>
+    </style>
+
+    <!-- 水平居中 -->
+    <style name="ConHorCenter" parent="ConHor">
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+
+    <!-- 高度Math -->
+    <style name="ConHeightMath" parent="ConVer">
+        <item name="android:layout_height">0dp</item>
+
+    </style>
+
+    <!-- 垂直居中 -->
+    <style name="ConVerCenter" parent="ConVer">
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="ConAllParent" parent="ConVer">
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+    </style>
+    <!-- 完全居中 -->
+    <style name="ConCenterInParent" parent="ConAllParent">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <!-- 顶部Width全屏,Height Wrap -->
+    <style name="ConTopHeightWrap" parent="ConWidthMath">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+
+    <!-- 底部Width全屏,Height Wrap -->
+    <style name="ConBottomHeightWrap" parent="ConWidthMath">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+    </style>
+
+    <!-- 顶部Wrap居中 -->
+    <style name="ConTopAllWrapCenter" parent="ConHor">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+
+    <!-- 底部Wrap居中 -->
+    <style name="ConBottomAllWrapCenter" parent="ConHor">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+    </style>
+
+    <!-- 居左 垂直居中 -->
+    <style name="ConStartVerCenter" parent="ConVerCenter">
+        <item name="layout_constraintStart_toStartOf">parent</item>
+    </style>
+
+    <!-- 顶部居左 垂直居中 -->
+    <style name="ConTopStartVerCenter" parent="ConStartVerCenter">
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+
+    <style name="Divide" parent="ConVerCenter">
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="SettingMainText">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">@dimen/setting_main_tv_main_size</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="SettingMainTv" parent="ConCenterInParent">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">@dimen/setting_main_tv_main_size</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginTop">@dimen/setting_main_tv_main</item>
+        <item name="android:layout_marginBottom">@dimen/setting_main_tv_main</item>
+    </style>
+
+    <style name="SystemInfoTv" parent="MatchWidth">
+        <item name="android:textColor">@color/system_info_tv</item>
+        <item name="android:textSize">@dimen/system_info_tv_size</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:background">@drawable/bg_item_rectangle_normal</item>
+    </style>
+
+
+    <style name="DialogButton">
+        <item name="android:textSize">@dimen/setting_main_tv_main_size</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:background">@drawable/btn_dialog</item>
+    </style>
+
+</resources>

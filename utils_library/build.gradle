@@ -1,0 +1,75 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+//apply plugin: 'maven'
+
+android {
+    compileSdkVersion build_versions.compile_sdk
+
+    defaultConfig {
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters 'armeabi-v7a'
+        }
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    useLibrary 'org.apache.http.legacy'
+    externalNativeBuild {
+        cmake {
+            path file('CMakeLists.txt')
+        }
+    }
+    ndkVersion '22.0.7026061'
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation deps.espresso.core
+    implementation deps.support.app_compat
+    implementation deps.support.annotations
+
+    testImplementation deps.junit
+
+    implementation deps.kotlin.stdlib
+    implementation deps.kotlin.stdlib_jdk
+    implementation deps.timber
+    implementation deps.rxjava2
+    implementation deps.rx_android
+    implementation 'org.apache.karaf.http:http:3.0.8'
+//    api 'de.greenrobot:eventbus:3.0.0-beta1'
+    implementation deps.glide.runtime
+    kapt deps.glide.compiler
+
+    api deps.bugly.runtime
+    api deps.bugly.ndk
+
+    api deps.eventbus
+    api deps.permission
+}
+
+/*uploadArchives{
+    repositories.mavenDeployer{
+        // 本地仓库路径D:\WorkSpace
+//        repository(url: uri('../repository'))
+        repository(url:"file://F://WorkSpace/myaar/repository/")
+        // 唯一标识
+        pom.groupId = "com.zzx.utils"
+        // 项目名称
+        pom.artifactId = "utils"
+        // 版本号
+        pom.version = "1.0.0"
+    }
+}*/
