@@ -43,15 +43,17 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation deps.androidx.appcompat
-    implementation deps.androidx.annotation
+    androidTestImplementation deps.espresso.core
+    implementation deps.support.app_compat
+    implementation deps.support.annotations
+    testImplementation deps.junit
     implementation deps.kotlin.stdlib
     implementation deps.kotlin.reflect
     implementation deps.timber
-    implementation deps.rxjava3
-    implementation deps.rx_android3
-    implementation deps.kotlin_x.coroutines_core
-    implementation deps.kotlin_x.coroutines_android
+    implementation deps.rxjava2
+    implementation deps.rx_android
+    implementation deps.kotlin.coroutines_core
+    implementation deps.kotlin.coroutines_android
     //本地库使用
 //     implementation project(path: ':LibraryX:utils_library')
     //提交JitPack库时使用
