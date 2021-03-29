@@ -2,8 +2,8 @@ package com.zzx.media.player
 
 import android.media.MediaPlayer
 import android.os.Build
+import android.support.annotation.RequiresApi
 import android.view.Surface
-import androidx.annotation.RequiresApi
 import timber.log.Timber
 
 /**@author Tomy

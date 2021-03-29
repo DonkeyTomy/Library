@@ -14,7 +14,7 @@ import com.zzx.media.recorder.IRecorder
 import com.zzx.media.recorder.IRecorder.State
 import com.zzx.utils.file.FileUtil
 import com.zzx.utils.rxjava.FlowableUtil
-import io.reactivex.rxjava3.functions.Consumer
+import io.reactivex.functions.Consumer
 import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException

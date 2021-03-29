@@ -1,8 +1,8 @@
 package com.zzx.media.recorder
 
 import android.hardware.Camera
+import android.support.annotation.IntDef
 import android.view.Surface
-import androidx.annotation.IntDef
 import com.zzx.media.parameters.AudioProperty
 import com.zzx.media.parameters.VideoProperty
 import java.io.File

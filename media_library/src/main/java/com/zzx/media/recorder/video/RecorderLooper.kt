@@ -15,9 +15,9 @@ import com.zzx.media.utils.FileNameUtils
 import com.zzx.media.utils.MediaInfoUtil
 import com.zzx.utils.file.FileUtil
 import com.zzx.utils.zzx.DeviceUtils
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.Executors

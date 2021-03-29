@@ -8,7 +8,6 @@ import android.provider.MediaStore
 import android.provider.MediaStore.Images.ImageColumns
 import com.zzx.media.bean.SaveRequest
 import com.zzx.media.platform.IFileSaver.OnFileSaveListener
-import io.reactivex.rxjava3.core.Observable
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -21,8 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 class FileSaver(var mContext: Context): IFileSaver {
 
     private val mQueue = LinkedList<ISaveRequest>()
-
-    private var mSubscribe: Observable<Unit>? = null
 
     private val mObject = Object()
 

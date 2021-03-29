@@ -5,13 +5,13 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraDevice
+import android.support.annotation.Keep
+import android.support.annotation.NonNull
 import android.util.AttributeSet
 import android.util.Size
 import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
-import androidx.annotation.Keep
-import androidx.annotation.NonNull
 import com.zzx.media.camera.ICameraManager
 import com.zzx.media.custom.view.camera.ISurfaceView
 import timber.log.Timber
