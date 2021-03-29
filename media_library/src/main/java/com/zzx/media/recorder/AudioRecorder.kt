@@ -3,11 +3,11 @@ package com.zzx.media.recorder
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import androidx.annotation.IntDef
-import io.reactivex.rxjava3.core.BackpressureStrategy
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.FlowableEmitter
-import io.reactivex.rxjava3.schedulers.Schedulers
+import android.support.annotation.IntDef
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
+import io.reactivex.FlowableEmitter
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
