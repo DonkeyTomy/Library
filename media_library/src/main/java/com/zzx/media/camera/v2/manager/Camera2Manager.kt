@@ -251,6 +251,13 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
         mPreviewSession!!.captureBurst(list, CaptureCallback(), mHandler)
     }
 
+    override fun isBurstModeSupported(): Boolean {
+        return true
+    }
+
+    override fun setPictureBurstMode(pictureCount: Int) {
+    }
+
     /**
      * 在当前的缩放下放大镜头的Level
      * @param level Int +level
@@ -603,6 +610,7 @@ class Camera2Manager(var context: Context): ICameraManager<SurfaceTexture, Camer
     override fun isPictureAutoFocusSupported(): Boolean {
         return false
     }
+
 
     override fun getFocusRect(): List<Rect> {
         return emptyList()

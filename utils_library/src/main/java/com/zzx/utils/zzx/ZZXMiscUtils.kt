@@ -238,20 +238,13 @@ object ZZXMiscUtils {
     fun write(path: String, cmd: String)  {
         FIXED_EXECUTOR.execute {
             try {
-//                synchronized(obj) {
-//                    JniFile().writeOnce(path, cmd)
-                    Timber.d("write: path = $path; cmd = $cmd; length = ${cmd.length}")
-                    val file = File(path)
-                    file.writeText(cmd)
-
-                val regex = Regex("[\n\r]")
-                val temp = file.readText().replace(regex, "")
-                Timber.d("read: path = $path; temp = $temp;\n length = ${temp.length}")
-                if (temp != cmd) {
-                        Timber.w("write again: path = $path; cmd = $cmd")
-                        file.writeText(cmd)
-                    }
-//                }
+                val cmdRuntime = "echo \"$cmd\" > $path\n"
+                val process = Runtime.getRuntime().exec("sh")
+                val outputStream = DataOutputStream(process.outputStream)
+                outputStream.writeBytes(cmdRuntime)
+                outputStream.flush()
+                outputStream.close()
+                Timber.d("writeCmd = $cmdRuntime")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -294,7 +287,7 @@ object ZZXMiscUtils {
         /*Observable.just(path)
                 .subscribeOn(Schedulers.single())
                 .subscribe {*/
-//                    Timber.e("write: path = $path; cmd = $cmd. Thread = ${Thread.currentThread().name}")
+                    Timber.e("write: path = $path; cmd = $cmd. int = ${cmd.toInt()}")
                     var outputStream: FileOutputStream? = null
                     try {
                         outputStream = FileOutputStream(path)

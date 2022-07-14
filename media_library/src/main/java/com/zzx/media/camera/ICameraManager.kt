@@ -119,6 +119,8 @@ interface ICameraManager<in surface, camera> {
 
     fun isPictureAutoFocusSupported(): Boolean
 
+    fun isBurstModeSupported(): Boolean
+
     fun getCameraCore(): CameraCore<camera>
 
     /**
@@ -168,6 +170,10 @@ interface ICameraManager<in surface, camera> {
     fun takePicture()
 
     fun takePictureBurst(count: Int)
+
+    fun setPictureBurstMode(pictureCount: Int)
+
+    fun setPictureNormalMode()
 
     /**
      * @param rotation Int 预览界面的旋转角度

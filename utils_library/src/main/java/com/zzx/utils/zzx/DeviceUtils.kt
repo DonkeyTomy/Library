@@ -30,7 +30,11 @@ object DeviceUtils {
     }
 
     fun setUserName(context: Context, name: String) {
-        System.putString(context.contentResolver, USER_NAME, name)
+        try {
+            System.putString(context.contentResolver, USER_NAME, name)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun getDeviceNum(context: Context): String {
